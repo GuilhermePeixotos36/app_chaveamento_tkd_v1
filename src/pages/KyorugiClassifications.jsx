@@ -501,11 +501,15 @@ const AthleteClassifications = () => {
                     <option value="">Selecione...</option>
                     {(() => {
                     const filtered = weightCategories.filter(cat => {
-                      // Temporariamente mostrando todas para debug
-                      console.log('--- DEBUG CATEGORY STRUCTURE ---');
-                      console.log('Category keys:', Object.keys(cat));
-                      console.log('Full category:', cat);
-                      return true; // Mostrar todas temporariamente
+                      console.log('--- DEBUG FILTERING ---');
+                      console.log('Category age_category:', cat.age_category);
+                      console.log('Category gender:', cat.gender);
+                      console.log('Form age_category:', formData.age_category);
+                      console.log('Form gender:', formData.gender);
+                      console.log('Match age:', cat.age_category === formData.age_category);
+                      console.log('Match gender:', cat.gender === formData.gender);
+                      
+                      return cat.age_category === formData.age_category && cat.gender === formData.gender;
                     });
                     console.log('--- DEBUG FORM SELECT ---');
                     console.log('Total weightCategories:', weightCategories.length);
