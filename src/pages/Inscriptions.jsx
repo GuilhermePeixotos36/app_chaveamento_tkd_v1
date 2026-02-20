@@ -6,7 +6,7 @@ import 'jspdf-autotable';
 
 const Inscriptions = () => {
   const [weightCategories, setWeightCategories] = useState([]);
-  const [selectedChampionship, setSelectedChampionship] = useState('');
+  const [championships, setChampionships] = useState([]);
   const [inscriptions, setInscriptions] = useState([]);
   const [modalities, setModalities] = useState([]);
   const [organizations, setOrganizations] = useState([]);
