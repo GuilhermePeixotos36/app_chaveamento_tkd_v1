@@ -197,14 +197,14 @@ const Brackets = () => {
         console.log('Nível Faixa:', registration.belt_level, '→ BeltGroup:', beltGroup);
         console.log('Peso Category ID:', registration.weight_category_id);
         console.log('Peso real:', registration.weight, 'kg');
-        console.log('Todos os dados do atleta:', registration);
         
-        // Se weight_category_id for null, tentar encontrar pela faixa de peso real
+        // Lógica corrigida: priorizar weight_category_id da inscrição, mesmo que seja null
         let matchingClassification = null;
         
+        // Tentar encontrar por weight_category_id da inscrição primeiro
         if (registration.weight_category_id) {
             matchingClassification = kyorugiClassifications.find(classification => {
-                console.log('Comparando com classificação (por ID):', {
+                console.log('Comparando com classificação (por ID da inscrição):', {
                     age_category: classification.age_category,
                     gender: classification.gender,
                     belt_group: classification.belt_group,
@@ -216,8 +216,10 @@ const Brackets = () => {
                        classification.belt_group === beltGroup &&
                        classification.weight_category_id === registration.weight_category_id;
             });
-        } else {
-            // Tentar encontrar pela faixa de peso real comparando com as classificações
+        }
+        
+        // Se não encontrar por ID, tentar encontrar pelo peso real
+        if (!matchingClassification && registration.weight) {
             matchingClassification = kyorugiClassifications.find(classification => {
                 console.log('Comparando com classificação (por peso):', {
                     age_category: classification.age_category,
@@ -233,11 +235,11 @@ const Brackets = () => {
                        registration.weight >= classification.min_weight &&
                        registration.weight <= classification.max_weight;
             });
-            
-            if (!matchingClassification) {
-                console.log('⚠️ Atleta não corresponde a nenhuma classificação criada');
-                console.log('Sugestão: Verifique se a inscrição foi feita corretamente');
-            }
+        }
+        
+        if (!matchingClassification) {
+            console.log('⚠️ Atleta não corresponde a nenhuma classificação criada');
+            console.log('Sugestão: Verifique se a inscrição foi feita corretamente');
         }
         
         console.log('Resultado:', matchingClassification ? 'ENCONTROU' : 'NÃO ENCONTROU');
