@@ -173,6 +173,10 @@ const Inscriptions = () => {
         organization_id: '',
         birth_date: ''
       });
+      
+      // Forçar refresh do schema cache do Supabase
+      await supabase.rpc('refresh_schema_cache');
+      
       loadInscriptions(selectedChampionship);
     } catch (error) {
       console.error('Erro ao criar inscrição:', error);
