@@ -21,7 +21,18 @@ const Inscriptions = () => {
   const [filterAgeCategory, setFilterAgeCategory] = useState('all');
   const [filterGender, setFilterGender] = useState('all');
   const [isEditing, setIsEditing] = useState(false);
-  const [editData, setEditData] = useState({});
+  const [editData, setEditData] = useState({
+    full_name: '',
+    age: '',
+    gender: '',
+    weight: '',
+    weight_category_id: null,
+    belt_level: '',
+    belt_category_id: null,
+    modality_id: '',
+    organization_id: '',
+    birth_date: ''
+  });
   const [suggestedWeightCategory, setSuggestedWeightCategory] = useState(null);
 
   // ... rest of the component state ...
@@ -111,7 +122,8 @@ const Inscriptions = () => {
           belt_level: parseInt(editData.belt_level),
           belt_category_id: editData.belt_category_id,
           modality_id: editData.modality_id,
-          organization_id: editData.organization_id
+          organization_id: editData.organization_id,
+          birth_date: editData.birth_date || new Date().toISOString().split('T')[0]
         })
         .eq('id', editData.id);
 
@@ -122,6 +134,49 @@ const Inscriptions = () => {
     } catch (error) {
       console.error('Erro ao atualizar:', error);
       alert('Erro ao atualizar inscrição');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAdd = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from('registrations')
+        .insert({
+          full_name: editData.full_name,
+          age: parseInt(editData.age),
+          gender: editData.gender,
+          weight: parseFloat(editData.weight),
+          weight_category_id: editData.weight_category_id,
+          belt_level: parseInt(editData.belt_level),
+          belt_category_id: editData.belt_category_id,
+          modality_id: editData.modality_id,
+          organization_id: editData.organization_id,
+          birth_date: editData.birth_date || new Date().toISOString().split('T')[0]
+        });
+
+      if (error) throw error;
+      setMessage('Inscrição criada com sucesso!');
+      setIsEditing(false);
+      setEditData({
+        full_name: '',
+        age: '',
+        gender: '',
+        weight: '',
+        weight_category_id: null,
+        belt_level: '',
+        belt_category_id: null,
+        modality_id: '',
+        organization_id: '',
+        birth_date: ''
+      });
+      loadInscriptions(selectedChampionship);
+    } catch (error) {
+      console.error('Erro ao criar inscrição:', error);
+      alert('Erro ao criar inscrição');
     } finally {
       setLoading(false);
     }
@@ -836,21 +891,32 @@ const Inscriptions = () => {
                     )}
                   </div>
                   <div>
-                    <label className="form-label">Faixa</label>
-                    <select
-                      name="belt_level"
-                      value={editData.belt_level || ''}
+                    <label className="form-label">Data de Nascimento</label>
+                    <input
+                      name="birth_date"
+                      type="date"
+                      value={editData.birth_date || ''}
                       onChange={handleEditChange}
-                      className="select-modern"
-                    >
-                      <option value="1">Branca</option>
-                      <option value="2">Amarela</option>
-                      <option value="3">Verde</option>
-                      <option value="4">Azul</option>
-                      <option value="5">Vermelha</option>
-                      <option value="6">Preta</option>
-                    </select>
+                      className="input-modern"
+                      required
+                    />
                   </div>
+                </div>
+                <div>
+                  <label className="form-label">Faixa</label>
+                  <select
+                    name="belt_level"
+                    value={editData.belt_level || ''}
+                    onChange={handleEditChange}
+                    className="select-modern"
+                  >
+                    <option value="1">Branca</option>
+                    <option value="2">Amarela</option>
+                    <option value="3">Verde</option>
+                    <option value="4">Azul</option>
+                    <option value="5">Vermelha</option>
+                    <option value="6">Preta</option>
+                  </select>
                 </div>
                 <div>
                   <label className="form-label">Modalidade</label>
