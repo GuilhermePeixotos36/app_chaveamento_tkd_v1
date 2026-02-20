@@ -150,6 +150,12 @@ const Brackets = () => {
             }
 
             setCategories(grouped);
+            
+            console.log('--- DEBUG GROUPED CATEGORIES ---');
+            console.log('Total grouped categories:', Object.keys(grouped).length);
+            console.log('Grouped data:', grouped);
+            console.log('Unclassified athletes:', unclassifiedAthletes.length);
+            console.log('--- END DEBUG GROUPED ---');
         } catch (error) {
             console.error('Erro ao carregar inscrições:', error);
         } finally {
