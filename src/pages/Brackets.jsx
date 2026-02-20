@@ -196,20 +196,44 @@ const Brackets = () => {
         console.log('Gênero:', registration.gender, '→ Expected:', registration.gender);
         console.log('Nível Faixa:', registration.belt_level, '→ BeltGroup:', beltGroup);
         console.log('Peso Category ID:', registration.weight_category_id);
+        console.log('Peso real:', registration.weight, 'kg');
+        console.log('Todos os dados do atleta:', registration);
         
-        const matchingClassification = kyorugiClassifications.find(classification => {
-            console.log('Comparando com classificação:', {
-                age_category: classification.age_category,
-                gender: classification.gender,
-                belt_group: classification.belt_group,
-                weight_category_id: classification.weight_category_id
+        // Se weight_category_id for null, tentar encontrar pela faixa de peso real
+        let matchingClassification = null;
+        
+        if (registration.weight_category_id) {
+            matchingClassification = kyorugiClassifications.find(classification => {
+                console.log('Comparando com classificação (por ID):', {
+                    age_category: classification.age_category,
+                    gender: classification.gender,
+                    belt_group: classification.belt_group,
+                    weight_category_id: classification.weight_category_id
+                });
+                
+                return classification.age_category === ageGroup &&
+                       classification.gender === registration.gender &&
+                       classification.belt_group === beltGroup &&
+                       classification.weight_category_id === registration.weight_category_id;
             });
-            
-            return classification.age_category === ageGroup &&
-                   classification.gender === registration.gender &&
-                   classification.belt_group === beltGroup &&
-                   classification.weight_category_id === registration.weight_category_id;
-        });
+        } else {
+            // Tentar encontrar pela faixa de peso real
+            matchingClassification = kyorugiClassifications.find(classification => {
+                console.log('Comparando com classificação (por peso):', {
+                    age_category: classification.age_category,
+                    gender: classification.gender,
+                    belt_group: classification.belt_group,
+                    min_weight: classification.min_weight,
+                    max_weight: classification.max_weight
+                });
+                
+                return classification.age_category === ageGroup &&
+                       classification.gender === registration.gender &&
+                       classification.belt_group === beltGroup &&
+                       registration.weight >= classification.min_weight &&
+                       registration.weight <= classification.max_weight;
+            });
+        }
         
         console.log('Resultado:', matchingClassification ? 'ENCONTROU' : 'NÃO ENCONTROU');
         console.log('--- END DEBUG ---');
