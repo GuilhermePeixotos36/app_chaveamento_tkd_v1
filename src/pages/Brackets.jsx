@@ -184,12 +184,29 @@ const Brackets = () => {
         const ageGroup = getAgeGroup(registration.age);
         const beltGroup = getBeltGroup(registration.belt_level);
         
-        const matchingClassification = kyorugiClassifications.find(classification => 
-            classification.age_category === ageGroup &&
-            classification.gender === registration.gender &&
-            classification.belt_group === beltGroup &&
-            classification.weight_category_id === registration.weight_category_id
-        );
+        console.log('--- DEBUG CLASSIFICATION MATCH ---');
+        console.log('Atleta:', registration.full_name);
+        console.log('Idade:', registration.age, '→ AgeGroup:', ageGroup);
+        console.log('Gênero:', registration.gender, '→ Expected:', registration.gender);
+        console.log('Nível Faixa:', registration.belt_level, '→ BeltGroup:', beltGroup);
+        console.log('Peso Category ID:', registration.weight_category_id);
+        
+        const matchingClassification = kyorugiClassifications.find(classification => {
+            console.log('Comparando com classificação:', {
+                age_category: classification.age_category,
+                gender: classification.gender,
+                belt_group: classification.belt_group,
+                weight_category_id: classification.weight_category_id
+            });
+            
+            return classification.age_category === ageGroup &&
+                   classification.gender === registration.gender &&
+                   classification.belt_group === beltGroup &&
+                   classification.weight_category_id === registration.weight_category_id;
+        });
+        
+        console.log('Resultado:', matchingClassification ? 'ENCONTROU' : 'NÃO ENCONTROU');
+        console.log('--- END DEBUG ---');
         
         return matchingClassification;
     };
