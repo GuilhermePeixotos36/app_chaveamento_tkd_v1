@@ -211,6 +211,10 @@ const Inscriptions = () => {
           status: 'active'
         });
         loadInscriptions(selectedChampionship);
+        // SQL para criar as colunas adicionais
+        const sqlStatements = [
+          'ALTER TABLE registrations ADD COLUMN IF NOT EXISTS birth_date TIMESTAMPTZ;',
+          'ALTER TABLE registrations ADD COLUMN IF NOT EXISTS phone TEXT;',
           'ALTER TABLE registrations ADD COLUMN IF NOT EXISTS observations TEXT;',
           'ALTER TABLE registrations ADD COLUMN IF NOT EXISTS email TEXT;',
           'ALTER TABLE registrations ADD COLUMN IF NOT EXISTS status TEXT DEFAULT \'active\';'
