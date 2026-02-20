@@ -1,0 +1,14 @@
+/* TKD Bracket Manager - Design de Ponta */
+@import './styles/global.css';
+
+/* Reset adicional */
+body, html {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+#root {
+  height: 100%;
+}
