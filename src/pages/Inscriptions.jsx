@@ -5,7 +5,8 @@ import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 
 const Inscriptions = () => {
-  const [championships, setChampionships] = useState([]);
+  const [weightCategories, setWeightCategories] = useState([]);
+  const [selectedChampionship, setSelectedChampionship] = useState('');
   const [inscriptions, setInscriptions] = useState([]);
   const [modalities, setModalities] = useState([]);
   const [organizations, setOrganizations] = useState([]);
@@ -21,6 +22,7 @@ const Inscriptions = () => {
   const [filterGender, setFilterGender] = useState('all');
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState({});
+  const [suggestedWeightCategory, setSuggestedWeightCategory] = useState(null);
 
   // ... rest of the component state ...
 
@@ -31,7 +33,68 @@ const Inscriptions = () => {
 
   const handleEditChange = (e) => {
     const { name, value } = e.target;
-    setEditData(prev => ({ ...prev, [name]: value }));
+    
+    // Se o campo for peso, processar automaticamente a categoria de peso
+    if (name === 'weight') {
+      const weight = parseFloat(value);
+      const age = editData.age || '';
+      const gender = editData.gender || '';
+      
+      if (weight && age && gender) {
+        const suggested = findWeightCategoryByWeight(weight, age, gender);
+        
+        if (suggested) {
+          console.log('Categoria de peso sugerida:', suggested.name, 'ID:', suggested.id);
+          setEditData(prev => ({
+            ...prev,
+            weight: weight,
+            weight_category_id: suggested.id
+          }));
+        } else {
+          console.log('Nenhuma categoria de peso encontrada para:', { weight, age, gender });
+          setEditData(prev => ({
+            ...prev,
+            weight: weight,
+            weight_category_id: null
+          }));
+        }
+      } else {
+        setEditData(prev => ({
+          ...prev,
+          weight: weight,
+          weight_category_id: null
+        }));
+      }
+    } else {
+      // Para outros campos, apenas atualizar normalmente
+      setEditData(prev => ({ ...prev, [name]: value }));
+      
+      // Se idade ou gênero mudar, recalcular categoria de peso se peso já estiver preenchido
+      if ((name === 'age' || name === 'gender') && editData.weight) {
+        const weight = editData.weight;
+        const newAge = name === 'age' ? value : editData.age;
+        const newGender = name === 'gender' ? value : editData.gender;
+        
+        if (weight && newAge && newGender) {
+          const suggested = findWeightCategoryByWeight(weight, newAge, newGender);
+          
+          if (suggested) {
+            console.log('Categoria de peso atualizada:', suggested.name, 'ID:', suggested.id);
+            setEditData(prev => ({
+              ...prev,
+              [name]: value,
+              weight_category_id: suggested.id
+            }));
+          } else {
+            setEditData(prev => ({
+              ...prev,
+              [name]: value,
+              weight_category_id: null
+            }));
+          }
+        }
+      }
+    }
   };
 
   const handleUpdate = async (e) => {
@@ -46,6 +109,7 @@ const Inscriptions = () => {
           gender: editData.gender,
           weight: parseFloat(editData.weight),
           belt_level: parseInt(editData.belt_level),
+          belt_category_id: editData.belt_category_id,
           modality_id: editData.modality_id,
           organization_id: editData.organization_id
         })
@@ -95,19 +159,21 @@ const Inscriptions = () => {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [champsData, modsData, orgsData, ageCatsData] = await Promise.all([
+      const [champsData, modsData, orgsData, ageCatsData, weightCatsData] = await Promise.all([
         supabase.from('championships').select('*').order('created_at', { ascending: false }),
         supabase.from('modalities').select('*').order('name'),
         supabase.from('organizations').select('*').order('name'),
-        supabase.from('age_categories').select('*').order('min_age')
+        supabase.from('age_categories').select('*').order('min_age'),
+        supabase.from('weight_categories').select('*').order('min_weight')
       ]);
 
-      console.log('Organizations loaded:', orgsData.data); // Debug
-
+      console.log('Weight categories loaded:', weightCatsData.data); // Debug
+      
       setChampionships(champsData.data || []);
       setModalities(modsData.data || []);
       setOrganizations(orgsData.data || []);
       setAgeCategories(ageCatsData.data || []);
+      setWeightCategories(weightCatsData.data || []);
 
       // Select first championship by default
       if (champsData.data && champsData.data.length > 0) {
@@ -118,6 +184,35 @@ const Inscriptions = () => {
       setMessage('Erro ao carregar dados');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const findWeightCategoryByWeight = (weight, ageCategory, gender) => {
+    if (!weight || !ageCategory || !gender) return null;
+    
+    return weightCategories.find(cat => 
+      cat.age_category === ageCategory &&
+      cat.gender === gender &&
+      weight >= cat.min_weight && 
+      weight <= cat.max_weight
+    );
+  };
+
+  const handleWeightChange = (weight) => {
+    const age = editData.age || '';
+    const gender = editData.gender || '';
+    
+    if (weight && age && gender) {
+      const suggested = findWeightCategoryByWeight(parseFloat(weight), age, gender);
+      setSuggestedWeightCategory(suggested);
+      
+      if (suggested) {
+        setEditData(prev => ({
+          ...prev,
+          weight: parseFloat(weight),
+          weight_category_id: suggested.id
+        }));
+      }
     }
   };
 
@@ -727,8 +822,18 @@ const Inscriptions = () => {
                       value={editData.weight || ''}
                       onChange={handleEditChange}
                       className="input-modern"
+                      placeholder="Ex: 67.9"
                       required
                     />
+                    {suggestedWeightCategory && (
+                      <div style={{ 
+                        marginTop: 'var(--spacing-2)', 
+                        fontSize: 'var(--font-size-xs)', 
+                        color: 'var(--success-600)' 
+                      }}>
+                        ✅ Categoria sugerida: {suggestedWeightCategory.name}
+                      </div>
+                    )}
                   </div>
                   <div>
                     <label className="form-label">Faixa</label>
