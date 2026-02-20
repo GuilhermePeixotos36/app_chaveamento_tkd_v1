@@ -174,8 +174,21 @@ const Inscriptions = () => {
         birth_date: ''
       });
       
-      // Forçar refresh do schema cache do Supabase
-      await supabase.rpc('refresh_schema_cache');
+      // Criar coluna birth_date se não existir (abordagem alternativa)
+      try {
+        console.log('Tentando criar coluna birth_date...');
+        const { error: columnError } = await supabase.rpc('sql', {
+          sql: 'ALTER TABLE registrations ADD COLUMN IF NOT EXISTS birth_date TIMESTAMPTZ;'
+        });
+        
+        if (columnError) {
+          console.error('Erro ao criar coluna:', columnError);
+        } else {
+          console.log('Coluna birth_date criada com sucesso!');
+        }
+      } catch (err) {
+        console.error('Erro na abordagem alternativa:', err);
+      }
       
       loadInscriptions(selectedChampionship);
     } catch (error) {
