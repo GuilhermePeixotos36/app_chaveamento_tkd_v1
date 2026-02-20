@@ -31,7 +31,11 @@ const Inscriptions = () => {
     belt_category_id: null,
     modality_id: '',
     organization_id: '',
-    birth_date: ''
+    birth_date: '',
+    phone: '',
+    observations: '',
+    email: '',
+    status: 'active'
   });
   const [suggestedWeightCategory, setSuggestedWeightCategory] = useState(null);
 
@@ -155,7 +159,11 @@ const Inscriptions = () => {
           belt_category_id: editData.belt_category_id,
           modality_id: editData.modality_id,
           organization_id: editData.organization_id,
-          birth_date: editData.birth_date || new Date().toISOString().split('T')[0]
+          birth_date: editData.birth_date || new Date().toISOString().split('T')[0],
+          phone: editData.phone || '',
+          observations: editData.observations || '',
+          email: editData.email || '',
+          status: editData.status || 'active'
         });
 
       if (error) throw error;
@@ -174,17 +182,27 @@ const Inscriptions = () => {
         birth_date: ''
       });
       
-      // Criar coluna birth_date se não existir (abordagem alternativa)
+      // Criar colunas adicionais se não existirem (abordagem alternativa)
       try {
-        console.log('Tentando criar coluna birth_date...');
-        const { error: columnError } = await supabase.rpc('sql', {
-          sql: 'ALTER TABLE registrations ADD COLUMN IF NOT EXISTS birth_date TIMESTAMPTZ;'
-        });
+        console.log('Tentando criar colunas adicionais...');
         
-        if (columnError) {
-          console.error('Erro ao criar coluna:', columnError);
-        } else {
-          console.log('Coluna birth_date criada com sucesso!');
+        // SQL para criar as colunas com tipos corretos
+        const sqlStatements = [
+          'ALTER TABLE registrations ADD COLUMN IF NOT EXISTS birth_date TIMESTAMPTZ;',
+          'ALTER TABLE registrations ADD COLUMN IF NOT EXISTS phone TEXT;',
+          'ALTER TABLE registrations ADD COLUMN IF NOT EXISTS observations TEXT;',
+          'ALTER TABLE registrations ADD COLUMN IF NOT EXISTS email TEXT;',
+          'ALTER TABLE registrations ADD COLUMN IF NOT EXISTS status TEXT DEFAULT \'active\';'
+        ];
+        
+        for (const sql of sqlStatements) {
+          const { error: columnError } = await supabase.rpc('sql', { sql });
+          
+          if (columnError) {
+            console.error('Erro ao criar coluna:', columnError);
+          } else {
+            console.log('Coluna criada com sucesso:', sql);
+          }
         }
       } catch (err) {
         console.error('Erro na abordagem alternativa:', err);
