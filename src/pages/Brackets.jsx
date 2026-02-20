@@ -79,6 +79,8 @@ const Brackets = () => {
 
             // Group by Kyorugi Classification
             const grouped = {};
+            const unclassifiedAthletes = []; // Para armazenar atletas sem classificação
+
             data.forEach(reg => {
                 const classification = findMatchingClassification(reg);
                 
@@ -111,26 +113,9 @@ const Brackets = () => {
                     }
                     grouped[catKey].athletes.push(reg);
                 } else {
-                    // Fallback: Group by raw categories if no classification matches
-                    const catKey = getCategoryKey(reg);
-                    if (!grouped[catKey]) {
-                        grouped[catKey] = {
-                            id: catKey,
-                            classification_id: null,
-                            classification_code: null,
-                            classification_name: null,
-                            info: getCategoryInfo(reg),
-                            category_params: {
-                                modality_id: reg.modality_id,
-                                age_category_id: reg.age_category_id,
-                                weight_category_id: reg.weight_category_id,
-                                belt_category_id: reg.belt_category_id
-                            },
-                            athletes: [],
-                            bracket: null
-                        };
-                    }
-                    grouped[catKey].athletes.push(reg);
+                    // Atletas sem classificação correspondente são ignorados por enquanto
+                    unclassifiedAthletes.push(reg);
+                    console.log('Atleta sem classificação correspondente:', reg.full_name, 'Idade:', reg.age, 'Gênero:', reg.gender);
                 }
             });
 
@@ -179,12 +164,12 @@ const Brackets = () => {
     const getAgeGroup = (age) => {
         if (age <= 6) return 'Fraldinha';
         if (age <= 9) return 'Mirim';
-        if (age <= 12) return 'Infantil';
-        if (age <= 15) return 'Juvenil';
-        if (age <= 17) return 'Júnior';
-        if (age <= 34) return 'Sênior';
-        if (age <= 44) return 'Master 1';
-        if (age <= 54) return 'Master 2';
+        if (age <= 11) return 'Infantil';
+        if (age <= 14) return 'Cadete';
+        if (age <= 17) return 'Juvenil';
+        if (age <= 30) return 'Adulto';
+        if (age <= 34) return 'Master 1';
+        if (age <= 44) return 'Master 2';
         return 'Master 3';
     };
 
