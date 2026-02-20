@@ -23,15 +23,15 @@ const AthleteClassifications = () => {
 
   // Opções para os selects
   const ageCategories = [
-    { value: 'Fraldinha', label: 'Fraldinha (4-6 anos)' },
+    { value: 'Fraldinha', label: 'Fraldinha (2-6 anos)' },
     { value: 'Mirim', label: 'Mirim (7-9 anos)' },
-    { value: 'Infantil', label: 'Infantil (10-12 anos)' },
-    { value: 'Juvenil', label: 'Juvenil (13-15 anos)' },
-    { value: 'Júnior', label: 'Júnior (16-17 anos)' },
-    { value: 'Sênior', label: 'Sênior (18-34 anos)' },
-    { value: 'Master 1', label: 'Master 1 (35-44 anos)' },
-    { value: 'Master 2', label: 'Master 2 (45-54 anos)' },
-    { value: 'Master 3', label: 'Master 3 (55+ anos)' }
+    { value: 'Infantil', label: 'Infantil (10-11 anos)' },
+    { value: 'Cadete', label: 'Cadete (12-14 anos)' },
+    { value: 'Juvenil', label: 'Juvenil (15-17 anos)' },
+    { value: 'Adulto', label: 'Adulto (18-30 anos)' },
+    { value: 'Master 1', label: 'Master 1 (31-34 anos)' },
+    { value: 'Master 2', label: 'Master 2 (35-44 anos)' },
+    { value: 'Master 3', label: 'Master 3 (45-55 anos)' }
   ];
 
   const genders = [
@@ -75,8 +75,8 @@ const AthleteClassifications = () => {
       'Mirim': 'M',
       'Infantil': 'I',
       'Juvenil': 'J',
-      'Júnior': 'JR',
-      'Sênior': 'A', // A de Adulto
+      'Cadete': 'C', // Para Cadete
+      'Adulto': 'A', // A de Adulto
       'Master 1': 'M1',
       'Master 2': 'M2',
       'Master 3': 'M3'
@@ -136,8 +136,8 @@ const AthleteClassifications = () => {
           'Mirim': 'M',
           'Infantil': 'I',
           'Juvenil': 'J',
-          'Júnior': 'JR',
-          'Sênior': 'A', // A de Adulto
+          'Cadete': 'C', // Para Cadete
+          'Adulto': 'A', // A de Adulto
           'Master 1': 'M1',
           'Master 2': 'M2',
           'Master 3': 'M3'
