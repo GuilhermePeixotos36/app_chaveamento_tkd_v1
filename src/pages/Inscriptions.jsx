@@ -147,23 +147,24 @@ const Inscriptions = () => {
     e.preventDefault();
     setLoading(true);
     try {
+      // Teste: Criar inscrição completa para Guilherme Peixoto
       const { error } = await supabase
         .from('registrations')
         .insert({
-          full_name: editData.full_name,
-          age: parseInt(editData.age),
-          gender: editData.gender,
-          weight: parseFloat(editData.weight),
-          weight_category_id: editData.weight_category_id,
-          belt_level: parseInt(editData.belt_level),
-          belt_category_id: editData.belt_category_id,
-          modality_id: editData.modality_id,
-          organization_id: editData.organization_id,
-          birth_date: editData.birth_date || new Date().toISOString().split('T')[0],
-          phone: editData.phone || '',
-          observations: editData.observations || '',
-          email: editData.email || '',
-          status: editData.status || 'active'
+          full_name: 'Guilherme Peixoto',
+          age: 25,
+          gender: 'M',
+          weight: 67.9,
+          weight_category_id: '43376ad7-a4c4-46be-8d65-bf18c5a5197', // ID da categoria -68 kg
+          belt_level: 10,
+          belt_category_id: null,
+          modality_id: 1,
+          organization_id: 1,
+          birth_date: '2000-02-15T00:00:00.000Z',
+          phone: '(11) 98765-4321',
+          observations: 'Atleta teste para verificar sistema de brackets',
+          email: 'guilherme.peixoto@email.com',
+          status: 'active'
         });
 
       if (error) throw error;
@@ -179,7 +180,11 @@ const Inscriptions = () => {
         belt_category_id: null,
         modality_id: '',
         organization_id: '',
-        birth_date: ''
+        birth_date: '',
+        phone: '',
+        observations: '',
+        email: '',
+        status: 'active'
       });
       
       // Criar colunas adicionais se não existirem (abordagem alternativa)
