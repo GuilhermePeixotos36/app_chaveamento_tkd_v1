@@ -83,7 +83,7 @@ const AthleteClassifications = () => {
     };
 
     const weightCategory = weightCategories.find(cat => cat.id === formData.weight_category_id);
-    const weightCode = weightCategory ? weightCategory.name.replace('até-', '').replace('acima-', '+') : '';
+    const weightCode = weightCategory ? weightCategory.name.replace('até-', '').replace('acima-', '+').replace(' kg', '') : '';
     
     const ageCode = ageCodes[formData.age_category];
     const genderCode = formData.gender;
