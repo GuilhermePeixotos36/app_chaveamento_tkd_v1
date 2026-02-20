@@ -77,6 +77,14 @@ const Brackets = () => {
 
             if (error) throw error;
 
+            console.log('--- DEBUG INSCRIÇÕES CARREGADAS ---');
+            console.log('Total de inscrições:', data?.length || 0);
+            if (data && data.length > 0) {
+                console.log('Exemplo de inscrição:', data[0]);
+                console.log('Campos da primeira inscrição:', Object.keys(data[0]));
+            }
+            console.log('--- END DEBUG INSCRIÇÕES ---');
+
             // Group by Kyorugi Classification
             const grouped = {};
             const unclassifiedAthletes = []; // Para armazenar atletas sem classificação
