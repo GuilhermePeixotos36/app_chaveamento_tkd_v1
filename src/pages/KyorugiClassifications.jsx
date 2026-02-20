@@ -500,7 +500,13 @@ const AthleteClassifications = () => {
                   >
                     <option value="">Selecione...</option>
                     {(() => {
-                    const filtered = weightCategories.filter(cat => cat.age_category === formData.age_category && cat.gender === formData.gender);
+                    const filtered = weightCategories.filter(cat => {
+                      // Temporariamente mostrando todas para debug
+                      console.log('--- DEBUG CATEGORY STRUCTURE ---');
+                      console.log('Category keys:', Object.keys(cat));
+                      console.log('Full category:', cat);
+                      return true; // Mostrar todas temporariamente
+                    });
                     console.log('--- DEBUG FORM SELECT ---');
                     console.log('Total weightCategories:', weightCategories.length);
                     console.log('Filtered for form:', filtered.length);
