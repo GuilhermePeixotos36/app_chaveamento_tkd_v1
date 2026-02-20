@@ -16,7 +16,7 @@ const AthleteClassifications = () => {
     age_category: '',
     gender: '',
     belt_group: '',
-    max_weight: '',
+    weight_category_id: '',
     description: '',
     is_active: true
   });
@@ -66,7 +66,7 @@ const AthleteClassifications = () => {
 
   // Gerar sigla automática baseada nas características
   const generateCode = () => {
-    if (!formData.age_category || !formData.gender || !formData.belt_group || !formData.max_weight) {
+    if (!formData.age_category || !formData.gender || !formData.belt_group || !formData.weight_category_id) {
       return '';
     }
 
@@ -82,10 +82,12 @@ const AthleteClassifications = () => {
       'Master 3': 'M3'
     };
 
+    const weightCategory = weightCategories.find(cat => cat.id === formData.weight_category_id);
+    const weightCode = weightCategory ? weightCategory.name.replace('até-', '').replace('acima-', '+') : '';
+    
     const ageCode = ageCodes[formData.age_category];
     const genderCode = formData.gender;
     const beltCode = formData.belt_group;
-    const weightCode = formData.max_weight;
 
     return `${ageCode}${genderCode}${beltCode}-${weightCode}`;
   };
@@ -93,13 +95,22 @@ const AthleteClassifications = () => {
   const loadClassifications = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('athlete_classifications')
-        .select('*')
-        .order('created_at', { ascending: false });
+      const [classificationsData, weightCategoriesData] = await Promise.all([
+        supabase
+          .from('kyorugi_classifications')
+          .select('*')
+          .order('created_at', { ascending: false }),
+        supabase
+          .from('weight_categories')
+          .select('*')
+          .order('min_weight', { ascending: true })
+      ]);
 
-      if (error) throw error;
-      setClassifications(data || []);
+      if (classificationsData.error) throw classificationsData.error;
+      if (weightCategoriesData.error) throw weightCategoriesData.error;
+
+      setClassifications(classificationsData.data || []);
+      setWeightCategories(weightCategoriesData.data || []);
     } catch (error) {
       console.error('Erro ao carregar classificações:', error);
       setMessage('Erro ao carregar classificações');
@@ -112,7 +123,7 @@ const AthleteClassifications = () => {
     const { name, value, type, checked } = e.target;
     
     // Gerar código automaticamente quando os campos mudam
-    if (['age_category', 'gender', 'belt_group', 'max_weight'].includes(name)) {
+    if (['age_category', 'gender', 'belt_group', 'weight_category_id'].includes(name)) {
       setFormData(prev => {
         const newFormData = { ...prev, [name]: type === 'checkbox' ? checked : value };
         const ageCodes = {
@@ -127,11 +138,12 @@ const AthleteClassifications = () => {
           'Master 3': 'M3'
         };
 
-        if (newFormData.age_category && newFormData.gender && newFormData.belt_group && newFormData.max_weight) {
+        if (newFormData.age_category && newFormData.gender && newFormData.belt_group && newFormData.weight_category_id) {
+          const weightCategory = weightCategories.find(cat => cat.id === newFormData.weight_category_id);
+          const weightCode = weightCategory ? weightCategory.name.replace('até-', '').replace('acima-', '+') : '';
           const ageCode = ageCodes[newFormData.age_category];
           const genderCode = newFormData.gender;
           const beltCode = newFormData.belt_group;
-          const weightCode = newFormData.max_weight;
           
           return {
             ...newFormData,
@@ -155,17 +167,25 @@ const AthleteClassifications = () => {
     setMessage('');
 
     try {
+      // Buscar a categoria de peso para obter min_weight e max_weight
+      const weightCategory = weightCategories.find(cat => cat.id === formData.weight_category_id);
+      
+      if (!weightCategory) {
+        throw new Error('Categoria de peso não encontrada');
+      }
+      
       const submitData = {
         ...formData,
         belt_group: parseInt(formData.belt_group),
-        max_weight: parseFloat(formData.max_weight),
+        min_weight: weightCategory.min_weight,
+        max_weight: weightCategory.max_weight,
         code: generateCode()
       };
 
       console.log('Dados a serem salvos:', submitData);
 
       const { error } = await supabase
-        .from('athlete_classifications')
+        .from('kyorugi_classifications')
         .insert([submitData]);
 
       if (error) throw error;
@@ -187,7 +207,7 @@ const AthleteClassifications = () => {
       age_category: '',
       gender: '',
       belt_group: '',
-      max_weight: '',
+      weight_category_id: '',
       description: '',
       is_active: true
     });
@@ -457,18 +477,24 @@ const AthleteClassifications = () => {
                     fontWeight: 'var(--font-weight-medium)',
                     color: 'var(--text-primary)'
                   }}>
-                    Peso Máximo (kg) *
+                    Categoria de Peso *
                   </label>
-                  <input
-                    type="number"
-                    name="max_weight"
-                    value={formData.max_weight}
+                  <select
+                    name="weight_category_id"
+                    value={formData.weight_category_id}
                     onChange={handleChange}
-                    placeholder="Ex: 68"
-                    step="0.1"
                     className="input-modern"
                     required
-                  />
+                  >
+                    <option value="">Selecione...</option>
+                    {weightCategories
+                      .filter(cat => cat.age_category === formData.age_category && cat.gender === formData.gender)
+                      .map(category => (
+                        <option key={category.id} value={category.id}>
+                          {category.name} ({category.min_weight}kg - {category.max_weight}kg)
+                        </option>
+                      ))}
+                  </select>
                 </div>
 
                 <div>
@@ -647,7 +673,7 @@ const AthleteClassifications = () => {
                             </td>
                             <td>
                               <div style={{ fontSize: 'var(--font-size-sm)' }}>
-                                Até {classification.max_weight}kg
+                                {classification.min_weight}kg - {classification.max_weight}kg
                               </div>
                             </td>
                             <td>
