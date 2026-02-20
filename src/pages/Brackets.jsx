@@ -217,7 +217,7 @@ const Brackets = () => {
                        classification.weight_category_id === registration.weight_category_id;
             });
         } else {
-            // Tentar encontrar pela faixa de peso real
+            // Tentar encontrar pela faixa de peso real comparando com as classificações
             matchingClassification = kyorugiClassifications.find(classification => {
                 console.log('Comparando com classificação (por peso):', {
                     age_category: classification.age_category,
@@ -233,6 +233,11 @@ const Brackets = () => {
                        registration.weight >= classification.min_weight &&
                        registration.weight <= classification.max_weight;
             });
+            
+            if (!matchingClassification) {
+                console.log('⚠️ Atleta não corresponde a nenhuma classificação criada');
+                console.log('Sugestão: Verifique se a inscrição foi feita corretamente');
+            }
         }
         
         console.log('Resultado:', matchingClassification ? 'ENCONTROU' : 'NÃO ENCONTROU');
