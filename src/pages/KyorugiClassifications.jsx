@@ -109,6 +109,11 @@ const AthleteClassifications = () => {
       if (classificationsData.error) throw classificationsData.error;
       if (weightCategoriesData.error) throw weightCategoriesData.error;
 
+      console.log('--- DEBUG LOAD CLASSIFICATIONS ---');
+      console.log('Classifications loaded:', classificationsData.data?.length || 0);
+      console.log('Weight categories loaded:', weightCategoriesData.data?.length || 0);
+      console.log('Sample weight category:', weightCategoriesData.data?.[0]);
+
       setClassifications(classificationsData.data || []);
       setWeightCategories(weightCategoriesData.data || []);
     } catch (error) {
@@ -182,7 +187,14 @@ const AthleteClassifications = () => {
         code: generateCode()
       };
 
-      console.log('Dados a serem salvos:', submitData);
+      console.log('--- DEBUG WEIGHT CATEGORIES ---');
+      console.log('Total categories:', weightCategories.length);
+      console.log('Age category selected:', formData.age_category);
+      console.log('Gender selected:', formData.gender);
+      
+      const filteredCategories = weightCategories.filter(cat => cat.age_category === formData.age_category && cat.gender === formData.gender);
+      console.log('Filtered categories:', filteredCategories.length);
+      console.log('Sample category:', weightCategories[0]);
 
       const { error } = await supabase
         .from('kyorugi_classifications')
@@ -487,9 +499,16 @@ const AthleteClassifications = () => {
                     required
                   >
                     <option value="">Selecione...</option>
-                    {weightCategories
-                      .filter(cat => cat.age_category === formData.age_category && cat.gender === formData.gender)
-                      .map(category => (
+                    {(() => {
+                    const filtered = weightCategories.filter(cat => cat.age_category === formData.age_category && cat.gender === formData.gender);
+                    console.log('--- DEBUG FORM SELECT ---');
+                    console.log('Total weightCategories:', weightCategories.length);
+                    console.log('Filtered for form:', filtered.length);
+                    console.log('formData.age_category:', formData.age_category);
+                    console.log('formData.gender:', formData.gender);
+                    return filtered;
+                  })()
+                    .map(category => (
                         <option key={category.id} value={category.id}>
                           {category.name} ({category.min_weight}kg - {category.max_weight}kg)
                         </option>
