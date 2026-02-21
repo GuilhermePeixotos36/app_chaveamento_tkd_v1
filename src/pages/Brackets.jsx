@@ -343,12 +343,20 @@ const Brackets = () => {
                         <div style={{ position: 'absolute', top: '-100px', fontWeight: 950, fontSize: '32px', letterSpacing: '8px' }}>FINAL</div>
 
                         <div style={{ display: 'flex', alignItems: 'center', width: '100%', justifyContent: 'space-between', border: '2px solid #111', padding: '20px', borderRadius: '4px', background: '#fff', boxShadow: '0 4px 15px rgba(0,0,0,0.05)' }}>
-                            <div style={{ position: 'absolute', top: '-15px', left: '50%', transform: 'translateX(-50%)', background: '#111', color: '#fff', padding: '4px 20px', borderRadius: '4px', fontWeight: 950, fontSize: '20px' }}>{finalMatch.match_number}</div>
+                            <div style={{ position: 'absolute', top: '-25px', left: '50%', transform: 'translateX(-50%)', background: '#111', color: '#fff', padding: '4px 20px', borderRadius: '4px', fontWeight: 950, fontSize: '20px' }}>{finalMatch.match_number}</div>
 
-                            <div style={{ flex: 1 }}>
-                                <PlayerLine player={finalMatch.player1} isBlue={true} isRight={false} />
-                                <div style={{ height: '20px' }} />
-                                <PlayerLine player={finalMatch.player2} isBlue={false} isRight={false} />
+                            <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                    <div style={{ position: 'relative', width: '160px', height: '60px', border: '2px solid #111', borderRadius: '4px', background: '#fff', padding: '10px' }}>
+                                        <PlayerLine player={finalMatch.player1} isBlue={true} isRight={false} />
+                                    </div>
+                                    <div style={{ height: '20px' }} />
+                                    <div style={{ position: 'relative', width: '160px', height: '60px', border: '2px solid #111', borderRadius: '4px', background: '#fff', padding: '10px' }}>
+                                        <PlayerLine player={finalMatch.player2} isBlue={false} isRight={false} />
+                                    </div>
+                                </div>
+
+                                <div style={{ position: 'absolute', top: '-30px', left: '50%', transform: 'translateX(-50%)', background: '#111', color: '#fff', padding: '4px 12px', borderRadius: '4px', fontWeight: 950, fontSize: '16px' }}>FINAL</div>
                             </div>
                         </div>
 
