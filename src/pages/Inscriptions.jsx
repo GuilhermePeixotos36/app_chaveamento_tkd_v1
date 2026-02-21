@@ -49,24 +49,36 @@ const Inscriptions = () => {
   const handleEditChange = (e) => {
     const { name, value } = e.target;
     
+    console.log('=== HANDLE EDIT CHANGE ===');
+    console.log('Campo alterado:', name, 'Valor:', value);
+    console.log('EditData atual:', editData);
+    
     // Se o campo for peso, processar automaticamente a categoria de peso
     if (name === 'weight') {
       const weight = parseFloat(value);
       const age = editData.age || '';
       const gender = editData.gender || '';
       
+      console.log('=== PROCESSANDO PESO ===');
+      console.log('Peso:', weight, 'Idade:', age, 'Gênero:', gender);
+      
       if (weight && age && gender) {
         const suggested = findWeightCategoryByWeight(weight, age, gender);
         
+        console.log('=== RESULTADO SUGESTÃO ===');
+        console.log('Sugerido:', suggested);
+        
         if (suggested) {
-          console.log('Categoria de peso sugerida:', suggested.name, 'ID:', suggested.id);
+          console.log('✅ Categoria de peso sugerida:', suggested.name, 'ID:', suggested.id);
+          alert(`✅ Categoria sugerida: ${suggested.name}`);
           setEditData(prev => ({
             ...prev,
             weight: weight,
             weight_category_id: suggested.id
           }));
         } else {
-          console.log('Nenhuma categoria de peso encontrada para:', { weight, age, gender });
+          console.log('❌ Nenhuma categoria de peso encontrada para:', { weight, age, gender });
+          alert(`❌ Nenhuma categoria encontrada para peso ${weight}kg, idade ${age}, gênero ${gender}`);
           setEditData(prev => ({
             ...prev,
             weight: weight,
@@ -74,6 +86,7 @@ const Inscriptions = () => {
           }));
         }
       } else {
+        console.log('⚠️ Dados incompletos para sugestão');
         setEditData(prev => ({
           ...prev,
           weight: weight,
@@ -82,6 +95,7 @@ const Inscriptions = () => {
       }
     } else {
       // Para outros campos, apenas atualizar normalmente
+      console.log('🔄 Atualizando campo normal:', name, value);
       setEditData(prev => ({ ...prev, [name]: value }));
       
       // Se idade ou gênero mudar, recalcular categoria de peso se peso já estiver preenchido
@@ -90,17 +104,25 @@ const Inscriptions = () => {
         const newAge = name === 'age' ? value : editData.age;
         const newGender = name === 'gender' ? value : editData.gender;
         
+        console.log('=== RECALCULANDO CATEGORIA ===');
+        console.log('Novos dados:', { weight, age: newAge, gender: newGender });
+        
         if (weight && newAge && newGender) {
           const suggested = findWeightCategoryByWeight(weight, newAge, newGender);
           
+          console.log('🔄 Categoria atualizada:', suggested);
+          
           if (suggested) {
-            console.log('Categoria de peso atualizada:', suggested.name, 'ID:', suggested.id);
+            console.log('✅ Categoria de peso atualizada:', suggested.name, 'ID:', suggested.id);
+            alert(`✅ Categoria atualizada: ${suggested.name}`);
             setEditData(prev => ({
               ...prev,
               [name]: value,
               weight_category_id: suggested.id
             }));
           } else {
+            console.log('❌ Nenhuma categoria encontrada após atualização');
+            alert(`❌ Nenhuma categoria encontrada para os novos dados`);
             setEditData(prev => ({
               ...prev,
               [name]: value,
