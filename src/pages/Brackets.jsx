@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import { Trophy, Users, Award, ChevronLeft, Share2, Download, Eye, Save } from 'lucide-react';
+import { Trophy, Users, Award, ChevronLeft, Share2, Download, Eye, Save, Printer } from 'lucide-react';
 
 const Brackets = () => {
     const [championships, setChampionships] = useState([]);
@@ -400,6 +400,51 @@ const Brackets = () => {
         setShowBracketModal(true);
     };
 
+    const generateAllBrackets = () => {
+        const hasAvailable = Object.keys(categories).some(key =>
+            categories[key].athletes.length >= 2 && !categories[key].bracket
+        );
+
+        if (!hasAvailable) {
+            alert('Não há novas categorias com pelo menos 2 atletas para gerar chaves.');
+            return;
+        }
+
+        setGeneratingAll(true);
+        let count = 0;
+        const newCategories = { ...categories };
+
+        Object.keys(newCategories).forEach(key => {
+            const cat = newCategories[key];
+            if (cat.athletes.length >= 2 && !cat.bracket) {
+                const athletes = [...cat.athletes];
+                // Shuffle
+                for (let i = athletes.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [athletes[i], athletes[j]] = [athletes[j], athletes[i]];
+                }
+                cat.bracket = createSingleEliminationBracket(athletes);
+                count++;
+            }
+        });
+
+        setCategories(newCategories);
+        setGeneratingAll(false);
+
+        if (count > 0) {
+            if (window.confirm(`${count} chaves geradas com sucesso! Deseja imprimir todas as chaves agora?`)) {
+                window.print();
+            }
+        }
+    };
+
+    const handlePrint = (catKey) => {
+        setActiveCategory(catKey);
+        setTimeout(() => {
+            window.print();
+        }, 100);
+    };
+
     const viewBracket = (catKey) => {
         setActiveCategory(catKey);
         setShowBracketModal(true);
@@ -479,6 +524,12 @@ const Brackets = () => {
                                 disabled={saving}
                             >
                                 <Save size={18} /> {saving ? 'Salvando...' : 'Salvar Chave'}
+                            </button>
+                            <button
+                                className="btn btn-outline"
+                                onClick={() => window.print()}
+                            >
+                                <Printer size={18} /> Imprimir
                             </button>
                             <button className="modal-close" onClick={() => setShowBracketModal(false)}>&times;</button>
                         </div>
@@ -622,8 +673,11 @@ const Brackets = () => {
                                 <option key={c.id} value={c.id}>{c.name}</option>
                             ))}
                         </select>
-                        <button className="btn btn-outline">
-                            <Download size={18} /> Exportar Todas
+                        <button className="btn btn-outline" onClick={generateAllBrackets}>
+                            <Trophy size={18} /> Gerar Todas
+                        </button>
+                        <button className="btn btn-outline" onClick={() => window.print()}>
+                            <Printer size={18} /> Imprimir Chaves
                         </button>
                     </div>
                 </div>
@@ -745,6 +799,113 @@ const Brackets = () => {
                         {message}
                     </div>
                 )}
+
+                {/* Professional Print Layout (Hidden on screen) */}
+                <style>
+                    {`
+                    @media screen {
+                        .print-all-containers {
+                            display: none !important;
+                        }
+                    }
+                    @media print {
+                        body * {
+                            visibility: hidden;
+                        }
+                        /* If modal is open, only print modal */
+                        .modal-overlay {
+                            position: absolute !important;
+                            left: 0 !important;
+                            top: 0 !important;
+                            width: 100% !important;
+                            height: auto !important;
+                            background: white !important;
+                            visibility: visible !important;
+                            padding: 0 !important;
+                            display: block !important;
+                        }
+                        .modal-content {
+                            box-shadow: none !important;
+                            border: none !important;
+                            width: 100% !important;
+                            max-width: 100% !important;
+                            visibility: visible !important;
+                            margin: 0 !important;
+                            padding: 0 !important;
+                        }
+                        .modal-content * {
+                            visibility: visible !important;
+                        }
+                        .modal-close, .btn, .toast, .loading-spinner, .header-title, .header-subtitle, .app-container {
+                            display: none !important;
+                        }
+                        .modal-header {
+                            border-bottom: 2px solid #000 !important;
+                            margin-bottom: 20px !important;
+                        }
+                        .modal-title {
+                            color: black !important;
+                            font-size: 24px !important;
+                        }
+                        .content-card {
+                            border: 1px solid #000 !important;
+                            background: white !important;
+                            break-inside: avoid;
+                        }
+                        .content-wrapper {
+                            padding: 0 !important;
+                            margin: 0 !important;
+                        }
+                        
+                        /* Layout for printing multiple brackets if needed */
+                        .print-all-containers {
+                            visibility: visible !important;
+                            display: block !important;
+                            position: absolute !important;
+                            left: 0 !important;
+                            top: 0 !important;
+                            width: 100% !important;
+                        }
+                        .print-bracket-page {
+                            visibility: visible !important;
+                            page-break-after: always !important;
+                            padding: 1cm !important;
+                        }
+                    }
+                    `}
+                </style>
+
+                {/* Print view for 'Print All' (Simple fallback if modal is closed) */}
+                <div className="print-all-containers">
+                    {Object.keys(categories).filter(k => categories[k].bracket).map(key => (
+                        <div key={key} className="print-bracket-page">
+                            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '2px solid black', paddingBottom: '10px', marginBottom: '20px' }}>
+                                <div>
+                                    <h1 style={{ margin: 0, color: 'black' }}>{categories[key].classification_name || 'CHAVEAMENTO'}</h1>
+                                    <p style={{ margin: 0, color: 'black' }}>{categories[key].info.age} - {categories[key].info.gender} • {categories[key].info.weight}</p>
+                                </div>
+                                <div style={{ textAlign: 'right' }}>
+                                    <h2 style={{ margin: 0, color: 'black' }}>{categories[key].classification_code}</h2>
+                                    <p style={{ margin: 0, color: 'black' }}>{championships.find(c => c.id === selectedChampionship)?.name}</p>
+                                </div>
+                            </div>
+                            <div style={{ padding: '20px', border: '2px solid black' }}>
+                                <h3 style={{ color: 'black' }}>Atletas Inscritos:</h3>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                                    {categories[key].athletes.map((a, i) => (
+                                        <div key={a.id} style={{ border: '1px solid black', padding: '10px', color: 'black' }}>
+                                            <strong>{i + 1}. {a.full_name}</strong>
+                                            <div style={{ fontSize: '12px' }}>{a.organizations?.name}</div>
+                                        </div>
+                                    ))}
+                                </div>
+                                <p style={{ marginTop: '40px', textAlign: 'center', fontSize: '14px', fontStyle: 'italic', color: 'black' }}>
+                                    Documento gerado em {new Date().toLocaleDateString('pt-BR')} às {new Date().toLocaleTimeString('pt-BR')}
+                                </p>
+                            </div>
+                        </div>
+                    ))}
+                </div>
             </div>
         </div>
     );
