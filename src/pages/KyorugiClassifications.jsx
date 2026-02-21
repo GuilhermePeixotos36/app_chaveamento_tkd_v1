@@ -59,8 +59,8 @@ const AthleteClassifications = () => {
       console.log('Belt categories loaded:', data?.length || 0);
       
       // Transformar categorias em opções para o dropdown
-      const beltGroupOptions = (data || []).map(cat => ({
-        value: cat.id,
+      const beltGroupOptions = (data || []).map((cat, index) => ({
+        value: index + 1, // Usar índice + 1 para ficar 1, 2, 3...
         label: `${cat.name} (${cat.min_belt_color} à ${cat.max_belt_color})`
       }));
       
