@@ -308,6 +308,8 @@ const Brackets = () => {
         
         return matchingClassification;
     };
+    
+    // Forçar deploy na Vercel
 
     const getBeltName = (level) => {
         const belts = [
