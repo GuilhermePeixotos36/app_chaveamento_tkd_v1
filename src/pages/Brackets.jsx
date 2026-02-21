@@ -260,69 +260,108 @@ const Brackets = () => {
         const PlayerLine = ({ player, isBlue, isRight }) => (
             <div style={{
                 borderBottom: '1.5px solid #111',
-                padding: '6px 0',
+                padding: '4px 0',
                 width: '180px',
                 textAlign: isRight ? 'right' : 'left',
                 color: isBlue ? '#1782C8' : '#E71546',
-                minHeight: '52px',
+                minHeight: '48px',
                 position: 'relative'
             }}>
-                <div style={{ fontWeight: 950, whiteSpace: 'nowrap', textTransform: 'uppercase', fontSize: '12px' }}>
+                <div style={{ fontWeight: 950, whiteSpace: 'nowrap', textTransform: 'uppercase', fontSize: '12px', lineHeight: '1.2' }}>
                     <span style={{ fontSize: '9px', marginRight: '5px', color: '#111', fontWeight: 800 }}>{isBlue ? 'AZUL' : 'VERMELHO'}</span>
                     {player?.full_name || ''}
                 </div>
-                <div style={{ fontSize: '9px', color: '#666', fontWeight: 800 }}>{player?.organizations?.name || ''}</div>
+                <div style={{ fontSize: '9px', color: '#666', fontWeight: 800, marginTop: '2px' }}>{player?.organizations?.name || ''}</div>
             </div>
         );
 
         const MatchBox = ({ match, rIndex, isRight }) => {
             const verticalSpace = Math.pow(2, rIndex) * 55;
-            const totalH = verticalSpace * 2;
             const connectorWidth = 32;
+            const playerHeight = 48; // minHeight de PlayerLine
 
             return (
                 <div style={{
                     display: 'flex',
                     flexDirection: 'column',
-                    height: `${totalH}px`,
+                    height: `${verticalSpace * 2}px`,
                     position: 'relative',
-                    margin: isRight ? `0 0 0 ${connectorWidth}px` : `0 ${connectorWidth}px 0 0`
+                    margin: isRight ? `0 0 0 ${connectorWidth}px` : `0 ${connectorWidth}px 0 0`,
+                    justifyContent: 'space-between'
                 }}>
                     <PlayerLine player={match.player1} isBlue={true} isRight={isRight} />
-                    <div style={{ flex: 1 }} />
                     <PlayerLine player={match.player2} isBlue={false} isRight={isRight} />
 
-                    {/* Conector em "C" ou "L" invertido para as lutas */}
+                    {/* L-Shape Connectors and Match Number */}
                     <div style={{
                         position: 'absolute',
                         [isRight ? 'left' : 'right']: `-${connectorWidth}px`,
-                        top: '52px',
-                        height: `${totalH - 52}px`,
+                        top: '48px', // Top do container do primeiro jogador
+                        bottom: '0px', // Chega até o final (onde está o border-bottom do segundo jogador)
                         width: `${connectorWidth}px`,
-                        border: '1.5px solid #111',
-                        [isRight ? 'borderRight' : 'borderLeft']: 'none',
                         zIndex: 1
                     }}>
-                        {/* Box do Número da Luta */}
+                        {/* Linha Vertical Conectora */}
                         <div style={{
                             position: 'absolute',
-                            top: '50%',
-                            [isRight ? 'right' : 'left']: '-18px',
-                            transform: 'translateY(-50%)',
-                            background: '#111',
-                            color: '#FFF',
-                            fontSize: '11px',
-                            padding: '4px 8px',
-                            fontWeight: 950,
-                            borderRadius: '4px',
-                            zIndex: 10
-                        }}>{match.match_number}</div>
+                            [isRight ? 'left' : 'right']: '0',
+                            top: 0,
+                            bottom: 0,
+                            width: '1.5px',
+                            background: '#111'
+                        }} />
 
-                        {/* Saída horizontal para a próxima etapa */}
+                        {/* Linha Horizontal Topo (L de cima) */}
+                        <div style={{
+                            position: 'absolute',
+                            top: 0,
+                            [isRight ? 'left' : 'right']: 0,
+                            width: `${connectorWidth}px`,
+                            height: '1.5px',
+                            background: '#111'
+                        }} />
+
+                        {/* Linha Horizontal Base (L de baixo) */}
+                        <div style={{
+                            position: 'absolute',
+                            bottom: 0,
+                            [isRight ? 'left' : 'right']: 0,
+                            width: `${connectorWidth}px`,
+                            height: '1.5px',
+                            background: '#111'
+                        }} />
+
+                        {/* Caixa com o Número da Luta (Centralizada ao lado da barra) */}
                         <div style={{
                             position: 'absolute',
                             top: '50%',
-                            [isRight ? 'right' : 'left']: `-${connectorWidth}px`,
+                            [isRight ? 'left' : 'right']: '8px',
+                            transform: 'translateY(-50%)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px'
+                        }}>
+                            <div style={{
+                                width: '12px',
+                                height: '1.5px',
+                                background: '#111'
+                            }} />
+                            <div style={{
+                                background: '#111',
+                                color: '#FFF',
+                                fontSize: '10px',
+                                padding: '3px 6px',
+                                fontWeight: 950,
+                                borderRadius: '3px',
+                                whiteSpace: 'nowrap'
+                            }}>{match.match_number}</div>
+                        </div>
+
+                        {/* Saída horizontal para a próxima etapa (Lado oposto dos jogadores) */}
+                        <div style={{
+                            position: 'absolute',
+                            top: '50%',
+                            [isRight ? 'right' : 'left']: '0',
                             width: `${connectorWidth}px`,
                             height: '1.5px',
                             background: '#111',
