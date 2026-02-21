@@ -351,11 +351,6 @@ const Brackets = () => {
                                 </div>
                             </div>
                         </div>
-
-                        <div style={{ marginTop: '80px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
-                            <Trophy size={90} color="#FBCB37" fill="#FBCB37" />
-                            <div style={{ fontWeight: 950, fontSize: '28px', letterSpacing: '2px' }}>CAMPEÃO</div>
-                        </div>
                     </div>
 
                     {/* Ramos Direita */}
