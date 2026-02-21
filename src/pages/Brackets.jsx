@@ -261,7 +261,7 @@ const Brackets = () => {
             <div style={{ borderBottom: '2.5px solid #111', padding: '6px 0', width: '200px', textAlign: isRight ? 'right' : 'left', color: isBlue ? '#1782C8' : '#E71546', minHeight: '52px' }}>
                 <div style={{ fontWeight: 950, whiteSpace: 'nowrap', textTransform: 'uppercase', fontSize: '13px' }}>
                     <span style={{ fontSize: '10px', marginRight: '5px', color: '#111', fontWeight: 800 }}>{isBlue ? 'BLUE' : 'RED'}</span>
-                    {player?.full_name || (player === null ? 'BYE' : '---')}
+                    {player?.full_name || ''}
                 </div>
                 <div style={{ fontSize: '10px', color: '#666', fontWeight: 800 }}>{player?.organizations?.name || ''}</div>
             </div>
@@ -290,7 +290,7 @@ const Brackets = () => {
                         </div>
                     ))}
                     <div style={{ textAlign: 'center', margin: '0 80px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                        <div style={{ fontWeight: 950, fontSize: '32px', marginBottom: '40px', color: '#10151C', textTransform: 'uppercase', letterSpacing: '4px' }}>GRAND FINAL</div>
+                        <div style={{ fontWeight: 950, fontSize: '32px', marginBottom: '40px', color: '#10151C', textTransform: 'uppercase', letterSpacing: '4px' }}>FINAL</div>
                         <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '60px' }}>
                             <PlayerLine player={finalMatch.player1} isBlue={true} isRight={false} />
                             <div style={{ background: '#10151C', color: '#FFF', fontSize: '20px', padding: '12px 20px', fontWeight: 950, borderRadius: '8px', boxShadow: '0 6px 15px rgba(0,0,0,0.3)' }}>{finalMatch.match_number}</div>
@@ -470,11 +470,12 @@ const Brackets = () => {
                 {message && <div className="toast success show" style={{ zIndex: 10000 }}><Check size={24} /> {message}</div>}
                 <style>{`
                     @media print {
+                        @page { size: landscape; margin: 10mm; }
                         .no-print, .btn, .header-title, .header-subtitle, .app-container > .content-wrapper > *:not(.modal-overlay), .navbar, .sidebar, .toast { display: none !important; }
                         body, .app-container { background: #FFF !important; padding: 0 !important; margin: 0 !important; }
-                        .modal-overlay { background: #FFF !important; display: block !important; position: static !important; padding: 0 !important; }
+                        .modal-overlay { background: #FFF !important; display: block !important; position: static !important; padding: 0 !important; overflow: visible !important; }
                         .modal-content { box-shadow: none !important; border: none !important; margin: 0 !important; width: 100% !important; padding: 0 !important; }
-                        .bracket-container { padding: 40px 0 !important; }
+                        .bracket-container { padding: 40px 0 !important; width: 100% !important; }
                     }
                 `}</style>
             </div>
