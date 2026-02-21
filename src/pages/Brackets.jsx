@@ -309,6 +309,11 @@ const Brackets = () => {
             });
         }
         
+        // Se ainda não encontrou, retornar null
+        if (!matchingClassification) {
+            console.log('❌ Nenhuma classificação encontrada para:', registration.full_name);
+        }
+        
         console.log('=== RESULTADO FINAL ===');
         console.log('Classificação encontrada:', matchingClassification ? matchingClassification.name : 'NENHUMA');
         
