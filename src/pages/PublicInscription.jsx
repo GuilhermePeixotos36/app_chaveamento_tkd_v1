@@ -351,9 +351,9 @@ const PublicInscription = () => {
     return found ? found.id : null;
   };
 
-  const findBeltCategoryId = (beltIndex) => {
+  const findBeltCategoryId = (beltLevel) => {
     console.log('--- DEBUG FIND BELT CATEGORY ID ---');
-    console.log('BeltIndex:', beltIndex);
+    console.log('BeltLevel:', beltLevel);
     console.log('Belt categories disponíveis:', beltCategories);
     
     if (!beltCategories || beltCategories.length === 0) {
@@ -361,14 +361,49 @@ const PublicInscription = () => {
       return null;
     }
     
-    // beltIndex é baseado 1 (1, 2, 3...), array é baseado 0
-    const selectedCategory = beltCategories[beltIndex - 1];
+    // Mapeamento de nível para nome da faixa
+    const beltLevelToName = {
+      1: 'Branca',
+      2: 'Cinza',
+      3: 'Amarela',
+      4: 'Laranja',
+      5: 'Verde',
+      6: 'Roxa',
+      7: 'Azul',
+      8: 'Marrom',
+      9: 'Vermelha',
+      10: 'Vermelha Ponteira Preta',
+      11: 'Preta'
+    };
     
-    if (selectedCategory) {
-      console.log('✅ Belt category encontrada:', selectedCategory);
-      return selectedCategory.id;
+    const beltName = beltLevelToName[beltLevel];
+    console.log('Belt name para nível', beltLevel, ':', beltName);
+    
+    if (!beltName) {
+      console.log('❌ Nenhuma faixa encontrada para nível:', beltLevel);
+      return null;
+    }
+    
+    // Procurar categoria onde a faixa está entre min_belt_color e max_belt_color
+    const found = beltCategories.find(cat => {
+      console.log('Comparando com categoria:', {
+        beltName: beltName,
+        cat_name: cat.name,
+        cat_min_belt_color: cat.min_belt_color,
+        cat_max_belt_color: cat.max_belt_color,
+        match: beltName >= cat.min_belt_color && beltName <= cat.max_belt_color
+      });
+      
+      // Verificar se a faixa está dentro do intervalo da categoria
+      return beltName >= cat.min_belt_color && beltName <= cat.max_belt_color;
+    });
+    
+    if (found) {
+      console.log('✅ Belt category encontrada:', found);
+      return found.id;
     } else {
-      console.log('❌ Nenhuma belt category encontrada para índice:', beltIndex);
+      console.log('❌ Nenhuma belt category encontrada para faixa:', beltName);
+      console.log('Verifique se a categoria está cadastrada corretamente');
       return null;
     }
   };
@@ -853,11 +888,17 @@ const PublicInscription = () => {
                   className="input-modern"
                 >
                   <option value="">Selecione a faixa</option>
-                  {beltCategories.map((cat, index) => (
-                    <option key={cat.id} value={index + 1}>
-                      {cat.name}
-                    </option>
-                  ))}
+                  <option value="1">⚪ Branca</option>
+                  <option value="2">⚫ Cinza</option>
+                  <option value="3">🟡 Amarela</option>
+                  <option value="4">🟠 Laranja</option>
+                  <option value="5">🟢 Verde</option>
+                  <option value="6">🟣 Roxa</option>
+                  <option value="7">🔵 Azul</option>
+                  <option value="8">🟤 Marrom</option>
+                  <option value="9">🔴 Vermelha</option>
+                  <option value="10">🔴🟫 Vermelha Ponteira Preta</option>
+                  <option value="11">⚫ Preta</option>
                 </select>
               </div>
             </div>
