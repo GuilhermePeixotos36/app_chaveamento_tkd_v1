@@ -340,16 +340,15 @@ const Brackets = () => {
 
                     {/* FINAL CENTRAL */}
                     <div style={{ width: '400px', height: `${totalH}px`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative', margin: '0 60px' }}>
-                        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                <div style={{ position: 'relative', width: '160px', height: '60px', border: '2px solid #000', background: '#fff', padding: '10px' }}>
-                                    <PlayerLine player={finalMatch.player1} isBlue={true} isRight={false} />
-                                </div>
-                                <div style={{ height: '20px' }} />
-                                <div style={{ position: 'relative', width: '160px', height: '60px', border: '2px solid #000', background: '#fff', padding: '10px' }}>
-                                    <PlayerLine player={finalMatch.player2} isBlue={false} isRight={false} />
-                                </div>
+                        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <div style={{ position: 'relative', width: '200px', height: '80px', background: '#000', padding: '15px', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <div style={{ color: '#fff', fontWeight: 950, fontSize: '20px' }}>{finalMatch.match_number}</div>
                             </div>
+                        </div>
+
+                        <div style={{ marginTop: '40px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
+                            <Trophy size={90} color="#FBCB37" fill="#FBCB37" />
+                            <div style={{ fontWeight: 950, fontSize: '28px', letterSpacing: '2px' }}>CAMPEÃO</div>
                         </div>
                     </div>
 
