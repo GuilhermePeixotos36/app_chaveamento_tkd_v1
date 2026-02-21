@@ -6,6 +6,8 @@ const PublicInscription = () => {
   const [organizations, setOrganizations] = useState([]);
   const [modalities, setModalities] = useState([]);
   const [weightCategories, setWeightCategories] = useState([]);
+  const [ageCategories, setAgeCategories] = useState([]);
+  const [beltCategories, setBeltCategories] = useState([]);
   const [suggestedWeightCategory, setSuggestedWeightCategory] = useState(null);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
@@ -19,6 +21,8 @@ const PublicInscription = () => {
     athlete_birthdate: '',
     athlete_weight: '',
     weight_category_id: null,
+    age_category_id: null,
+    belt_category_id: null,
     athlete_gender: '',
     athlete_belt: '',
     modality_id: '',
@@ -98,6 +102,24 @@ const PublicInscription = () => {
       setWeightCategories(weightData || []);
       console.log('Weight categories carregadas:', weightData);
 
+      // Buscar categorias de idade
+      const { data: ageData } = await supabase
+        .from('age_categories')
+        .select('*')
+        .order('min_age');
+
+      setAgeCategories(ageData || []);
+      console.log('Age categories carregadas:', ageData);
+
+      // Buscar categorias de faixa
+      const { data: beltData } = await supabase
+        .from('belt_categories')
+        .select('*')
+        .order('min_level');
+
+      setBeltCategories(beltData || []);
+      console.log('Belt categories carregadas:', beltData);
+
     } catch (error) {
       console.error('Erro ao carregar dados:', error);
       setMessage('Erro ao carregar dados do formulário');
@@ -129,10 +151,25 @@ const PublicInscription = () => {
         
         if (suggested) {
           console.log('✅ Categoria sugerida (PUBLIC):', suggested.name, 'ID:', suggested.id);
+          
+          // Calcular IDs das outras categorias
+          const age = calculateAge(formData.athlete_birthdate);
+          const beltLevel = parseInt(formData.athlete_belt);
+          const ageCategoryId = findAgeCategoryId(age);
+          const beltCategoryId = findBeltCategoryId(beltLevel);
+          
+          console.log('IDs calculados:', {
+            weight_category_id: suggested.id,
+            age_category_id: ageCategoryId,
+            belt_category_id: beltCategoryId
+          });
+          
           setFormData(prev => ({
             ...prev,
             athlete_weight: value,
-            weight_category_id: suggested.id
+            weight_category_id: suggested.id,
+            age_category_id: ageCategoryId,
+            belt_category_id: beltCategoryId
           }));
           setSuggestedWeightCategory(suggested);
         } else {
@@ -140,7 +177,9 @@ const PublicInscription = () => {
           setFormData(prev => ({
             ...prev,
             athlete_weight: value,
-            weight_category_id: null
+            weight_category_id: null,
+            age_category_id: null,
+            belt_category_id: null
           }));
           setSuggestedWeightCategory(null);
         }
@@ -239,6 +278,19 @@ const PublicInscription = () => {
     
     console.log('Categoria encontrada (PUBLIC):', found);
     return found;
+  };
+
+  const findAgeCategoryId = (age) => {
+    const ageCategory = getAgeCategory(age);
+    const found = ageCategories.find(cat => cat.name === ageCategory);
+    return found ? found.id : null;
+  };
+
+  const findBeltCategoryId = (beltLevel) => {
+    const found = beltCategories.find(cat => 
+      beltLevel >= cat.min_level && beltLevel <= cat.max_level
+    );
+    return found ? found.id : null;
   };
 
   const handleOrganizationChange = (e) => {
@@ -367,6 +419,8 @@ const PublicInscription = () => {
           birth_date: formData.athlete_birthdate,
           weight: parseFloat(formData.athlete_weight),
           weight_category_id: formData.weight_category_id,
+          age_category_id: formData.age_category_id,
+          belt_category_id: formData.belt_category_id,
           gender: formData.athlete_gender,
           belt_level: parseInt(formData.athlete_belt),
           modality_id: formData.modality_id,
@@ -384,6 +438,8 @@ const PublicInscription = () => {
         full_name: formData.athlete_name,
         weight: parseFloat(formData.athlete_weight),
         weight_category_id: formData.weight_category_id,
+        age_category_id: formData.age_category_id,
+        belt_category_id: formData.belt_category_id,
         gender: formData.athlete_gender,
         age: age
       });
@@ -399,6 +455,8 @@ const PublicInscription = () => {
         athlete_birthdate: '',
         athlete_weight: '',
         weight_category_id: null,
+        age_category_id: null,
+        belt_category_id: null,
         athlete_gender: '',
         athlete_belt: '',
         modality_id: '',
