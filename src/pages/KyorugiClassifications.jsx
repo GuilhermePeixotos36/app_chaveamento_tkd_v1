@@ -1,16 +1,27 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
+import {
+  Medal,
+  Plus,
+  List,
+  ArrowLeft,
+  Check,
+  X,
+  Shield,
+  Activity,
+  Layout,
+  Scale,
+  Settings,
+  AlertCircle
+} from 'lucide-react';
 
 const AthleteClassifications = () => {
   const [classifications, setClassifications] = useState([]);
   const [weightCategories, setWeightCategories] = useState([]);
-  const [selectedAgeCategory, setSelectedAgeCategory] = useState('');
-  const [selectedGender, setSelectedGender] = useState('');
   const [view, setView] = useState('main'); // 'main', 'form', 'list'
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
-  const [showForm, setShowForm] = useState(false);
-  
+
   const [formData, setFormData] = useState({
     name: '',
     age_category: '',
@@ -21,7 +32,6 @@ const AthleteClassifications = () => {
     is_active: true
   });
 
-  // Opções para os selects
   const ageCategories = [
     { value: 'Fraldinha', label: 'Fraldinha (2-6 anos)' },
     { value: 'Mirim', label: 'Mirim (7-9 anos)' },
@@ -46,710 +56,214 @@ const AthleteClassifications = () => {
     loadBeltGroups();
   }, []);
 
-  // Carregar categorias de faixa da tabela
   const loadBeltGroups = async () => {
     try {
-      const { data, error } = await supabase
-        .from('belt_categories')
-        .select('*')
-        .order('name');
-      
+      const { data, error } = await supabase.from('belt_categories').select('*').order('name');
       if (error) throw error;
-      
-      console.log('Belt categories loaded:', data?.length || 0);
-      
-      // Transformar categorias em opções para o dropdown
       const beltGroupOptions = (data || []).map((cat, index) => ({
-        value: index + 1, // Usar índice + 1 para ficar 1, 2, 3...
+        value: index + 1,
         label: `${cat.name} (${cat.min_belt_color} à ${cat.max_belt_color})`
       }));
-      
       setBeltGroups(beltGroupOptions);
-    } catch (error) {
-      console.error('Erro ao carregar categorias de faixa:', error);
-    }
+    } catch (error) { console.error('Erro ao carregar categorias de faixa:', error); }
   };
 
-  // Funções de navegação
-  const goToAddClassification = () => {
-    setView('form');
-  };
+  const goToAddClassification = () => setView('form');
+  const goToList = () => setView('list');
+  const goBack = () => { setView('main'); resetForm(); };
 
-  const goToList = () => {
-    setView('list');
-  };
-
-  const goBack = () => {
-    setView('main');
-    resetForm();
-  };
-
-  // Gerar sigla automática baseada nas características
   const generateCode = () => {
-    if (!formData.age_category || !formData.gender || !formData.belt_group || !formData.weight_category_id) {
-      return '';
-    }
-
-    const ageCodes = {
-      'Fraldinha': 'F',
-      'Mirim': 'M',
-      'Infantil': 'I',
-      'Juvenil': 'J',
-      'Cadete': 'C', // Para Cadete
-      'Adulto': 'A', // A de Adulto
-      'Master 1': 'M1',
-      'Master 2': 'M2',
-      'Master 3': 'M3'
-    };
-
+    if (!formData.age_category || !formData.gender || !formData.belt_group || !formData.weight_category_id) return '';
+    const ageCodes = { 'Fraldinha': 'F', 'Mirim': 'M', 'Infantil': 'I', 'Juvenil': 'J', 'Cadete': 'C', 'Adulto': 'A', 'Master 1': 'M1', 'Master 2': 'M2', 'Master 3': 'M3' };
     const weightCategory = weightCategories.find(cat => cat.id === formData.weight_category_id);
     const weightCode = weightCategory ? weightCategory.name.replace('até-', '').replace('acima-', '+').replace(' kg', '') : '';
-    
     const ageCode = ageCodes[formData.age_category];
     const genderCode = formData.gender;
-    
-    // Buscar a categoria de faixa para obter um código simples
-    const beltCategory = beltGroups.find(group => group.value === formData.belt_group);
-    const beltCode = beltCategory ? (beltGroups.indexOf(beltCategory) + 1).toString() : '1';
-    
-    // Gerar sigla no formato: A-M1-68 (máximo 15 caracteres)
-    return `${ageCode}${genderCode}${beltCode}-${weightCode}`;
+    return `${ageCode}${genderCode}${formData.belt_group}-${weightCode}`;
   };
 
   const loadClassifications = async () => {
     setLoading(true);
     try {
       const [classificationsData, weightCategoriesData] = await Promise.all([
-        supabase
-          .from('kyorugi_classifications')
-          .select('*')
-          .order('created_at', { ascending: false }),
-        supabase
-          .from('weight_categories')
-          .select('*')
-          .order('min_weight', { ascending: true })
+        supabase.from('kyorugi_classifications').select('*').order('created_at', { ascending: false }),
+        supabase.from('weight_categories').select('*').order('min_weight', { ascending: true })
       ]);
-
       if (classificationsData.error) throw classificationsData.error;
       if (weightCategoriesData.error) throw weightCategoriesData.error;
-
-      console.log('--- DEBUG LOAD CLASSIFICATIONS ---');
-      console.log('Classifications loaded:', classificationsData.data?.length || 0);
-      console.log('Weight categories loaded:', weightCategoriesData.data?.length || 0);
-      console.log('Sample weight category:', weightCategoriesData.data?.[0]);
-
       setClassifications(classificationsData.data || []);
       setWeightCategories(weightCategoriesData.data || []);
-    } catch (error) {
-      console.error('Erro ao carregar classificações:', error);
-      setMessage('Erro ao carregar classificações');
-    } finally {
-      setLoading(false);
-    }
+    } catch (error) { setMessage('Erro ao carregar classificações'); } finally { setLoading(false); }
   };
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    
-    // Gerar código automaticamente quando os campos mudam
-    if (['age_category', 'gender', 'belt_group', 'weight_category_id'].includes(name)) {
-      setFormData(prev => {
-        const newFormData = { ...prev, [name]: type === 'checkbox' ? checked : value };
-        const ageCodes = {
-          'Fraldinha': 'F',
-          'Mirim': 'M',
-          'Infantil': 'I',
-          'Juvenil': 'J',
-          'Cadete': 'C', // Para Cadete
-          'Adulto': 'A', // A de Adulto
-          'Master 1': 'M1',
-          'Master 2': 'M2',
-          'Master 3': 'M3'
-        };
-
-        if (newFormData.age_category && newFormData.gender && newFormData.belt_group && newFormData.weight_category_id) {
-          const weightCategory = weightCategories.find(cat => cat.id === newFormData.weight_category_id);
-          const weightCode = weightCategory ? weightCategory.name.replace('até-', '').replace('acima-', '+') : '';
-          const ageCode = ageCodes[newFormData.age_category];
-          const genderCode = newFormData.gender;
-          const beltCode = newFormData.belt_group;
-          
-          return {
-            ...newFormData,
-            code: `${ageCode}${genderCode}${beltCode}-${weightCode}`
-          };
-        }
-        
-        return newFormData;
-      });
-    } else {
-      setFormData(prev => ({
-        ...prev,
-        [name]: type === 'checkbox' ? checked : value
-      }));
-    }
+    setFormData(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setMessage('');
-
     try {
-      // Buscar a categoria de peso para obter min_weight e max_weight
       const weightCategory = weightCategories.find(cat => cat.id === formData.weight_category_id);
-      
-      if (!weightCategory) {
-        throw new Error('Categoria de peso não encontrada');
-      }
-      
-      const submitData = {
-        ...formData,
-        belt_group: parseInt(formData.belt_group) || 1,
-        min_weight: weightCategory.min_weight,
-        max_weight: weightCategory.max_weight,
-        code: generateCode()
-      };
-
-      console.log('--- DEBUG SUBMIT DATA ---');
-      console.log('belt_group original:', formData.belt_group);
-      console.log('belt_group parsed:', parseInt(formData.belt_group));
-      console.log('submitData:', submitData);
-
-      console.log('--- DEBUG WEIGHT CATEGORIES ---');
-      console.log('Total categories:', weightCategories.length);
-      console.log('Age category selected:', formData.age_category);
-      console.log('Gender selected:', formData.gender);
-      
-      const filteredCategories = weightCategories.filter(cat => cat.age_category === formData.age_category && cat.gender === formData.gender);
-      console.log('Filtered categories:', filteredCategories.length);
-      console.log('Sample category:', weightCategories[0]);
-
-      const { error } = await supabase
-        .from('kyorugi_classifications')
-        .insert([submitData]);
-
+      if (!weightCategory) throw new Error('Categoria de peso não encontrada');
+      const submitData = { ...formData, belt_group: parseInt(formData.belt_group) || 1, min_weight: weightCategory.min_weight, max_weight: weightCategory.max_weight, code: generateCode() };
+      const { error } = await supabase.from('kyorugi_classifications').insert([submitData]);
       if (error) throw error;
       setMessage('Classificação criada com sucesso!');
       resetForm();
       loadClassifications();
       setView('list');
-    } catch (error) {
-      console.error('Erro ao salvar classificação:', error);
-      setMessage(`Erro ao salvar classificação: ${error.message}`);
-    } finally {
-      setLoading(false);
-    }
+    } catch (error) { setMessage(`Erro ao salvar: ${error.message}`); } finally { setLoading(false); }
   };
 
-  const resetForm = () => {
-    setFormData({
-      name: '',
-      age_category: '',
-      gender: '',
-      belt_group: '',
-      weight_category_id: '',
-      description: '',
-      is_active: true
-    });
-    setShowForm(false);
-  };
-
-  const getStatusBadge = (isActive) => {
-    return isActive 
-      ? { text: 'Ativo', class: 'badge-success' }
-      : { text: 'Inativo', class: 'badge-secondary' };
-  };
+  const resetForm = () => { setFormData({ name: '', age_category: '', gender: '', belt_group: '', weight_category_id: '', description: '', is_active: true }); };
 
   return (
-    <div className="app-container">
+    <div className="app-container" style={{ backgroundColor: '#F2EFEA' }}>
       <div className="content-wrapper">
-        {/* Header */}
-        <div style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: 'var(--spacing-6)'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-3)' }}>
-            {view !== 'main' && (
-              <button
-                onClick={goBack}
-                style={{
-                  background: 'none',
-                  border: '1px solid var(--border-color)',
-                  borderRadius: 'var(--border-radius-md)',
-                  padding: 'var(--spacing-2)',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 'var(--spacing-1)'
-                }}
-              >
-                ← Voltar
-              </button>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--spacing-12)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-4)' }}>
+            {view !== 'main' ? (
+              <button onClick={goBack} className="btn btn-secondary" style={{ backgroundColor: '#FFF', width: '42px', height: '42px', padding: 0 }}><ArrowLeft size={18} /></button>
+            ) : (
+              <button onClick={() => window.location.href = '/dashboard'} className="btn btn-secondary" style={{ backgroundColor: '#FFF', width: '42px', height: '42px', padding: 0 }}><ArrowLeft size={18} /></button>
             )}
             <div>
-              <h1 style={{ 
-                fontSize: 'var(--font-size-2xl)', 
-                fontWeight: 'var(--font-weight-bold)',
-                margin: '0',
-                color: 'var(--text-primary)'
-              }}>
-                🥋 {view === 'main' && 'Classificações de Atletas'}
-                {view === 'form' && 'Criar Nova Classificação'}
-                {view === 'list' && 'Lista de Classificações'}
-              </h1>
-              <p style={{ 
-                margin: 'var(--spacing-1) 0 0 0',
-                color: 'var(--text-secondary)',
-                fontSize: 'var(--font-size-sm)'
-              }}>
-                {view === 'main' && 'Crie classificações com geração automática de sigla para chaveamento'}
-                {view === 'form' && 'Preencha os dados para gerar uma classificação automática'}
-                {view === 'list' && 'Visualize todas as classificações cadastradas'}
-              </p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Medal size={24} color="var(--brand-blue)" />
+                <h1 className="header-title" style={{ margin: 0, fontSize: '1.8rem' }}>
+                  {view === 'main' && 'Classificações Kyorugi'}
+                  {view === 'form' && 'Nova Classificação'}
+                  {view === 'list' && 'Base de Classificações'}
+                </h1>
+              </div>
+              <p className="header-subtitle" style={{ margin: 0, fontSize: '0.9rem' }}>Parametrização técnica para sorteio de chaves</p>
             </div>
           </div>
-          {view === 'main' && (
-            <button
-              onClick={() => window.location.href = '/dashboard'}
-              className="btn btn-outline"
-            >
-              ← Dashboard
-            </button>
-          )}
         </div>
 
-        {/* Message */}
         {message && (
-          <div style={{
-            padding: 'var(--spacing-4)',
-            borderRadius: 'var(--border-radius-md)',
-            marginBottom: 'var(--spacing-4)',
-            backgroundColor: message.includes('sucesso') || message.includes('criada') || message.includes('atualizada') || message.includes('excluída')
-              ? 'rgba(16, 185, 129, 0.1)'
-              : 'rgba(239, 68, 68, 0.1)',
-            border: `1px solid ${
-              message.includes('sucesso') || message.includes('criada') || message.includes('atualizada') || message.includes('excluída')
-                ? 'rgba(16, 185, 129, 0.3)'
-                : 'rgba(239, 68, 68, 0.3)'
-            }`,
-            color: message.includes('sucesso') || message.includes('criada') || message.includes('atualizada') || message.includes('excluída')
-              ? '#10b981'
-              : '#ef4444'
-          }}>
+          <div style={{ padding: '16px', borderRadius: '12px', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '12px', backgroundColor: message.includes('sucesso') ? '#ECFDF5' : '#FEF2F2', border: `1px solid ${message.includes('sucesso') ? '#10B981' : '#EF4444'}`, color: message.includes('sucesso') ? '#047857' : '#B91C1C' }}>
+            {message.includes('sucesso') ? <Check size={18} /> : <AlertCircle size={18} />}
             {message}
           </div>
         )}
 
-        {/* Main View - Menu Principal */}
         {view === 'main' && (
-          <div className="grid-responsive" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))' }}>
-            <div 
-              className="content-card hover-lift"
-              style={{ 
-                cursor: 'pointer',
-                textAlign: 'center',
-                padding: 'var(--spacing-8)'
-              }}
-              onClick={goToAddClassification}
-            >
-              <div style={{ fontSize: '48px', marginBottom: 'var(--spacing-4)' }}>➕</div>
-              <h3 style={{ 
-                fontSize: 'var(--font-size-xl)', 
-                fontWeight: 'var(--font-weight-semibold)',
-                margin: '0 0 var(--spacing-2) 0',
-                color: 'var(--text-primary)'
-              }}>
-                Criar Classificação
-              </h3>
-              <p style={{ 
-                fontSize: 'var(--font-size-sm)', 
-                color: 'var(--text-secondary)',
-                margin: '0'
-              }}>
-                Crie uma nova classificação com geração automática de sigla
-              </p>
+          <div className="grid-responsive" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))' }}>
+            <div className="content-card hover-lift" style={{ cursor: 'pointer', textAlign: 'center', padding: '48px' }} onClick={goToAddClassification}>
+              <div className="card-icon-container" style={{ margin: '0 auto 24px auto' }}><Plus size={32} /></div>
+              <h3 style={{ fontSize: '1.5rem', marginBottom: '12px' }}>Criar Classificação</h3>
+              <p style={{ color: 'var(--gray-600)' }}>Gere automaticamente siglas de competição baseadas em idade, gênero e peso.</p>
             </div>
-            
-            <div 
-              className="content-card hover-lift"
-              style={{ 
-                cursor: 'pointer',
-                textAlign: 'center',
-                padding: 'var(--spacing-8)'
-              }}
-              onClick={goToList}
-            >
-              <div style={{ fontSize: '48px', marginBottom: 'var(--spacing-4)' }}>📋</div>
-              <h3 style={{ 
-                fontSize: 'var(--font-size-xl)', 
-                fontWeight: 'var(--font-weight-semibold)',
-                margin: '0 0 var(--spacing-2) 0',
-                color: 'var(--text-primary)'
-              }}>
-                Ver Classificações
-              </h3>
-              <p style={{ 
-                fontSize: 'var(--font-size-sm)', 
-                color: 'var(--text-secondary)',
-                margin: '0'
-              }}>
-                Visualize todas as classificações cadastradas
-              </p>
+
+            <div className="content-card hover-lift" style={{ cursor: 'pointer', textAlign: 'center', padding: '48px' }} onClick={goToList}>
+              <div className="card-icon-container" style={{ margin: '0 auto 24px auto' }}><List size={32} /></div>
+              <h3 style={{ fontSize: '1.5rem', marginBottom: '12px' }}>Consultar Base</h3>
+              <p style={{ color: 'var(--gray-600)' }}>Visualize e gerencie todas as classificações técnicas cadastradas no sistema.</p>
             </div>
           </div>
         )}
 
-        {/* Form View - Criar Classificação */}
         {view === 'form' && (
-          <div className="content-card">
-            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-4)' }}>
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-                gap: 'var(--spacing-4)'
-              }}>
-                <div>
-                  <label style={{ 
-                    display: 'block', 
-                    marginBottom: 'var(--spacing-2)', 
-                    fontSize: 'var(--font-size-sm)',
-                    fontWeight: 'var(--font-weight-medium)',
-                    color: 'var(--text-primary)'
-                  }}>
-                    Nome da Classificação *
-                  </label>
-                  <input
-                    type="text"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleChange}
-                    placeholder="Ex: Sênior Masculino Elite"
-                    className="input-modern"
-                    required
-                  />
+          <div className="content-card" style={{ maxWidth: '800px', margin: '0 auto' }}>
+            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                <div style={{ gridColumn: 'span 2' }}>
+                  <label>Nome Descritivo (Ex: Sênior Masculino até 54kg)</label>
+                  <input name="name" value={formData.name} onChange={handleChange} className="input-modern" required />
                 </div>
-
                 <div>
-                  <label style={{ 
-                    display: 'block', 
-                    marginBottom: 'var(--spacing-2)', 
-                    fontSize: 'var(--font-size-sm)',
-                    fontWeight: 'var(--font-weight-medium)',
-                    color: 'var(--text-primary)'
-                  }}>
-                    Categoria de Idade *
-                  </label>
-                  <select
-                    name="age_category"
-                    value={formData.age_category}
-                    onChange={handleChange}
-                    className="input-modern"
-                    required
-                  >
+                  <label>Faixa Etária</label>
+                  <select name="age_category" value={formData.age_category} onChange={handleChange} className="select-modern" required>
                     <option value="">Selecione...</option>
-                    {ageCategories.map(category => (
-                      <option key={category.value} value={category.value}>
-                        {category.label}
-                      </option>
+                    {ageCategories.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label>Gênero</label>
+                  <select name="gender" value={formData.gender} onChange={handleChange} className="select-modern" required>
+                    <option value="">Selecione...</option>
+                    {genders.map(g => <option key={g.value} value={g.value}>{g.label}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label>Grupo de Graduação</label>
+                  <select name="belt_group" value={formData.belt_group} onChange={handleChange} className="select-modern" required>
+                    <option value="">Selecione...</option>
+                    {beltGroups.map(g => <option key={g.value} value={g.value}>{g.label}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label>Categoria de Peso</label>
+                  <select name="weight_category_id" value={formData.weight_category_id} onChange={handleChange} className="select-modern" required>
+                    <option value="">Selecione...</option>
+                    {weightCategories.filter(cat => cat.age_category === formData.age_category && cat.gender === formData.gender).map(c => (
+                      <option key={c.id} value={c.id}>{c.name} ({c.min_weight}kg - {c.max_weight}kg)</option>
                     ))}
                   </select>
                 </div>
+              </div>
 
-                <div>
-                  <label style={{ 
-                    display: 'block', 
-                    marginBottom: 'var(--spacing-2)', 
-                    fontSize: 'var(--font-size-sm)',
-                    fontWeight: 'var(--font-weight-medium)',
-                    color: 'var(--text-primary)'
-                  }}>
-                    Gênero *
-                  </label>
-                  <select
-                    name="gender"
-                    value={formData.gender}
-                    onChange={handleChange}
-                    className="input-modern"
-                    required
-                  >
-                    <option value="">Selecione...</option>
-                    {genders.map(gender => (
-                      <option key={gender.value} value={gender.value}>
-                        {gender.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label style={{ 
-                    display: 'block', 
-                    marginBottom: 'var(--spacing-2)', 
-                    fontSize: 'var(--font-size-sm)',
-                    fontWeight: 'var(--font-weight-medium)',
-                    color: 'var(--text-primary)'
-                  }}>
-                    Grupo de Faixas *
-                  </label>
-                  <select
-                    name="belt_group"
-                    value={formData.belt_group}
-                    onChange={handleChange}
-                    className="input-modern"
-                    required
-                  >
-                    <option value="">Selecione...</option>
-                    {beltGroups.map(group => (
-                      <option key={group.value} value={group.value}>
-                        {group.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label style={{ 
-                    display: 'block', 
-                    marginBottom: 'var(--spacing-2)', 
-                    fontSize: 'var(--font-size-sm)',
-                    fontWeight: 'var(--font-weight-medium)',
-                    color: 'var(--text-primary)'
-                  }}>
-                    Categoria de Peso *
-                  </label>
-                  <select
-                    name="weight_category_id"
-                    value={formData.weight_category_id}
-                    onChange={handleChange}
-                    className="input-modern"
-                    required
-                  >
-                    <option value="">Selecione...</option>
-                    {(() => {
-                    const filtered = weightCategories.filter(cat => {
-                      console.log('--- DEBUG FILTERING ---');
-                      console.log('Category age_category:', cat.age_category);
-                      console.log('Category gender:', cat.gender);
-                      console.log('Form age_category:', formData.age_category);
-                      console.log('Form gender:', formData.gender);
-                      console.log('Match age:', cat.age_category === formData.age_category);
-                      console.log('Match gender:', cat.gender === formData.gender);
-                      
-                      return cat.age_category === formData.age_category && cat.gender === formData.gender;
-                    });
-                    console.log('--- DEBUG FORM SELECT ---');
-                    console.log('Total weightCategories:', weightCategories.length);
-                    console.log('Filtered for form:', filtered.length);
-                    console.log('formData.age_category:', formData.age_category);
-                    console.log('formData.gender:', formData.gender);
-                    return filtered;
-                  })()
-                    .map(category => (
-                        <option key={category.id} value={category.id}>
-                          {category.name} ({category.min_weight}kg - {category.max_weight}kg)
-                        </option>
-                      ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label style={{ 
-                    display: 'block', 
-                    marginBottom: 'var(--spacing-2)', 
-                    fontSize: 'var(--font-size-sm)',
-                    fontWeight: 'var(--font-weight-medium)',
-                    color: 'var(--text-primary)'
-                  }}>
-                    Sigla (Gerada Automaticamente)
-                  </label>
-                  <input
-                    type="text"
-                    value={generateCode()}
-                    readOnly
-                    className="input-modern"
-                    style={{
-                      backgroundColor: 'var(--background-secondary)',
-                      cursor: 'not-allowed',
-                      fontWeight: 'bold',
-                      textAlign: 'center'
-                    }}
-                    placeholder="Ex: AM4-68"
-                  />
+              <div style={{ background: 'var(--bg-secondary)', padding: '20px', borderRadius: '12px', border: '1px dashed var(--border)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <h4 style={{ margin: 0, color: 'var(--gray-900)' }}>Sigla de Sistema</h4>
+                    <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--gray-600)' }}>Identificador único para automação de chaves</p>
+                  </div>
+                  <div style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--brand-blue)', letterSpacing: '1px' }}>
+                    {generateCode() || '---'}
+                  </div>
                 </div>
               </div>
 
-              <div>
-                <label style={{ 
-                  display: 'block', 
-                  marginBottom: 'var(--spacing-2)', 
-                  fontSize: 'var(--font-size-sm)',
-                  fontWeight: 'var(--font-weight-medium)',
-                  color: 'var(--text-primary)'
-                }}>
-                  Descrição
-                </label>
-                <textarea
-                  name="description"
-                  value={formData.description}
-                  onChange={handleChange}
-                  placeholder="Descrição detalhada da classificação..."
-                  rows={3}
-                  className="input-modern"
-                  style={{ resize: 'vertical' }}
-                />
-              </div>
-
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 'var(--spacing-2)'
-              }}>
-                <input
-                  type="checkbox"
-                  name="is_active"
-                  checked={formData.is_active}
-                  onChange={handleChange}
-                  id="is_active"
-                />
-                <label htmlFor="is_active" style={{
-                  fontSize: 'var(--font-size-sm)',
-                  color: 'var(--text-primary)'
-                }}>
-                  Classificação ativa
-                </label>
-              </div>
-
-              <div style={{
-                display: 'flex',
-                gap: 'var(--spacing-3)',
-                justifyContent: 'flex-end',
-                marginTop: 'var(--spacing-4)'
-              }}>
-                <button
-                  type="button"
-                  onClick={goBack}
-                  className="btn btn-outline"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="btn btn-primary"
-                >
-                  {loading ? 'Salvando...' : 'Criar Classificação'}
-                </button>
+              <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '12px' }}>
+                <button type="button" onClick={goBack} className="btn btn-secondary">Cancelar</button>
+                <button type="submit" className="btn btn-primary" disabled={loading}><Check size={18} /> Cadastrar Classificação</button>
               </div>
             </form>
           </div>
         )}
 
-        {/* List View - Visualizar Classificações */}
         {view === 'list' && (
           <div className="content-card">
-            {loading ? (
-              <div style={{ textAlign: 'center', padding: 'var(--spacing-8)' }}>
-                <div className="loading-spinner" style={{ margin: '0 auto var(--spacing-4)' }} />
-                <p style={{ color: 'var(--text-secondary)' }}>Carregando classificações...</p>
-              </div>
-            ) : classifications.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: 'var(--spacing-8)' }}>
-                <div style={{ fontSize: '48px', marginBottom: 'var(--spacing-4)' }}>🥋</div>
-                <h3 style={{ 
-                  fontSize: 'var(--font-size-xl)', 
-                  fontWeight: 'var(--font-weight-semibold)',
-                  color: 'var(--text-primary)',
-                  marginBottom: 'var(--spacing-2)'
-                }}>
-                  Nenhuma classificação encontrada
-                </h3>
-                <p style={{ 
-                  fontSize: 'var(--font-size-base)', 
-                  color: 'var(--text-secondary)',
-                  margin: '0 0 var(--spacing-4) 0'
-                }}>
-                  Crie sua primeira classificação
-                </p>
-                <button
-                  onClick={goToAddClassification}
-                  className="btn btn-primary"
-                >
-                  Criar Primeira Classificação
-                </button>
+            {classifications.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '48px' }}>
+                <Medal size={48} color="var(--gray-200)" style={{ marginBottom: '16px' }} />
+                <p>Nenhuma classificação encontrada.</p>
               </div>
             ) : (
-              <div>
-                <div className="table-modern-container">
-                  <table className="table-modern">
-                    <thead>
-                      <tr>
-                        <th>Sigla</th>
-                        <th>Nome</th>
-                        <th>Categoria</th>
-                        <th>Gênero</th>
-                        <th>Faixas</th>
-                        <th>Peso</th>
-                        <th>Status</th>
+              <div className="table-modern-container">
+                <table className="table-modern">
+                  <thead>
+                    <tr>
+                      <th>Código</th>
+                      <th>Classificação</th>
+                      <th>Categoria</th>
+                      <th>Graduação</th>
+                      <th>Peso</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {classifications.map((c) => (
+                      <tr key={c.id}>
+                        <td><span className="badge badge-primary" style={{ fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>{c.code}</span></td>
+                        <td style={{ fontWeight: 600 }}>{c.name}</td>
+                        <td>{c.age_category} {c.gender === 'M' ? '(Masc)' : '(Fem)'}</td>
+                        <td><span className="badge badge-secondary">Grupo {c.belt_group}</span></td>
+                        <td>{c.min_weight} - {c.max_weight} kg</td>
+                        <td>{c.is_active ? <span style={{ color: '#10B981', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.8rem' }}><Activity size={10} /> Ativo</span> : 'Inativo'}</td>
                       </tr>
-                    </thead>
-                    <tbody>
-                      {classifications.map((classification) => {
-                        const status = getStatusBadge(classification.is_active);
-                        const beltGroup = beltGroups.find(group => group.value === classification.belt_group);
-                        const ageCategory = ageCategories.find(cat => cat.value === classification.age_category);
-                        const gender = genders.find(g => g.value === classification.gender);
-
-                        return (
-                          <tr key={classification.id}>
-                            <td>
-                              <span className="badge badge-primary" style={{ fontWeight: 'bold' }}>
-                                {classification.code}
-                              </span>
-                            </td>
-                            <td>
-                              <div style={{ fontWeight: 'var(--font-weight-medium)' }}>
-                                {classification.name}
-                              </div>
-                            </td>
-                            <td>
-                              <div style={{ fontSize: 'var(--font-size-sm)' }}>
-                                {ageCategory?.label || classification.age_category}
-                              </div>
-                            </td>
-                            <td>
-                              <span className="badge badge-info">
-                                {gender?.label || classification.gender}
-                              </span>
-                            </td>
-                            <td>
-                              <span className="badge badge-warning">
-                                Grupo {classification.belt_group}
-                              </span>
-                            </td>
-                            <td>
-                              <div style={{ fontSize: 'var(--font-size-sm)' }}>
-                                {classification.min_weight}kg - {classification.max_weight}kg
-                              </div>
-                            </td>
-                            <td>
-                              <span className={`badge ${status.class}`}>
-                                {status.text}
-                              </span>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             )}
           </div>
         )}
-
       </div>
     </div>
   );

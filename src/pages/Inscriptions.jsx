@@ -3,6 +3,23 @@ import { supabase } from '../lib/supabase';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
+import {
+  ClipboardList,
+  ArrowLeft,
+  Search,
+  Filter,
+  FileSpreadsheet,
+  FileDown,
+  Pencil,
+  Trash2,
+  User,
+  UserRound,
+  X,
+  Check,
+  Calendar,
+  MapPin,
+  Circle
+} from 'lucide-react';
 
 const Inscriptions = () => {
   const [weightCategories, setWeightCategories] = useState([]);
@@ -39,8 +56,6 @@ const Inscriptions = () => {
   });
   const [suggestedWeightCategory, setSuggestedWeightCategory] = useState(null);
 
-  // ... rest of the component state ...
-
   const handleEdit = (inscription) => {
     setEditData(inscription);
     setIsEditing(true);
@@ -48,86 +63,32 @@ const Inscriptions = () => {
 
   const handleEditChange = (e) => {
     const { name, value } = e.target;
-
-    console.log('=== HANDLE EDIT CHANGE ===');
-    console.log('Campo alterado:', name, 'Valor:', value);
-    console.log('EditData atual:', editData);
-
-    // Se o campo for peso, processar automaticamente a categoria de peso
     if (name === 'weight') {
       const weight = parseFloat(value);
       const age = editData.age || '';
       const gender = editData.gender || '';
-
-      console.log('=== PROCESSANDO PESO ===');
-      console.log('Peso:', weight, 'Idade:', age, 'Gênero:', gender);
-
       if (weight && age && gender) {
         const suggested = findWeightCategoryByWeight(weight, age, gender);
-
-        console.log('=== RESULTADO SUGESTÃO ===');
-        console.log('Sugerido:', suggested);
-
         if (suggested) {
-          console.log('✅ Categoria de peso sugerida:', suggested.name, 'ID:', suggested.id);
-          alert(`✅ Categoria sugerida: ${suggested.name}`);
-          setEditData(prev => ({
-            ...prev,
-            weight: weight,
-            weight_category_id: suggested.id
-          }));
+          setEditData(prev => ({ ...prev, weight: weight, weight_category_id: suggested.id }));
         } else {
-          console.log('❌ Nenhuma categoria de peso encontrada para:', { weight, age, gender });
-          alert(`❌ Nenhuma categoria encontrada para peso ${weight}kg, idade ${age}, gênero ${gender}`);
-          setEditData(prev => ({
-            ...prev,
-            weight: weight,
-            weight_category_id: null
-          }));
+          setEditData(prev => ({ ...prev, weight: weight, weight_category_id: null }));
         }
       } else {
-        console.log('⚠️ Dados incompletos para sugestão');
-        setEditData(prev => ({
-          ...prev,
-          weight: weight,
-          weight_category_id: null
-        }));
+        setEditData(prev => ({ ...prev, weight: weight, weight_category_id: null }));
       }
     } else {
-      // Para outros campos, apenas atualizar normalmente
-      console.log('🔄 Atualizando campo normal:', name, value);
       setEditData(prev => ({ ...prev, [name]: value }));
-
-      // Se idade ou gênero mudar, recalcular categoria de peso se peso já estiver preenchido
       if ((name === 'age' || name === 'gender') && editData.weight) {
         const weight = editData.weight;
         const newAge = name === 'age' ? value : editData.age;
         const newGender = name === 'gender' ? value : editData.gender;
-
-        console.log('=== RECALCULANDO CATEGORIA ===');
-        console.log('Novos dados:', { weight, age: newAge, gender: newGender });
-
         if (weight && newAge && newGender) {
           const suggested = findWeightCategoryByWeight(weight, newAge, newGender);
-
-          console.log('🔄 Categoria atualizada:', suggested);
-
           if (suggested) {
-            console.log('✅ Categoria de peso atualizada:', suggested.name, 'ID:', suggested.id);
-            alert(`✅ Categoria atualizada: ${suggested.name}`);
-            setEditData(prev => ({
-              ...prev,
-              [name]: value,
-              weight_category_id: suggested.id
-            }));
+            setEditData(prev => ({ ...prev, weight_category_id: suggested.id }));
           } else {
-            console.log('❌ Nenhuma categoria encontrada após atualização');
-            alert(`❌ Nenhuma categoria encontrada para os novos dados`);
-            setEditData(prev => ({
-              ...prev,
-              [name]: value,
-              weight_category_id: null
-            }));
+            setEditData(prev => ({ ...prev, weight_category_id: null }));
           }
         }
       }
@@ -165,66 +126,22 @@ const Inscriptions = () => {
     }
   };
 
-  const handleAdd = async (e) => {
-    e.preventDefault();
+  const handleDelete = async (id) => {
+    if (!window.confirm('Tem certeza que deseja excluir esta inscrição?')) return;
     setLoading(true);
-
-    console.log('Dados do formulario:', editData);
-
     try {
-      const { data, error } = await supabase
-        .from('registrations')
-        .insert({
-          full_name: editData.full_name,
-          age: parseInt(editData.age),
-          gender: editData.gender,
-          weight: parseFloat(editData.weight),
-          weight_category_id: editData.weight_category_id,
-          belt_level: parseInt(editData.belt_level),
-          belt_category_id: editData.belt_category_id,
-          modality_id: editData.modality_id,
-          organization_id: editData.organization_id,
-          birth_date: editData.birth_date || new Date().toISOString().split('T')[0],
-          phone: editData.phone || '',
-          observations: editData.observations || '',
-          email: editData.email || '',
-          status: editData.status || 'active'
-        });
-
-      console.log('Resultado:', { data, error });
-
-      if (error) {
-        console.error('Erro:', error);
-        alert('Erro ao criar inscrição: ' + error.message);
-      } else {
-        console.log('Sucesso! ID:', data?.[0]?.id);
-        setMessage('Inscrição criada com sucesso!');
-        setIsEditing(false);
-        setEditData({
-          full_name: '',
-          age: '',
-          gender: '',
-          weight: '',
-          weight_category_id: null,
-          belt_level: '',
-          belt_category_id: null,
-          modality_id: '',
-          organization_id: '',
-          birth_date: '',
-          phone: '',
-          observations: '',
-          email: '',
-          status: 'active'
-        });
-        loadInscriptions(selectedChampionship);
-      }
+      const { error } = await supabase.from('registrations').delete().eq('id', id);
+      if (error) throw error;
+      setMessage('Inscrição excluída com sucesso!');
+      loadInscriptions(selectedChampionship);
     } catch (error) {
-      console.error('Erro ao criar inscrição:', error);
-      alert('Erro ao criar inscrição');
+      console.error('Erro ao excluir:', error);
+      alert('Erro ao excluir inscrição');
     } finally {
       setLoading(false);
     }
   };
+
   useEffect(() => {
     loadData();
   }, []);
@@ -245,16 +162,11 @@ const Inscriptions = () => {
         supabase.from('age_categories').select('*').order('min_age'),
         supabase.from('weight_categories').select('*').order('min_weight')
       ]);
-
-      console.log('Weight categories loaded:', weightCatsData.data); // Debug
-
       setChampionships(champsData.data || []);
       setModalities(modsData.data || []);
       setOrganizations(orgsData.data || []);
       setAgeCategories(ageCatsData.data || []);
       setWeightCategories(weightCatsData.data || []);
-
-      // Select first championship by default
       if (champsData.data && champsData.data.length > 0) {
         setSelectedChampionship(champsData.data[0].id);
       }
@@ -267,78 +179,31 @@ const Inscriptions = () => {
   };
 
   const findWeightCategoryByWeight = (weight, age, gender) => {
-    console.log('--- DEBUG FIND WEIGHT CATEGORY ---');
-    console.log('Parâmetros:', { weight, age, gender });
-
-    // Converter idade numérica para categoria
     const ageCategory = getAgeCategory(age);
-    console.log('Idade convertida para categoria:', ageCategory);
-    console.log('Weight categories disponíveis:', weightCategories);
-
-    if (!weight || !ageCategory || !gender) {
-      console.log('Parâmetros faltando, retornando null');
-      return null;
-    }
-
-    const found = weightCategories.find(cat =>
+    if (!weight || !ageCategory || !gender) return null;
+    return weightCategories.find(cat =>
       cat.age_category === ageCategory &&
       cat.gender === gender &&
       weight >= cat.min_weight &&
       weight <= cat.max_weight
     );
-
-    console.log('Categoria encontrada:', found);
-    return found;
-  };
-
-  const handleWeightChange = (weight) => {
-    const age = editData.age || '';
-    const gender = editData.gender || '';
-
-    if (weight && age && gender) {
-      const suggested = findWeightCategoryByWeight(parseFloat(weight), age, gender);
-      setSuggestedWeightCategory(suggested);
-
-      if (suggested) {
-        setEditData(prev => ({
-          ...prev,
-          weight: parseFloat(weight),
-          weight_category_id: suggested.id
-        }));
-      }
-    }
   };
 
   const loadInscriptions = async (championshipId) => {
     setLoading(true);
     try {
-      // Primeiro busca as inscrições
       const { data: registrationsData, error: regError } = await supabase
         .from('registrations')
-        .select(`
-          *,
-          organizations (
-            name
-          )
-        `)
+        .select(`*, organizations(name)`)
         .eq('championship_id', championshipId)
         .order('created_at', { ascending: false });
-
       if (regError) throw regError;
 
-      // Depois busca as modalidades separadamente
-      const { data: modalitiesData, error: modError } = await supabase
-        .from('modalities')
-        .select('id, name');
-
-      if (modError) throw modError;
-
-      // Combina os dados
+      const { data: modalitiesData } = await supabase.from('modalities').select('id, name');
       const enrichedData = registrationsData.map(registration => ({
         ...registration,
         modalities: modalitiesData.find(m => m.id === registration.modality_id)
       }));
-
       setInscriptions(enrichedData || []);
     } catch (error) {
       console.error('Erro ao carregar inscrições:', error);
@@ -348,36 +213,28 @@ const Inscriptions = () => {
     }
   };
 
-  const getBeltEmoji = (beltLevel) => {
+  const getBeltColor = (beltLevel) => {
     const colors = {
-      1: '⚪',  // Branca
-      2: '🔘',  // Cinza
-      3: '🟡',  // Amarela
-      4: '🟠',  // Laranja
-      5: '🟢',  // Verde
-      6: '🟣',  // Roxa
-      7: '🔵',  // Azul
-      8: '🟤',  // Marrom
-      9: '🔴',  // Vermelha
-      10: '🥋', // Vermelha Ponteira Preta
-      11: '⚫'  // Preta
+      1: '#FFFFFF', // Branca
+      2: '#808080', // Cinza
+      3: '#FFFF00', // Amarela
+      4: '#FFA500', // Laranja
+      5: '#008000', // Verde
+      6: '#800080', // Roxa
+      7: '#0000FF', // Azul
+      8: '#8B4513', // Marrom
+      9: '#FF0000', // Vermelha
+      10: '#FF0000', // Vermelha Ponteira Preta (Visual aproximado)
+      11: '#000000' // Preta
     };
-    return colors[beltLevel] || '🥋';
+    return colors[beltLevel] || '#CCCCCC';
   };
 
   const getBeltName = (beltLevel) => {
     const beltNames = {
-      1: 'Branca',
-      2: 'Cinza',
-      3: 'Amarela',
-      4: 'Laranja',
-      5: 'Verde',
-      6: 'Roxa',
-      7: 'Azul',
-      8: 'Marrom',
-      9: 'Vermelha',
-      10: 'Vermelha Ponteira Preta',
-      11: 'Preta'
+      1: 'Branca', 2: 'Cinza', 3: 'Amarela', 4: 'Laranja', 5: 'Verde',
+      6: 'Roxa', 7: 'Azul', 8: 'Marrom', 9: 'Vermelha',
+      10: 'Vermelha P. Preta', 11: 'Preta'
     };
     return beltNames[beltLevel] || 'Desconhecida';
   };
@@ -397,84 +254,38 @@ const Inscriptions = () => {
 
   const exportToExcel = () => {
     try {
-      if (filteredInscriptions.length === 0) {
-        alert('Nenhuma inscrição para exportar');
-        return;
-      }
-
+      if (filteredInscriptions.length === 0) { alert('Nenhuma inscrição para exportar'); return; }
       const data = filteredInscriptions.map(ins => ({
-        'Atleta': ins.full_name,
-        'Idade': ins.age,
-        'Gênero': ins.gender === 'M' ? 'Masculino' : 'Feminino',
-        'Peso (kg)': ins.weight,
-        'Faixa': getBeltName(ins.belt_level),
-        'Modalidade': ins.modalities?.name || '---',
-        'Academia': ins.organizations?.name || '---',
-        'Data Inscrição': new Date(ins.created_at).toLocaleDateString('pt-BR')
+        'Atleta': ins.full_name, 'Idade': ins.age, 'Gênero': ins.gender === 'M' ? 'Masculino' : 'Feminino',
+        'Peso (kg)': ins.weight, 'Faixa': getBeltName(ins.belt_level), 'Modalidade': ins.modalities?.name || '---',
+        'Academia': ins.organizations?.name || '---', 'Data Inscrição': new Date(ins.created_at).toLocaleDateString('pt-BR')
       }));
-
       const ws = XLSX.utils.json_to_sheet(data);
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "Inscritos");
-
-      const fileName = `inscritos_${selectedChampionshipData?.name || 'campeonato'}_${new Date().toISOString().split('T')[0]}.xlsx`;
-      XLSX.writeFile(wb, fileName);
-      setMessage('Excel exportado com sucesso!');
-    } catch (error) {
-      console.error('Erro ao exportar Excel:', error);
-      alert('Erro ao exportar Excel');
-    }
+      XLSX.writeFile(wb, `inscritos_${selectedChampionshipData?.name || 'campeonato'}.xlsx`);
+    } catch (error) { alert('Erro ao exportar Excel'); }
   };
 
   const exportToPDF = () => {
     try {
-      if (filteredInscriptions.length === 0) {
-        alert('Nenhuma inscrição para exportar');
-        return;
-      }
-
+      if (filteredInscriptions.length === 0) { alert('Nenhuma inscrição para exportar'); return; }
       const doc = new jsPDF();
-      const title = `Relatório de Inscritos - ${selectedChampionshipData?.name || 'Campeonato'}`;
-
       doc.setFontSize(18);
-      doc.text(title, 14, 22);
-      doc.setFontSize(11);
-      doc.setTextColor(100);
-
-      const reportDate = new Date().toLocaleString('pt-BR');
-      doc.text(`Gerado em: ${reportDate}`, 14, 30);
-
-      const tableColumn = ["Atleta", "Idade", "Gênero", "Peso", "Faixa", "Modalidade", "Academia"];
+      doc.text(`Relatório de Inscritos - ${selectedChampionshipData?.name || 'Campeonato'}`, 14, 22);
       const tableRows = filteredInscriptions.map(ins => [
-        ins.full_name,
-        ins.age,
-        ins.gender,
-        ins.weight + " kg",
-        getBeltName(ins.belt_level),
-        ins.modalities?.name || '---',
-        ins.organizations?.name || '---'
+        ins.full_name, ins.age, ins.gender, ins.weight + " kg", getBeltName(ins.belt_level),
+        ins.modalities?.name || '---', ins.organizations?.name || '---'
       ]);
-
       doc.autoTable({
-        head: [tableColumn],
-        body: tableRows,
-        startY: 35,
-        theme: 'striped',
-        headStyles: { fillColor: [59, 130, 246] }
+        head: [["Atleta", "Idade", "Gênero", "Peso", "Faixa", "Modalidade", "Academia"]],
+        body: tableRows, startY: 35, theme: 'striped', headStyles: { fillColor: [23, 130, 200] }
       });
-
-      const fileName = `inscritos_${selectedChampionshipData?.name || 'campeonato'}.pdf`;
-      doc.save(fileName);
-      setMessage('PDF exportado com sucesso!');
-    } catch (error) {
-      console.error('Erro ao exportar PDF:', error);
-      alert('Erro ao exportar PDF');
-    }
+      doc.save(`inscritos_${selectedChampionshipData?.name || 'campeonato'}.pdf`);
+    } catch (error) { alert('Erro ao exportar PDF'); }
   };
 
   const selectedChampionshipData = championships.find(c => c.id === selectedChampionship);
-
-  console.log('Organizations state:', organizations); // Debug
 
   const filteredInscriptions = inscriptions.filter(inscription => {
     const matchesSearch = inscription.full_name?.toLowerCase().includes(searchTerm.toLowerCase());
@@ -487,524 +298,206 @@ const Inscriptions = () => {
   });
 
   return (
-    <div className="app-container">
+    <div className="app-container" style={{ backgroundColor: '#FFFFFF' }}>
       <div className="content-wrapper">
         {/* Header */}
-        <div style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: 'var(--spacing-10)',
-          animation: 'fadeIn 0.6s ease-out'
-        }}>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 'var(--spacing-4)'
-          }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--spacing-12)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-4)' }}>
             <button
               onClick={() => window.location.href = '/dashboard'}
               className="btn btn-secondary"
+              style={{ width: '42px', height: '42px', padding: 0 }}
             >
-              ← Voltar
+              <ArrowLeft size={18} />
             </button>
             <div>
-              <h1 className="header-title">📝 Lista de Inscritos</h1>
-              <p className="header-subtitle">
-                Visualize e gerencie os inscritos por campeonato
-              </p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <ClipboardList size={24} color="var(--brand-blue)" />
+                <h1 className="header-title" style={{ margin: 0, fontSize: '1.8rem' }}>Inscrições</h1>
+              </div>
+              <p className="header-subtitle" style={{ margin: 0, fontSize: '0.9rem' }}>Controle oficial de atletas e entidades filiadas</p>
             </div>
+          </div>
+          <div style={{ display: 'flex', gap: 'var(--spacing-3)' }}>
+            <button onClick={exportToExcel} className="btn btn-secondary" style={{ backgroundColor: '#FFFFFF' }}>
+              <FileSpreadsheet size={18} /> Excel
+            </button>
+            <button onClick={exportToPDF} className="btn btn-secondary" style={{ backgroundColor: '#FFFFFF' }}>
+              <FileDown size={18} /> PDF
+            </button>
           </div>
         </div>
 
-        {/* Controls */}
-        <div className="content-card card-compact" style={{ marginBottom: 'var(--spacing-8)' }}>
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-            gap: 'var(--spacing-4)'
-          }}>
-            {/* Championship Selector */}
+        {/* Filters */}
+        <div className="content-card" style={{ marginBottom: 'var(--spacing-8)', padding: 'var(--spacing-6)' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 'var(--spacing-6)' }}>
             <div>
-              <label style={{
-                display: 'block',
-                marginBottom: 'var(--spacing-2)',
-                fontSize: 'var(--font-size-sm)',
-                fontWeight: 'var(--font-weight-medium)',
-                color: 'var(--text-primary)'
-              }}>
-                Campeonato
-              </label>
-              <select
-                value={selectedChampionship}
-                onChange={(e) => setSelectedChampionship(e.target.value)}
-                className="select-modern"
-              >
-                {championships.map(champ => (
-                  <option key={champ.id} value={champ.id}>
-                    {champ.name}
-                  </option>
-                ))}
+              <label>Campeonato</label>
+              <select value={selectedChampionship} onChange={(e) => setSelectedChampionship(e.target.value)} className="select-modern">
+                {championships.map(champ => <option key={champ.id} value={champ.id}>{champ.name}</option>)}
               </select>
             </div>
-
-            {/* Search */}
             <div>
-              <label style={{
-                display: 'block',
-                marginBottom: 'var(--spacing-2)',
-                fontSize: 'var(--font-size-sm)',
-                fontWeight: 'var(--font-weight-medium)',
-                color: 'var(--text-primary)'
-              }}>
-                Buscar Atleta
-              </label>
-              <input
-                type="text"
-                placeholder="Nome do atleta..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="input-modern"
-              />
+              <label>Busca por Nome</label>
+              <div style={{ position: 'relative' }}>
+                <input type="text" placeholder="Nome do atleta..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="input-modern" style={{ paddingLeft: '2.5rem' }} />
+                <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--gray-400)' }} />
+              </div>
             </div>
-
-            {/* Category Filter */}
             <div>
-              <label style={{
-                display: 'block',
-                marginBottom: 'var(--spacing-2)',
-                fontSize: 'var(--font-size-sm)',
-                fontWeight: 'var(--font-weight-medium)',
-                color: 'var(--text-primary)'
-              }}>
-                Filtrar por Faixa
-              </label>
-              <select
-                value={filterCategory}
-                onChange={(e) => setFilterCategory(e.target.value)}
-                className="select-modern"
-              >
-                <option value="all">Todas as faixas</option>
-                <option value="1">Branca</option>
-                <option value="2">Cinza</option>
-                <option value="3">Amarela</option>
-                <option value="4">Laranja</option>
-                <option value="5">Verde</option>
-                <option value="6">Roxa</option>
-                <option value="7">Azul</option>
-                <option value="8">Marrom</option>
-                <option value="9">Vermelha</option>
-                <option value="10">Vermelha Ponteira Preta</option>
-                <option value="11">Preta</option>
-              </select>
-            </div>
-
-            <div>
-              <label style={{
-                display: 'block',
-                marginBottom: 'var(--spacing-2)',
-                fontSize: 'var(--font-size-sm)',
-                fontWeight: 'var(--font-weight-medium)',
-                color: 'var(--text-primary)'
-              }}>
-                Filtrar por Modalidade
-              </label>
-              <select
-                value={filterModality}
-                onChange={(e) => setFilterModality(e.target.value)}
-                className="select-modern"
-              >
-                <option value="all">Todas as modalidades</option>
-                {modalities.map(modality => (
-                  <option key={modality.id} value={modality.id}>
-                    {modality.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label style={{
-                display: 'block',
-                marginBottom: 'var(--spacing-2)',
-                fontSize: 'var(--font-size-sm)',
-                fontWeight: 'var(--font-weight-medium)',
-                color: 'var(--text-primary)'
-              }}>
-                Filtrar por Academia
-              </label>
-              <select
-                value={filterOrganization}
-                onChange={(e) => setFilterOrganization(e.target.value)}
-                className="select-modern"
-              >
-                <option value="all">Todas as academias</option>
-                {console.log('Rendering organizations:', organizations) || organizations.map(organization => (
-                  <option key={organization.id} value={organization.id}>
-                    {organization.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label style={{
-                display: 'block',
-                marginBottom: 'var(--spacing-2)',
-                fontSize: 'var(--font-size-sm)',
-                fontWeight: 'var(--font-weight-medium)',
-                color: 'var(--text-primary)'
-              }}>
-                Filtrar por Categoria de Idade
-              </label>
-              <select
-                value={filterAgeCategory}
-                onChange={(e) => setFilterAgeCategory(e.target.value)}
-                className="select-modern"
-              >
-                <option value="all">Todas as categorias</option>
-                <option value="Fraldinha">Fraldinha (4-6 anos)</option>
-                <option value="Mirim">Mirim (7-9 anos)</option>
-                <option value="Infantil">Infantil (10-12 anos)</option>
-                <option value="Juvenil">Juvenil (13-15 anos)</option>
-                <option value="Júnior">Júnior (16-17 anos)</option>
-                <option value="Sênior">Sênior (18-34 anos)</option>
-                <option value="Master 1">Master 1 (35-44 anos)</option>
-                <option value="Master 2">Master 2 (45-54 anos)</option>
-                <option value="Master 3">Master 3 (55+ anos)</option>
-              </select>
-            </div>
-
-            <div>
-              <label style={{
-                display: 'block',
-                marginBottom: 'var(--spacing-2)',
-                fontSize: 'var(--font-size-sm)',
-                fontWeight: 'var(--font-weight-medium)',
-                color: 'var(--text-primary)'
-              }}>
-                Filtrar por Gênero
-              </label>
-              <select
-                value={filterGender}
-                onChange={(e) => setFilterGender(e.target.value)}
-                className="select-modern"
-              >
-                <option value="all">Todos os gêneros</option>
+              <label>Gênero</label>
+              <select value={filterGender} onChange={(e) => setFilterGender(e.target.value)} className="select-modern">
+                <option value="all">Todos</option>
                 <option value="M">Masculino</option>
                 <option value="F">Feminino</option>
               </select>
             </div>
-          </div>
-
-          {/* Action Buttons */}
-          <div style={{
-            display: 'flex',
-            gap: 'var(--spacing-3)',
-            marginTop: 'var(--spacing-6)',
-            flexWrap: 'wrap'
-          }}>
-            <button
-              onClick={exportToExcel}
-              className="btn btn-success"
-            >
-              📊 Exportar Excel
-            </button>
-            <button
-              onClick={exportToPDF}
-              className="btn btn-danger"
-            >
-              📄 Exportar PDF
-            </button>
+            <div>
+              <label>Faixa</label>
+              <select value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)} className="select-modern">
+                <option value="all">Todas</option>
+                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map(n => <option key={n} value={n}>{getBeltName(n)}</option>)}
+              </select>
+            </div>
           </div>
         </div>
 
-        {/* Championship Info */}
+        {/* Championship Info Bar */}
         {selectedChampionshipData && (
-          <div className="content-card card-compact" style={{ marginBottom: 'var(--spacing-8)' }}>
-            <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center'
-            }}>
-              <div>
-                <h3 style={{
-                  fontSize: 'var(--font-size-xl)',
-                  fontWeight: 'var(--font-weight-semibold)',
-                  color: 'var(--text-primary)',
-                  margin: '0'
-                }}>
-                  {selectedChampionshipData.name}
-                </h3>
-                <p style={{
-                  fontSize: 'var(--font-size-sm)',
-                  color: 'var(--text-secondary)',
-                  margin: 'var(--spacing-1) 0 0 0'
-                }}>
-                  📍 {selectedChampionshipData.location} • 📅 {new Date(selectedChampionshipData.date).toLocaleDateString('pt-BR')}
-                </p>
+          <div style={{
+            background: 'var(--bg-secondary)',
+            padding: '1rem 1.5rem',
+            borderRadius: 'var(--radius-lg)',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: 'var(--spacing-8)',
+            border: '1px solid var(--border)'
+          }}>
+            <div style={{ display: 'flex', gap: '24px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.9rem', fontWeight: 600 }}>
+                <Calendar size={16} color="var(--brand-blue)" /> {new Date(selectedChampionshipData.date).toLocaleDateString('pt-BR')}
               </div>
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 'var(--spacing-2)'
-              }}>
-                <span className="badge badge-primary">
-                  {filteredInscriptions.length} inscritos
-                </span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.9rem', fontWeight: 600 }}>
+                <MapPin size={16} color="var(--brand-blue)" /> {selectedChampionshipData.location}
               </div>
             </div>
+            <div className="badge badge-primary">{filteredInscriptions.length} ATLETAS CONFIRMADOS</div>
           </div>
         )}
 
         {/* Message */}
         {message && (
-          <div style={{
-            padding: 'var(--spacing-4)',
-            borderRadius: 'var(--radius-lg)',
-            marginBottom: 'var(--spacing-8)',
-            background: 'var(--warning-50)',
-            color: 'var(--warning-600)',
-            border: '1px solid rgba(245, 158, 11, 0.2)',
-            textAlign: 'center'
-          }}>
+          <div style={{ padding: '1rem', borderRadius: 'var(--radius-lg)', marginBottom: 'var(--spacing-8)', background: 'var(--primary-50)', color: 'var(--brand-blue)', textAlign: 'center', fontWeight: 600 }}>
             {message}
           </div>
         )}
 
-        {/* Inscriptions List */}
-        <div className="content-card">
+        {/* List Table */}
+        <div className="table-modern-container">
           {loading ? (
-            <div style={{ textAlign: 'center', padding: 'var(--spacing-8)' }}>
+            <div style={{ textAlign: 'center', padding: 'var(--spacing-12)' }}>
               <div className="loading-spinner" style={{ margin: '0 auto var(--spacing-4)' }} />
-              <p style={{ color: 'var(--text-secondary)' }}>Carregando inscrições...</p>
+              <p>Carregando registros...</p>
             </div>
           ) : filteredInscriptions.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: 'var(--spacing-8)' }}>
-              <div style={{ fontSize: '48px', marginBottom: 'var(--spacing-4)' }}>📝</div>
-              <h3 style={{
-                fontSize: 'var(--font-size-xl)',
-                fontWeight: 'var(--font-weight-semibold)',
-                color: 'var(--text-primary)',
-                marginBottom: 'var(--spacing-2)'
-              }}>
-                Nenhuma inscrição encontrada
-              </h3>
-              <p style={{
-                fontSize: 'var(--font-size-base)',
-                color: 'var(--text-secondary)',
-                margin: '0'
-              }}>
-                {searchTerm || filterCategory !== 'all' || filterModality !== 'all' || filterOrganization !== 'all' || filterAgeCategory !== 'all' || filterGender !== 'all'
-                  ? 'Tente ajustar os filtros de busca'
-                  : 'Nenhum atleta se inscreveu neste campeonato ainda'
-                }
-              </p>
+            <div style={{ textAlign: 'center', padding: 'var(--spacing-12)' }}>
+              <h3 style={{ color: 'var(--gray-400)' }}>Nenhum registro encontrado</h3>
             </div>
           ) : (
-            <div className="table-modern-container">
-              <table className="table-modern">
-                <thead>
-                  <tr>
-                    <th>Atleta</th>
-                    <th>Idade</th>
-                    <th>Gênero</th>
-                    <th>Peso</th>
-                    <th>Faixa</th>
-                    <th>Modalidade</th>
-                    <th>Academia</th>
-                    <th>Ações</th>
+            <table className="table-modern">
+              <thead>
+                <tr>
+                  <th>Atleta</th>
+                  <th>Idade</th>
+                  <th>Gênero</th>
+                  <th>Peso</th>
+                  <th>Graduação</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredInscriptions.map(ins => (
+                  <tr key={ins.id}>
+                    <td style={{ fontWeight: 600, color: 'var(--gray-900)' }}>{ins.full_name}</td>
+                    <td><span className="badge badge-secondary">{ins.age} anos</span></td>
+                    <td>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        {ins.gender === 'M' ? <User size={14} /> : <UserRound size={14} />}
+                        {ins.gender}
+                      </div>
+                    </td>
+                    <td>{ins.weight} kg</td>
+                    <td>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <Circle size={12} fill={getBeltColor(ins.belt_level)} color={ins.belt_level === 1 ? '#e2e8f0' : 'transparent'} />
+                        {getBeltName(ins.belt_level)}
+                      </div>
+                    </td>
+                    <td>
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <button onClick={() => handleEdit(ins)} className="btn btn-secondary" style={{ padding: '6px', borderRadius: '8px' }}>
+                          <Pencil size={14} />
+                        </button>
+                        <button onClick={() => handleDelete(ins.id)} className="btn btn-danger" style={{ padding: '6px', borderRadius: '8px', backgroundColor: 'var(--brand-red)' }}>
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    </td>
                   </tr>
-                </thead>
-                <tbody>
-                  {filteredInscriptions.map((inscription, index) => (
-                    <tr key={inscription.id || index}>
-                      <td>
-                        <div style={{ fontWeight: 'var(--font-weight-medium)', color: 'var(--text-primary)' }}>
-                          {inscription.full_name}
-                        </div>
-                      </td>
-                      <td>
-                        <span className="badge badge-secondary">{inscription.age} anos</span>
-                      </td>
-                      <td>
-                        <span className="badge badge-primary">{inscription.gender === 'M' ? 'M' : 'F'}</span>
-                      </td>
-                      <td>{inscription.weight} kg</td>
-                      <td>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-2)' }}>
-                          <span>{getBeltEmoji(inscription.belt_level)}</span>
-                          <span style={{ fontSize: 'var(--font-size-sm)', color: 'var(--text-secondary)' }}>
-                            {getBeltName(inscription.belt_level)}
-                          </span>
-                        </div>
-                      </td>
-                      <td>
-                        <span className={`badge ${inscription.modalities?.name ? 'badge-primary' : 'badge-secondary'}`}>
-                          {inscription.modalities?.name || '---'}
-                        </span>
-                      </td>
-                      <td>
-                        <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--text-secondary)' }}>
-                          {inscription.organizations?.name || '---'}
-                        </div>
-                      </td>
-                      <td>
-                        <div style={{ display: 'flex', gap: '8px' }}>
-                          <button
-                            onClick={() => handleEdit(inscription)}
-                            className="btn btn-xs btn-outline"
-                            title="Editar"
-                          >
-                            ✏️
-                          </button>
-                          <button
-                            onClick={() => handleDelete(inscription.id)}
-                            className="btn btn-xs btn-danger"
-                            title="Excluir"
-                          >
-                            🗑️
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                ))}
+              </tbody>
+            </table>
           )}
         </div>
 
         {/* Edit Modal */}
         {isEditing && (
-          <div className="modal-overlay" style={{
-            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-            background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center',
-            justifyContent: 'center', zIndex: 1000
-          }}>
-            <div className="content-card" style={{ width: '500px', maxHeight: '90vh', overflowY: 'auto' }}>
-              <h3 style={{ marginBottom: '20px' }}>Editar Inscrição</h3>
-              <form onSubmit={handleUpdate} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+          <div className="modal-overlay">
+            <div className="modal-content" style={{ width: '600px', maxWidth: '100%' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+                <h3 style={{ color: 'var(--gray-900)' }}>Editar Atleta</h3>
+                <button onClick={() => setIsEditing(false)} className="btn btn-ghost"><X size={20} /></button>
+              </div>
+              <form onSubmit={handleUpdate} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                 <div>
-                  <label className="form-label">Nome Completo</label>
-                  <input
-                    name="full_name"
-                    value={editData.full_name || ''}
-                    onChange={handleEditChange}
-                    className="input-modern"
-                    required
-                  />
+                  <label>Nome do Atleta</label>
+                  <input name="full_name" value={editData.full_name} onChange={handleEditChange} className="input-modern" required />
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                   <div>
-                    <label className="form-label">Idade</label>
-                    <input
-                      name="age"
-                      type="number"
-                      value={editData.age || ''}
-                      onChange={handleEditChange}
-                      className="input-modern"
-                      required
-                    />
+                    <label>Idade (Anos)</label>
+                    <input name="age" type="number" value={editData.age} onChange={handleEditChange} className="input-modern" required />
                   </div>
                   <div>
-                    <label className="form-label">Gênero</label>
-                    <select
-                      name="gender"
-                      value={editData.gender || ''}
-                      onChange={handleEditChange}
-                      className="select-modern"
-                    >
+                    <label>Gênero</label>
+                    <select name="gender" value={editData.gender} onChange={handleEditChange} className="select-modern">
                       <option value="M">Masculino</option>
                       <option value="F">Feminino</option>
                     </select>
                   </div>
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                   <div>
-                    <label className="form-label">Peso (kg)</label>
-                    <input
-                      name="weight"
-                      type="number"
-                      step="0.1"
-                      value={editData.weight || ''}
-                      onChange={handleEditChange}
-                      className="input-modern"
-                      placeholder="Ex: 67.9"
-                      required
-                    />
-                    {suggestedWeightCategory && (
-                      <div style={{
-                        marginTop: 'var(--spacing-2)',
-                        fontSize: 'var(--font-size-xs)',
-                        color: 'var(--success-600)'
-                      }}>
-                        ✅ Categoria sugerida: {suggestedWeightCategory.name}
-                      </div>
-                    )}
+                    <label>Peso Corporal (kg)</label>
+                    <input name="weight" type="number" step="0.1" value={editData.weight} onChange={handleEditChange} className="input-modern" required />
                   </div>
                   <div>
-                    <label className="form-label">Data de Nascimento</label>
-                    <input
-                      name="birth_date"
-                      type="date"
-                      value={editData.birth_date || ''}
-                      onChange={handleEditChange}
-                      className="input-modern"
-                      required
-                    />
+                    <label>Data de Nascimento</label>
+                    <input name="birth_date" type="date" value={editData.birth_date} onChange={handleEditChange} className="input-modern" required />
                   </div>
                 </div>
                 <div>
-                  <label className="form-label">Faixa</label>
-                  <select
-                    name="belt_level"
-                    value={editData.belt_level || ''}
-                    onChange={handleEditChange}
-                    className="select-modern"
-                  >
-                    <option value="1">Branca</option>
-                    <option value="2">Cinza</option>
-                    <option value="3">Amarela</option>
-                    <option value="4">Laranja</option>
-                    <option value="5">Verde</option>
-                    <option value="6">Roxa</option>
-                    <option value="7">Azul</option>
-                    <option value="8">Marrom</option>
-                    <option value="9">Vermelha</option>
-                    <option value="10">Vermelha Ponteira Preta</option>
-                    <option value="11">Preta</option>
+                  <label>Graduação (Faixa)</label>
+                  <select name="belt_level" value={editData.belt_level} onChange={handleEditChange} className="select-modern">
+                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map(n => <option key={n} value={n}>{getBeltName(n)}</option>)}
                   </select>
                 </div>
-                <div>
-                  <label className="form-label">Modalidade</label>
-                  <select
-                    name="modality_id"
-                    value={editData.modality_id || ''}
-                    onChange={handleEditChange}
-                    className="select-modern"
-                  >
-                    {modalities.map(m => (
-                      <option key={m.id} value={m.id}>{m.name}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="form-label">Academia</label>
-                  <select
-                    name="organization_id"
-                    value={editData.organization_id || ''}
-                    onChange={handleEditChange}
-                    className="select-modern"
-                  >
-                    {organizations.map(o => (
-                      <option key={o.id} value={o.id}>{o.name}</option>
-                    ))}
-                  </select>
-                </div>
-                <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', marginTop: '10px' }}>
+                <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '12px' }}>
                   <button type="button" onClick={() => setIsEditing(false)} className="btn btn-secondary">Cancelar</button>
-                  <button type="submit" className="btn btn-primary" disabled={loading}>Salvar Alterações</button>
+                  <button type="submit" className="btn btn-primary" style={{ minWidth: '140px' }}>
+                    <Check size={18} /> Salvar Atleta
+                  </button>
                 </div>
               </form>
             </div>

@@ -1,5 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
+import {
+  Trophy,
+  Plus,
+  Calendar,
+  ExternalLink,
+  ArrowLeft,
+  Pencil,
+  Trash2,
+  Lock,
+  Unlock,
+  X,
+  Check,
+  Layout,
+  Activity
+} from 'lucide-react';
 
 export default function Championships() {
   const [championships, setChampionships] = useState([]);
@@ -23,271 +38,76 @@ export default function Championships() {
         .from('championships')
         .select('*')
         .order('created_at', { ascending: false });
-
       if (error) throw error;
       setChampionships(data || []);
-    } catch (error) {
-      console.error('Erro ao carregar campeonatos:', error);
-    } finally {
-      setLoading(false);
-    }
+    } catch (error) { console.error('Erro:', error); } finally { setLoading(false); }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-
     try {
       if (editingChamp) {
-        const { error } = await supabase
-          .from('championships')
-          .update({
-            name: formData.name,
-            date: formData.date,
-            google_forms_index: formData.google_forms_index,
-            status: formData.status,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', editingChamp.id);
-
-        if (error) throw error;
+        await supabase.from('championships').update({
+          name: formData.name, date: formData.date, google_forms_index: formData.google_forms_index, status: formData.status, updated_at: new Date().toISOString()
+        }).eq('id', editingChamp.id);
       } else {
-        const { error } = await supabase
-          .from('championships')
-          .insert({
-            name: formData.name,
-            date: formData.date,
-            google_forms_index: formData.google_forms_index,
-            status: formData.status
-          });
-
-        if (error) throw error;
+        await supabase.from('championships').insert({ name: formData.name, date: formData.date, google_forms_index: formData.google_forms_index, status: formData.status });
       }
-
       await loadChampionships();
       handleCancel();
-    } catch (error) {
-      console.error('Erro ao salvar campeonato:', error);
-      alert('Erro ao salvar campeonato. Tente novamente.');
-    } finally {
-      setLoading(false);
-    }
+    } catch (error) { alert('Erro ao salvar campeonato.'); } finally { setLoading(false); }
   };
 
   const handleEdit = (champ) => {
     setEditingChamp(champ);
-    setFormData({
-      name: champ.name,
-      date: champ.date ? new Date(champ.date).toISOString().split('T')[0] : '',
-      google_forms_index: champ.google_forms_index || '',
-      status: champ.status
-    });
+    setFormData({ name: champ.name, date: champ.date ? new Date(champ.date).toISOString().split('T')[0] : '', google_forms_index: champ.google_forms_index || '', status: champ.status });
     setShowForm(true);
   };
 
   const handleToggleInscriptions = async (champ) => {
     try {
-      const { error } = await supabase
-        .from('championships')
-        .update({ inscription_open: !champ.inscription_open })
-        .eq('id', champ.id);
-
-      if (error) throw error;
+      await supabase.from('championships').update({ inscription_open: !champ.inscription_open }).eq('id', champ.id);
       await loadChampionships();
-    } catch (error) {
-      console.error('Erro ao alterar status das inscrições:', error);
-      alert('Erro ao alterar status das inscrições. Tente novamente.');
-    }
+    } catch (error) { alert('Erro ao alterar status.'); }
   };
 
   const handleDelete = async (id) => {
-    if (!confirm('Tem certeza que deseja excluir este campeonato?')) return;
-
+    if (!confirm('Tem certeza?')) return;
     try {
-      const { error } = await supabase
-        .from('championships')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
+      await supabase.from('championships').delete().eq('id', id);
       await loadChampionships();
-    } catch (error) {
-      console.error('Erro ao excluir campeonato:', error);
-      alert('Erro ao excluir campeonato. Tente novamente.');
-    }
+    } catch (error) { alert('Erro ao excluir.'); }
   };
 
-  const handleCancel = () => {
-    setShowForm(false);
-    setEditingChamp(null);
-    setFormData({ name: '', date: '', google_forms_index: '', status: 'active' });
-  };
-
-  const handleChange = (e) => {
-    setFormData(prev => ({
-      ...prev,
-      [e.target.name]: e.target.value
-    }));
-  };
-
-  const getStatusBadge = (status, inscriptionOpen) => {
-    if (inscriptionOpen) {
-      return { text: 'Inscrições Abertas', class: 'badge-success' };
-    }
-    
-    const statusMap = {
-      'active': { text: 'Ativo', class: 'badge-secondary' },
-      'completed': { text: 'Concluído', class: 'badge-secondary' },
-      'cancelled': { text: 'Cancelado', class: 'badge-error' }
-    };
-    return statusMap[status] || { text: status, class: 'badge-secondary' };
-  };
+  const handleCancel = () => { setShowForm(false); setEditingChamp(null); setFormData({ name: '', date: '', google_forms_index: '', status: 'active' }); };
+  const handleChange = (e) => { setFormData(prev => ({ ...prev, [e.target.name]: e.target.value })); };
 
   if (showForm) {
     return (
-      <div className="app-container">
+      <div className="app-container" style={{ backgroundColor: '#FFFFFF' }}>
         <div className="content-wrapper">
-          <div className="content-card card-centered" style={{ maxWidth: '600px' }}>
-            {/* Header */}
-            <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              marginBottom: 'var(--spacing-8)'
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-4)' }}>
-                <h1 className="header-title" style={{ fontSize: 'var(--font-size-2xl)' }}>
-                  {editingChamp ? 'Editar Campeonato' : 'Novo Campeonato'}
-                </h1>
-                {editingChamp && (
-                  <button
-                    onClick={() => window.open(`/inscrever-fetmg?id=${editingChamp.id}`, '_blank')}
-                    className="btn btn-outline btn-sm"
-                    style={{ 
-                      display: 'flex', 
-                      alignItems: 'center', 
-                      gap: '8px',
-                      borderColor: 'var(--primary-500)',
-                      color: 'var(--primary-600)'
-                    }}
-                    title="Ver Ficha de Inscrição"
-                  >
-                    🔗 Ficha de Inscrição
-                  </button>
-                )}
-              </div>
-              <button
-                onClick={handleCancel}
-                className="btn btn-secondary"
-              >
-                ← Voltar
-              </button>
-            </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-4)', marginBottom: 'var(--spacing-12)' }}>
+            <button onClick={handleCancel} className="btn btn-secondary" style={{ width: '42px', height: '42px', padding: 0 }}><ArrowLeft size={18} /></button>
+            <h1 className="header-title" style={{ margin: 0 }}>{editingChamp ? 'Editar Evento' : 'Novo Evento'}</h1>
+          </div>
 
-            {/* Form */}
-            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-6)' }}>
+          <div className="content-card" style={{ maxWidth: '600px', margin: '0 auto' }}>
+            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+              <div><label>Nome Oficial do Campeonato</label><input name="name" value={formData.name} onChange={handleChange} className="input-modern" placeholder="Ex: Open de Taekwondo 2025" required /></div>
+              <div><label>Data Prevista</label><input type="date" name="date" value={formData.date} onChange={handleChange} className="input-modern" required /></div>
+              <div><label>Referência de Registro</label><input name="google_forms_index" value={formData.google_forms_index} onChange={handleChange} className="input-modern" placeholder="ID Interno" /></div>
               <div>
-                <label style={{ 
-                  display: 'block', 
-                  marginBottom: 'var(--spacing-2)', 
-                  fontSize: 'var(--font-size-sm)',
-                  fontWeight: 'var(--font-weight-medium)',
-                  color: 'var(--text-primary)'
-                }}>
-                  Nome do Campeonato *
-                </label>
-                <input
-                  type="text"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  className="input-modern"
-                  placeholder="Ex: 1ª Etapa Campeonato Mineiro"
-                  required
-                />
-              </div>
-
-              <div>
-                <label style={{ 
-                  display: 'block', 
-                  marginBottom: 'var(--spacing-2)', 
-                  fontSize: 'var(--font-size-sm)',
-                  fontWeight: 'var(--font-weight-medium)',
-                  color: 'var(--text-primary)'
-                }}>
-                  Data do Campeonato *
-                </label>
-                <input
-                  type="date"
-                  name="date"
-                  value={formData.date}
-                  onChange={handleChange}
-                  className="input-modern"
-                  required
-                />
-              </div>
-
-              <div>
-                <label style={{ 
-                  display: 'block', 
-                  marginBottom: 'var(--spacing-2)', 
-                  fontSize: 'var(--font-size-sm)',
-                  fontWeight: 'var(--font-weight-medium)',
-                  color: 'var(--text-primary)'
-                }}>
-                  Índice Google Forms
-                </label>
-                <input
-                  type="text"
-                  name="google_forms_index"
-                  value={formData.google_forms_index}
-                  onChange={handleChange}
-                  className="input-modern"
-                  placeholder="ID do formulário Google"
-                />
-              </div>
-
-              <div>
-                <label style={{ 
-                  display: 'block', 
-                  marginBottom: 'var(--spacing-2)', 
-                  fontSize: 'var(--font-size-sm)',
-                  fontWeight: 'var(--font-weight-medium)',
-                  color: 'var(--text-primary)'
-                }}>
-                  Status
-                </label>
-                <select
-                  name="status"
-                  value={formData.status}
-                  onChange={handleChange}
-                  className="select-modern"
-                >
-                  <option value="active">Ativo</option>
+                <label>Status do Evento</label>
+                <select name="status" value={formData.status} onChange={handleChange} className="select-modern">
+                  <option value="active">Em Planejamento / Ativo</option>
                   <option value="completed">Concluído</option>
-                  <option value="cancelled">Cancelado</option>
+                  <option value="cancelled">Suspenso</option>
                 </select>
               </div>
-
-              <div style={{
-                display: 'flex',
-                gap: 'var(--spacing-3)',
-                justifyContent: 'flex-end'
-              }}>
-                <button
-                  type="button"
-                  onClick={handleCancel}
-                  className="btn btn-secondary"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  className="btn btn-primary"
-                  disabled={loading}
-                >
-                  {loading ? 'Salvando...' : (editingChamp ? 'Atualizar' : 'Cadastrar')}
-                </button>
+              <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '12px' }}>
+                <button type="button" onClick={handleCancel} className="btn btn-secondary">Cancelar</button>
+                <button type="submit" className="btn btn-primary" style={{ minWidth: '150px' }}><Check size={18} /> {editingChamp ? 'Salvar Evento' : 'Criar Evento'}</button>
               </div>
             </form>
           </div>
@@ -297,149 +117,64 @@ export default function Championships() {
   }
 
   return (
-    <div className="app-container">
+    <div className="app-container" style={{ backgroundColor: '#F2EFEA' }}>
       <div className="content-wrapper">
-        {/* Header */}
-        <div style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: 'var(--spacing-10)',
-          animation: 'fadeIn 0.6s ease-out'
-        }}>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 'var(--spacing-4)'
-          }}>
-            <button
-              onClick={() => window.location.href = '/dashboard'}
-              className="btn btn-secondary"
-            >
-              ← Voltar
-            </button>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--spacing-12)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-4)' }}>
+            <button onClick={() => window.location.href = '/dashboard'} className="btn btn-secondary" style={{ backgroundColor: '#FFF', width: '42px', height: '42px', padding: 0 }}><ArrowLeft size={18} /></button>
             <div>
-              <h1 className="header-title">🏆 Campeonatos</h1>
-              <p className="header-subtitle">
-                Gerencie todos os campeonatos de Taekwondo
-              </p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Trophy size={24} color="var(--brand-blue)" />
+                <h1 className="header-title" style={{ margin: 0, fontSize: '1.8rem' }}>Campeonatos</h1>
+              </div>
+              <p className="header-subtitle" style={{ margin: 0, fontSize: '0.9rem' }}>Gestão de eventos oficiais e períodos de inscrição</p>
             </div>
           </div>
-          <button
-            onClick={() => setShowForm(true)}
-            className="btn btn-primary hover-lift"
-          >
-            + Novo Campeonato
-          </button>
+          <button onClick={() => setShowForm(true)} className="btn btn-primary"><Plus size={18} /> Adicionar Evento</button>
         </div>
 
-        {/* Championships List */}
         {loading ? (
           <div className="content-card" style={{ textAlign: 'center', padding: 'var(--spacing-12)' }}>
-            <div className="loading-spinner" style={{ margin: '0 auto var(--spacing-4)' }} />
-            <p style={{ color: 'var(--text-secondary)' }}>Carregando campeonatos...</p>
+            <div className="loading-spinner" style={{ margin: '0 auto' }} />
           </div>
         ) : championships.length === 0 ? (
-          <div className="content-card" style={{ textAlign: 'center', padding: 'var(--spacing-12)' }}>
-            <div style={{ fontSize: '64px', marginBottom: 'var(--spacing-6)' }}>🏆</div>
-            <h3 style={{ 
-              fontSize: 'var(--font-size-xl)', 
-              fontWeight: 'var(--font-weight-semibold)',
-              color: 'var(--text-primary)',
-              marginBottom: 'var(--spacing-4)'
-            }}>
-              Nenhum campeonato cadastrado
-            </h3>
-            <p style={{ 
-              fontSize: 'var(--font-size-base)', 
-              color: 'var(--text-secondary)',
-              marginBottom: 'var(--spacing-8)'
-            }}>
-              Comece criando o primeiro campeonato do sistema
-            </p>
-            <button
-              onClick={() => setShowForm(true)}
-              className="btn btn-primary"
-            >
-              + Criar Primeiro Campeonato
-            </button>
+          <div className="content-card" style={{ textAlign: 'center', padding: '64px' }}>
+            <Trophy size={64} color="var(--gray-200)" style={{ marginBottom: '24px' }} />
+            <h3 style={{ color: 'var(--gray-600)' }}>Nenhum evento registrado</h3>
           </div>
         ) : (
-          <div className="grid-responsive">
+          <div className="grid-responsive" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(380px, 1fr))' }}>
             {championships.map((champ) => (
-              <div key={champ.id} className="content-card hover-lift">
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'flex-start',
-                  justifyContent: 'space-between',
-                  marginBottom: 'var(--spacing-4)'
-                }}>
-                  <div style={{
-                    width: '60px',
-                    height: '60px',
-                    borderRadius: 'var(--radius-xl)',
-                    background: 'var(--warning-50)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '24px',
-                    flexShrink: 0
-                  }}>
-                    🏆
+              <div key={champ.id} className="content-card" style={{ padding: 'var(--spacing-8)' }}>
+                <div style={{ display: 'flex', gap: '20px', marginBottom: '24px' }}>
+                  <div className="card-icon-container" style={{ margin: 0, flexShrink: 0 }}>
+                    <Trophy size={24} />
                   </div>
-                  <div style={{ flex: 1, marginLeft: 'var(--spacing-4)' }}>
-                    <h3 style={{ 
-                      fontSize: 'var(--font-size-lg)', 
-                      fontWeight: 'var(--font-weight-semibold)',
-                      color: 'var(--text-primary)',
-                      margin: '0 0 var(--spacing-2) 0'
-                    }}>
-                      {champ.name}
-                    </h3>
-                    <div style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 'var(--spacing-3)',
-                      marginBottom: 'var(--spacing-2)'
-                    }}>
-                      <span className={getStatusBadge(champ.status, champ.inscription_open).class}>
-                        {getStatusBadge(champ.status, champ.inscription_open).text}
-                      </span>
+                  <div style={{ flex: 1 }}>
+                    <h3 style={{ fontSize: '1.25rem', marginBottom: '8px', color: 'var(--gray-900)' }}>{champ.name}</h3>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--gray-600)', marginBottom: '12px' }}>
+                      <Calendar size={14} />
+                      <span style={{ fontSize: '0.875rem', fontWeight: 500 }}>{champ.date ? new Date(champ.date).toLocaleDateString('pt-BR') : 'Data a definir'}</span>
                     </div>
-                    <p style={{ 
-                      fontSize: 'var(--font-size-sm)', 
-                      color: 'var(--text-secondary)',
-                      margin: '0'
-                    }}>
-                      📅 {champ.date ? new Date(champ.date).toLocaleDateString('pt-BR') : 'Data não definida'}
-                    </p>
+                    {champ.inscription_open ? (
+                      <span className="badge badge-primary">INSCRIÇÕES ABERTAS</span>
+                    ) : (
+                      <span className="badge badge-secondary">{champ.status === 'completed' ? 'CONCLUÍDO' : 'INSCRIÇÕES FECHADAS'}</span>
+                    )}
                   </div>
                 </div>
-                
-                <div style={{
-                  display: 'flex',
-                  gap: 'var(--spacing-2)',
-                  justifyContent: 'flex-end',
-                  flexWrap: 'wrap'
-                }}>
+
+                <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', borderTop: '1px solid var(--border)', paddingTop: '20px' }}>
+                  <button onClick={() => handleEdit(champ)} className="btn btn-ghost" style={{ padding: '8px' }}><Pencil size={16} /></button>
+                  <button onClick={() => window.open(`/inscrever-fetmg?id=${champ.id}`, '_blank')} className="btn btn-ghost" title="Ver Link Público" style={{ padding: '8px' }}><ExternalLink size={16} /></button>
                   <button
                     onClick={() => handleToggleInscriptions(champ)}
-                    className={`btn btn-sm ${champ.inscription_open ? 'btn-warning' : 'btn-success'}`}
+                    className="btn btn-secondary"
+                    style={{ background: '#FFF', fontSize: '0.8rem', padding: '8px 16px' }}
                   >
-                    {champ.inscription_open ? '🔒 Fechar Inscrições' : '🔓 Abrir Inscrições'}
+                    {champ.inscription_open ? <Lock size={14} /> : <Unlock size={14} />} {champ.inscription_open ? 'Fechar' : 'Abrir'}
                   </button>
-                  <button
-                    onClick={() => handleEdit(champ)}
-                    className="btn btn-outline btn-sm"
-                  >
-                    Editar
-                  </button>
-                  <button
-                    onClick={() => handleDelete(champ.id)}
-                    className="btn btn-danger btn-sm"
-                  >
-                    Excluir
-                  </button>
+                  <button onClick={() => handleDelete(champ.id)} className="btn btn-danger" style={{ padding: '8px', backgroundColor: 'var(--brand-red)' }}><Trash2 size={16} /></button>
                 </div>
               </div>
             ))}
