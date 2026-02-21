@@ -266,7 +266,11 @@ const Brackets = () => {
                               classification.belt_group === beltGroup &&
                               classification.weight_category_id === registration.weight_category_id;
                 
-                console.log('Match por ID:', match);
+                console.log('Match por ID (string):', classification.weight_category_id === registration.weight_category_id);
+                console.log('Classification weight_category_id (string):', classification.weight_category_id);
+                console.log('Registration weight_category_id (string):', registration.weight_category_id);
+                console.log('São iguais?', classification.weight_category_id === registration.weight_category_id);
+                
                 return match;
             });
         }
