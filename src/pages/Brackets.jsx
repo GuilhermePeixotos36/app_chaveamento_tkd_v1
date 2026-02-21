@@ -339,10 +339,10 @@ const Brackets = () => {
                     </div>
 
                     {/* FINAL CENTRAL */}
-                    <div style={{ width: '200px', height: `${totalH}px`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative', margin: '0 60px' }}>
+                    <div style={{ width: '400px', height: `${totalH}px`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative', margin: '0 60px' }}>
                         <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            <div style={{ position: 'relative', width: '120px', height: '60px', background: '#000', padding: '10px', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                <div style={{ color: '#fff', fontWeight: 950, fontSize: '16px' }}>{finalMatch.match_number}</div>
+                            <div style={{ position: 'relative', width: '80px', height: '30px', background: '#000', padding: '5px', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <div style={{ color: '#fff', fontWeight: 950, fontSize: '10px' }}>{finalMatch.match_number}</div>
                             </div>
                         </div>
 
