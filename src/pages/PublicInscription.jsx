@@ -281,15 +281,41 @@ const PublicInscription = () => {
   };
 
   const findAgeCategoryId = (age) => {
+    console.log('--- DEBUG FIND AGE CATEGORY ID ---');
+    console.log('Age:', age);
     const ageCategory = getAgeCategory(age);
-    const found = ageCategories.find(cat => cat.name === ageCategory);
+    console.log('AgeCategory:', ageCategory);
+    console.log('Age categories disponíveis:', ageCategories);
+    
+    const found = ageCategories.find(cat => {
+      console.log('Comparando:', {
+        cat_name: cat.name,
+        ageCategory: ageCategory,
+        match: cat.name === ageCategory
+      });
+      return cat.name === ageCategory;
+    });
+    
+    console.log('Age category encontrada:', found);
     return found ? found.id : null;
   };
 
   const findBeltCategoryId = (beltLevel) => {
-    const found = beltCategories.find(cat => 
-      beltLevel >= cat.min_level && beltLevel <= cat.max_level
-    );
+    console.log('--- DEBUG FIND BELT CATEGORY ID ---');
+    console.log('BeltLevel:', beltLevel);
+    console.log('Belt categories disponíveis:', beltCategories);
+    
+    const found = beltCategories.find(cat => {
+      console.log('Comparando:', {
+        beltLevel: beltLevel,
+        cat_min_level: cat.min_level,
+        cat_max_level: cat.max_level,
+        match: beltLevel >= cat.min_level && beltLevel <= cat.max_level
+      });
+      return beltLevel >= cat.min_level && beltLevel <= cat.max_level;
+    });
+    
+    console.log('Belt category encontrada:', found);
     return found ? found.id : null;
   };
 
