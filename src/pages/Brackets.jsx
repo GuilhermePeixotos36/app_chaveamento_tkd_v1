@@ -258,7 +258,25 @@ const Brackets = () => {
         const rightBranch = rounds.slice(0, numRounds - 1).map(round => round.slice(Math.ceil(round.length / 2)));
 
         const PlayerLine = ({ player, isBlue, isRight }) => (
-            <div style={{ borderBottom: '2.5px solid #111', padding: '6px 0', width: '200px', textAlign: isRight ? 'right' : 'left', color: isBlue ? '#1782C8' : '#E71546', minHeight: '52px' }}>
+            <div style={{
+                borderBottom: '3.5px solid #111',
+                padding: '6px 0',
+                width: '200px',
+                textAlign: isRight ? 'right' : 'left',
+                color: isBlue ? '#1782C8' : '#E71546',
+                minHeight: '52px',
+                position: 'relative'
+            }}>
+                {/* Extensão da linha horizontal para conectar na vertical da luta */}
+                <div style={{
+                    position: 'absolute',
+                    bottom: '-3.5px',
+                    [isRight ? 'left' : 'right']: '-35px',
+                    width: '35px',
+                    height: '3.5px',
+                    background: '#111'
+                }} />
+
                 <div style={{ fontWeight: 950, whiteSpace: 'nowrap', textTransform: 'uppercase', fontSize: '13px' }}>
                     <span style={{ fontSize: '10px', marginRight: '5px', color: '#111', fontWeight: 800 }}>{isBlue ? 'AZUL' : 'VERMELHO'}</span>
                     {player?.full_name || ''}
@@ -270,11 +288,52 @@ const Brackets = () => {
         const MatchBox = ({ match, rIndex, isRight }) => {
             const verticalSpace = Math.pow(2, rIndex) * 55;
             return (
-                <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: `${verticalSpace * 2}px`, position: 'relative', margin: isRight ? '0 0 0 32px' : '0 32px 0 0' }}>
+                <div style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    height: `${verticalSpace * 2}px`,
+                    position: 'relative',
+                    margin: isRight ? '0 0 0 35px' : '0 35px 0 0'
+                }}>
                     <PlayerLine player={match.player1} isBlue={true} isRight={isRight} />
-                    <div style={{ position: 'absolute', [isRight ? 'left' : 'right']: '-32px', top: '25%', bottom: '25%', width: '32px', border: '3.5px solid #222', [isRight ? 'borderRight' : 'borderLeft']: 'none' }}>
-                        <div style={{ position: 'absolute', top: '50%', [isRight ? 'right' : 'left']: '-18px', transform: 'translateY(-50%)', background: '#222', color: '#FFF', fontSize: '11px', padding: '4px 8px', fontWeight: 950, borderRadius: '4px', zIndex: 10 }}>{match.match_number}</div>
+
+                    {/* Linha Vertical Conectora (Sem colchete) */}
+                    <div style={{
+                        position: 'absolute',
+                        [isRight ? 'left' : 'right']: '-3.5px',
+                        top: '52px', // Inicia no fim da linha do atleta 1
+                        height: `${verticalSpace * 2 - 52}px`, // Vai até o fim da linha do atleta 2
+                        width: '3.5px',
+                        background: '#111'
+                    }}>
+                        {/* Número da Luta (Caixa centralizada) */}
+                        <div style={{
+                            position: 'absolute',
+                            top: '50%',
+                            [isRight ? 'right' : 'left']: '-20px',
+                            transform: 'translateY(-50%)',
+                            background: '#111',
+                            color: '#FFF',
+                            fontSize: '11px',
+                            padding: '4px 8px',
+                            fontWeight: 950,
+                            borderRadius: '4px',
+                            zIndex: 10,
+                            boxShadow: '0 2px 5px rgba(0,0,0,0.3)'
+                        }}>{match.match_number}</div>
+
+                        {/* Saída horizontal para a próxima rodada */}
+                        <div style={{
+                            position: 'absolute',
+                            top: '50%',
+                            [isRight ? 'right' : 'left']: '-35px',
+                            width: '35px',
+                            height: '3.5px',
+                            background: '#111'
+                        }} />
                     </div>
+
                     <div style={{ height: `${verticalSpace - 52}px` }} />
                     <PlayerLine player={match.player2} isBlue={false} isRight={isRight} />
                 </div>
@@ -289,18 +348,44 @@ const Brackets = () => {
                             {round.map(m => <MatchBox key={m.id} match={m} rIndex={rIndex} isRight={false} />)}
                         </div>
                     ))}
+
                     <div style={{ textAlign: 'center', margin: '0 80px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                         <div style={{ fontWeight: 950, fontSize: '32px', marginBottom: '40px', color: '#10151C', textTransform: 'uppercase', letterSpacing: '4px' }}>FINAL</div>
-                        <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '60px' }}>
+                        <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
                             <PlayerLine player={finalMatch.player1} isBlue={true} isRight={false} />
-                            <div style={{ background: '#10151C', color: '#FFF', fontSize: '20px', padding: '12px 20px', fontWeight: 950, borderRadius: '8px', boxShadow: '0 6px 15px rgba(0,0,0,0.3)' }}>{finalMatch.match_number}</div>
+
+                            {/* Linha horizontal conectando Atleta 1 à Final */}
+                            <div style={{ width: '40px', height: '3.5px', background: '#111', marginTop: '48px' }} />
+
+                            <div style={{
+                                background: '#10151C',
+                                color: '#FFF',
+                                fontSize: '20px',
+                                padding: '12px 20px',
+                                fontWeight: 950,
+                                borderRadius: '8px',
+                                boxShadow: '0 6px 15px rgba(0,0,0,0.3)',
+                                margin: '0 10px',
+                                zIndex: 5,
+                                position: 'relative',
+                                top: '24px' // Alinha ao centro da linha dos atletas
+                            }}>{finalMatch.match_number}</div>
+
+                            {/* Linha horizontal conectando Atleta 2 à Final */}
+                            <div style={{ width: '40px', height: '3.5px', background: '#111', marginTop: '48px' }} />
+
                             <PlayerLine player={finalMatch.player2} isBlue={false} isRight={true} />
+
+                            {/* Linha vertical descendo para o Campeão */}
+                            <div style={{ position: 'absolute', top: '72px', left: '50%', transform: 'translateX(-50%)', width: '3.5px', height: '60px', background: '#111' }} />
                         </div>
-                        <div style={{ marginTop: '80px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '15px' }}>
+
+                        <div style={{ marginTop: '100px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '15px' }}>
                             <Trophy size={80} color="#FBCB37" fill="#FBCB37" strokeWidth={1} />
                             <div style={{ fontWeight: 950, color: '#10151C', fontSize: '24px', letterSpacing: '2px' }}>CAMPEÃO</div>
                         </div>
                     </div>
+
                     {[...rightBranch].reverse().map((round, reqIndex) => {
                         const rIndex = rightBranch.length - 1 - reqIndex;
                         return (
