@@ -402,7 +402,7 @@ const PublicInscription = () => {
       3: 'Amarela',
       4: 'Amarela Ponta Verde',
       5: 'Verde',
-      6: 'Verde Ponta Azul',
+      6: 'Preta', // Corrigido: era "Verde Ponta Azul"
       7: 'Azul',
       8: 'Azul Ponta Vermelha',
       9: 'Vermelha',
