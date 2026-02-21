@@ -42,24 +42,35 @@ const Brackets = () => {
     };
 
     const loadKyorugiClassifications = async () => {
+        setLoading(true);
         try {
-            const { data, error } = await supabase
-                .from('kyorugi_classifications')
-                .select(`
-                    *,
-                    weight_categories (
-                        name,
-                        min_weight,
-                        max_weight
-                    )
-                `)
-                .eq('is_active', true)
-                .order('code');
+            console.log('=== DEBUG LOAD CLASSIFICATIONS (BRACKETS) ===');
+            console.log('Carregando classificações...');
             
-            if (error) throw error;
-            setKyorugiClassifications(data || []);
+            const [classificationsData, weightCategoriesData] = await Promise.all([
+                supabase
+                    .from('kyorugi_classifications')
+                    .select('*')
+                    .order('created_at', { ascending: false }),
+                supabase
+                    .from('weight_categories')
+                    .select('*')
+                    .order('min_weight', { ascending: true })
+            ]);
+
+            if (classificationsData.error) throw classificationsData.error;
+            if (weightCategoriesData.error) throw weightCategoriesData.error;
+
+            console.log('Classifications carregadas:', classificationsData.data?.length || 0);
+            console.log('Weight categories carregadas:', weightCategoriesData.data?.length || 0);
+            console.log('Exemplo de classificação:', classificationsData.data?.[0]);
+            
+            setKyorugiClassifications(classificationsData.data || []);
         } catch (error) {
-            console.error('Erro ao carregar classificações kyorugi:', error);
+            console.error('Erro ao carregar classificações:', error);
+            setMessage('Erro ao carregar classificações');
+        } finally {
+            setLoading(false);
         }
     };
 
