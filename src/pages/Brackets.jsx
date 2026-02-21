@@ -260,21 +260,22 @@ const Brackets = () => {
         const PlayerLine = ({ player, isBlue, isRight }) => (
             <div style={{
                 borderBottom: '1.5px solid #111',
-                padding: '2px 0',
-                width: '160px',
+                padding: '0 0 2px 0',
+                width: '180px',
                 textAlign: isRight ? 'right' : 'left',
                 color: isBlue ? '#1782C8' : '#E71546',
-                minHeight: '40px',
+                height: '40px',
                 position: 'relative',
                 display: 'flex',
                 flexDirection: 'column',
-                justifyContent: 'flex-end'
+                justifyContent: 'flex-end',
+                boxSizing: 'border-box'
             }}>
-                <div style={{ fontWeight: 950, whiteSpace: 'nowrap', textTransform: 'uppercase', fontSize: '11px', lineHeight: '1.2' }}>
+                <div style={{ fontWeight: 950, whiteSpace: 'nowrap', textTransform: 'uppercase', fontSize: '11px', lineHeight: '1.1' }}>
                     <span style={{ fontSize: '7px', marginRight: '4px', color: '#111', fontWeight: 800 }}>{isBlue ? 'AZUL' : 'VERMELHO'}</span>
                     {player?.full_name || ''}
                 </div>
-                <div style={{ fontSize: '7px', color: '#666', fontWeight: 800 }}>{player?.organizations?.name || ''}</div>
+                <div style={{ fontSize: '7px', color: '#666', fontWeight: 800, lineHeight: '1' }}>{player?.organizations?.name || ''}</div>
             </div>
         );
 
@@ -288,84 +289,80 @@ const Brackets = () => {
                 <div style={{
                     position: 'relative',
                     height: `${totalH}px`,
-                    width: '160px',
+                    width: '180px',
                     margin: isRight ? `0 0 0 ${connectorWidth}px` : `0 ${connectorWidth}px 0 0`,
                 }}>
-                    {/* Atleta 1 */}
+                    {/* Atletas */}
                     <div style={{ position: 'absolute', top: 0, [isRight ? 'right' : 'left']: 0 }}>
                         <PlayerLine player={match.player1} isBlue={true} isRight={isRight} />
                     </div>
-
-                    {/* Atleta 2 */}
                     <div style={{ position: 'absolute', bottom: 0, [isRight ? 'right' : 'left']: 0 }}>
                         <PlayerLine player={match.player2} isBlue={false} isRight={isRight} />
                     </div>
 
-                    {/* Sistema de Conectores (Estilo Imagem 2) */}
+                    {/* Conectores */}
                     <div style={{
                         position: 'absolute',
-                        [isRight ? 'left' : 'right']: `-${connectorWidth}px`,
-                        top: playerHeight,
+                        [isRight ? 'left' : 'right']: -connectorWidth,
+                        top: playerHeight - 1,
                         bottom: 0,
-                        width: `${connectorWidth}px`,
-                        zIndex: 1
+                        width: connectorWidth,
                     }}>
-                        {/* Barra Vertical de Ligação */}
+                        {/* Barra Vertical de Ligação (Lado do Centro da Chave) */}
                         <div style={{
                             position: 'absolute',
-                            [isRight ? 'left' : 'right']: '0',
+                            [isRight ? 'left' : 'right']: 0,
                             top: 0,
                             bottom: 0,
                             width: '1.5px',
                             background: '#111'
                         }} />
 
-                        {/* Gancho Superior (Horizontal) */}
+                        {/* Linhas Horizontais que ligam os atletas à Barra Vertical */}
                         <div style={{
                             position: 'absolute',
                             top: 0,
-                            [isRight ? 'left' : 'right']: 0,
-                            width: `${connectorWidth}px`,
+                            left: 0,
+                            right: 0,
                             height: '1.5px',
                             background: '#111'
                         }} />
-
-                        {/* Gancho Inferior (Horizontal) */}
                         <div style={{
                             position: 'absolute',
                             bottom: 0,
-                            [isRight ? 'left' : 'right']: 0,
-                            width: `${connectorWidth}px`,
+                            left: 0,
+                            right: 0,
                             height: '1.5px',
                             background: '#111'
                         }} />
 
-                        {/* Caixa da Luta e Saída (Exatamente no meio) */}
+                        {/* Caixa da Luta e Saída (Lado do Centro da Chave) */}
                         <div style={{
                             position: 'absolute',
                             top: '50%',
                             [isRight ? 'left' : 'right']: 0,
-                            width: `${connectorWidth * 2}px`,
-                            transform: `translateY(-50%) ${isRight ? 'translateX(-100%)' : ''}`,
+                            width: connectorWidth,
+                            height: '1.5px',
+                            background: '#111',
+                            transform: `translateY(-50%) ${isRight ? 'translateX(-100%)' : 'translateX(100%)'}`,
                             display: 'flex',
                             alignItems: 'center',
-                            flexDirection: isRight ? 'row-reverse' : 'row'
+                            justifyContent: 'center',
+                            zIndex: 10
                         }}>
-                            <div style={{ width: '4px', height: '1.5px', background: '#111', flexShrink: 0 }} />
                             <div style={{
                                 background: '#EEE',
                                 border: '1.5px solid #111',
                                 color: '#000',
                                 fontSize: '9px',
-                                padding: '2px 6px',
+                                padding: '2px 4px',
                                 fontWeight: 950,
                                 borderRadius: '2px',
-                                boxShadow: '0 2px 5px rgba(0,0,0,0.1)',
-                                zIndex: 10,
-                                minWidth: '28px',
-                                textAlign: 'center'
+                                minWidth: '24px',
+                                textAlign: 'center',
+                                boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                                transform: 'translateY(-1px)'
                             }}>{match.match_number}</div>
-                            <div style={{ flex: 1, height: '1.5px', background: '#111' }} />
                         </div>
                     </div>
                 </div>
