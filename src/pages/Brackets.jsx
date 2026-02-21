@@ -349,8 +349,8 @@ const Brackets = () => {
         // Initial seeds
         let seeds = Array.from({ length: totalSlots }, (_, i) => i < n ? athletes[i] : null);
 
-        // Optimal seeding distribution (1 vs 8, 4 vs 5, etc)
-        // For now, keeping it simple as they were already shuffled
+        // Simple match counter starting at 101
+        let matchCounter = 101;
 
         const rounds = [];
         let currentRoundAthletes = seeds;
@@ -360,6 +360,7 @@ const Brackets = () => {
             for (let i = 0; i < currentRoundAthletes.length; i += 2) {
                 roundMatches.push({
                     id: Math.random().toString(36).substr(2, 9),
+                    match_number: matchCounter++,
                     player1: currentRoundAthletes[i],
                     player2: currentRoundAthletes[i + 1],
                     winner: null
@@ -493,164 +494,146 @@ const Brackets = () => {
 
     const BracketView = ({ cat }) => {
         const rounds = cat.bracket;
-        if (!rounds) return null;
+        if (!rounds || rounds.length === 0) return null;
+
+        const numRounds = rounds.length;
+        const finalMatch = rounds[numRounds - 1][0];
+
+        // Split into left and right branches for mirrored layout
+        const leftBranch = rounds.slice(0, numRounds - 1).map(round =>
+            round.slice(0, Math.ceil(round.length / 2))
+        );
+        const rightBranch = rounds.slice(0, numRounds - 1).map(round =>
+            round.slice(Math.ceil(round.length / 2))
+        );
+
+        const PlayerLine = ({ player, isBlue, isRight }) => {
+            const code = isBlue ? 'B/' : 'R/';
+            return (
+                <div style={{
+                    borderBottom: '1px solid #000',
+                    padding: '2px 0',
+                    width: '180px',
+                    position: 'relative',
+                    textAlign: isRight ? 'right' : 'left',
+                    color: isBlue ? '#0000ff' : '#ff0000',
+                    fontSize: '11px',
+                    minHeight: '35px'
+                }}>
+                    <div style={{ fontWeight: 'bold' }}>
+                        <span style={{ fontSize: '10px', marginRight: '5px', color: '#000' }}>{code}</span>
+                        {player?.full_name || (player === undefined ? '---' : 'Free draw')}
+                    </div>
+                    <div style={{ fontSize: '9px', color: '#000' }}>
+                        {player?.organizations?.name || ''}
+                    </div>
+                </div>
+            );
+        };
+
+        const MatchBox = ({ match, rIndex, isRight }) => {
+            const verticalSpace = Math.pow(2, rIndex) * 50;
+            return (
+                <div style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    height: `${verticalSpace * 2}px`,
+                    position: 'relative',
+                    margin: isRight ? '0 0 0 20px' : '0 20px 0 0'
+                }}>
+                    <PlayerLine player={match.player1} isBlue={true} isRight={isRight} />
+
+                    <div style={{
+                        position: 'absolute',
+                        right: isRight ? 'auto' : '-20px',
+                        left: isRight ? '-20px' : 'auto',
+                        top: '25%',
+                        bottom: '25%',
+                        width: '20px',
+                        border: '1px solid #94a3b8',
+                        borderLeft: isRight ? '1px solid #94a3b8' : 'none',
+                        borderRight: isRight ? 'none' : '1px solid #94a3b8',
+                        zIndex: 1
+                    }}>
+                        <div style={{
+                            position: 'absolute',
+                            top: '50%',
+                            [isRight ? 'right' : 'left']: '-10px',
+                            transform: 'translateY(-50%)',
+                            background: '#e2e8f0',
+                            border: '1px solid #94a3b8',
+                            fontSize: '10px',
+                            padding: '2px 4px',
+                            fontWeight: 'bold',
+                            zIndex: 2,
+                            color: '#000'
+                        }}>
+                            {match.match_number}
+                        </div>
+                    </div>
+
+                    <div style={{ height: `${verticalSpace - 36}px` }} />
+                    <PlayerLine player={match.player2} isBlue={false} isRight={isRight} />
+                </div>
+            );
+        };
 
         return (
             <div className="bracket-container" style={{
-                overflowX: 'auto',
-                padding: '40px',
-                minHeight: '60vh',
-                background: '#f8fafc',
+                padding: '20px',
+                minHeight: '400px',
+                background: '#fff',
                 display: 'flex',
-                alignItems: 'center'
+                alignItems: 'center',
+                justifyContent: 'center',
+                overflowX: 'auto'
             }}>
-                <div style={{ display: 'flex', gap: '0', alignItems: 'center' }}>
-                    {rounds.map((round, rIndex) => (
-                        <div key={rIndex} style={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            justifyContent: 'space-around',
-                            gap: '0',
-                            minWidth: '280px'
-                        }}>
-                            <div style={{
-                                textAlign: 'center',
-                                fontWeight: 'bold',
-                                padding: '10px',
-                                color: '#334155',
-                                textTransform: 'uppercase',
-                                fontSize: '12px',
-                                letterSpacing: '1px',
-                                background: '#f1f5f9',
-                                margin: '0 20px 20px 20px',
-                                borderRadius: '4px'
-                            }}>
-                                {rIndex === rounds.length - 1 ? 'FINAL' :
-                                    rIndex === rounds.length - 2 ? 'SEMIFINAL' :
-                                        rIndex === rounds.length - 3 ? 'QUARTAS' : `RODADA ${rIndex + 1}`}
-                            </div>
-
-                            <div style={{
-                                display: 'flex',
-                                flexDirection: 'column',
-                                justifyContent: 'space-around',
-                                flex: 1,
-                                gap: rIndex === 0 ? '20px' : '0'
-                            }}>
-                                {round.map((match, mIndex) => {
-                                    const verticalSpace = Math.pow(2, rIndex) * 100;
-
-                                    return (
-                                        <div key={match.id} style={{
-                                            position: 'relative',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            height: rIndex === 0 ? 'auto' : `${verticalSpace}px`,
-                                            marginBottom: rIndex === 0 ? '20px' : '0'
-                                        }}>
-                                            <div className="match-card" style={{
-                                                width: '220px',
-                                                background: 'white',
-                                                border: '1px solid #e2e8f0',
-                                                borderRadius: '6px',
-                                                boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
-                                                overflow: 'hidden',
-                                                zIndex: 2,
-                                                margin: '0 20px'
-                                            }}>
-                                                <div style={{
-                                                    padding: '8px 12px',
-                                                    borderBottom: '1px solid #f1f5f9',
-                                                    background: match.player1 ? 'white' : '#f8fafc',
-                                                    minHeight: '45px'
-                                                }}>
-                                                    <div style={{ fontWeight: '600', fontSize: '13px', color: match.player1 ? '#1e293b' : '#94a3b8' }}>
-                                                        {match.player1?.full_name || 'BYE'}
-                                                    </div>
-                                                    <div style={{ fontSize: '10px', color: '#64748b', marginTop: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                                        {match.player1?.organizations?.name || '---'}
-                                                    </div>
-                                                </div>
-                                                <div style={{
-                                                    padding: '8px 12px',
-                                                    background: match.player2 ? 'white' : '#f8fafc',
-                                                    minHeight: '45px'
-                                                }}>
-                                                    <div style={{ fontWeight: '600', fontSize: '13px', color: match.player2 ? '#1e293b' : '#94a3b8' }}>
-                                                        {match.player2?.full_name || 'BYE'}
-                                                    </div>
-                                                    <div style={{ fontSize: '10px', color: '#64748b', marginTop: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                                        {match.player2?.organizations?.name || '---'}
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            {/* Outgoing connectors */}
-                                            {rIndex < rounds.length - 1 && (
-                                                <div style={{
-                                                    position: 'absolute',
-                                                    right: '0',
-                                                    top: '50%',
-                                                    width: '20px',
-                                                    height: '2px',
-                                                    background: '#cbd5e1',
-                                                    transform: 'translateX(100%)'
-                                                }} />
-                                            )}
-
-                                            {/* Vertical meeting lines */}
-                                            {rIndex < rounds.length - 1 && mIndex % 2 === 0 && (
-                                                <div style={{
-                                                    position: 'absolute',
-                                                    right: '-20px',
-                                                    top: '50%',
-                                                    width: '2px',
-                                                    height: `${verticalSpace}px`,
-                                                    background: '#cbd5e1',
-                                                    zIndex: 1
-                                                }} />
-                                            )}
-
-                                            {/* Incoming horizontal lines */}
-                                            {rIndex < rounds.length - 1 && mIndex % 2 === 0 && (
-                                                <div style={{
-                                                    position: 'absolute',
-                                                    right: '-40px',
-                                                    top: `calc(50% + ${verticalSpace / 2}px)`,
-                                                    width: '20px',
-                                                    height: '2px',
-                                                    background: '#cbd5e1',
-                                                    zIndex: 1
-                                                }} />
-                                            )}
-                                        </div>
-                                    );
-                                })}
-                            </div>
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                    {leftBranch.map((round, rIndex) => (
+                        <div key={`left-${rIndex}`} style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-around' }}>
+                            {round.map((match) => (
+                                <MatchBox key={match.id} match={match} rIndex={rIndex} isRight={false} />
+                            ))}
                         </div>
                     ))}
 
-                    {/* Champion Box */}
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginLeft: '40px' }}>
-                        <div style={{
-                            width: '80px',
-                            height: '80px',
-                            borderRadius: '50%',
-                            background: 'linear-gradient(135deg, #fbbf24, #d97706)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            boxShadow: '0 10px 15px -3px rgba(217, 119, 6, 0.3)',
-                            fontSize: '32px',
-                            border: '4px solid white',
-                            color: 'white'
-                        }}>
-                            🏆
+                    <div style={{ textAlign: 'center', margin: '0 40px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                        <div style={{ fontWeight: 'bold', fontSize: '18px', marginBottom: '10px', color: '#334155' }}>Final</div>
+                        <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                            <div style={{
+                                position: 'absolute',
+                                top: '50%',
+                                left: '50%',
+                                transform: 'translate(-50%, -50%)',
+                                background: '#e2e8f0',
+                                border: '1px solid #94a3b8',
+                                fontSize: '12px',
+                                padding: '4px 8px',
+                                fontWeight: 'bold',
+                                zIndex: 10,
+                                color: '#000'
+                            }}>
+                                {finalMatch.match_number}
+                            </div>
+                            <div style={{ display: 'flex', gap: '80px' }}>
+                                <div style={{ borderBottom: '2px solid #94a3b8', width: '100px' }} />
+                                <div style={{ borderBottom: '2px solid #94a3b8', width: '100px' }} />
+                            </div>
                         </div>
-                        <div style={{ marginTop: '10px', fontWeight: 'bold', color: '#d97706', letterSpacing: '2px' }}>
-                            CAMPEÃO
-                        </div>
+                        <div style={{ marginTop: '20px', color: '#d97706', fontWeight: 'bold' }}>🏆 CAMPEÃO</div>
                     </div>
+
+                    {[...rightBranch].reverse().map((round, rIndex) => {
+                        const actualRIndex = rightBranch.length - 1 - rIndex;
+                        return (
+                            <div key={`right-${rIndex}`} style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-around' }}>
+                                {round.map((match) => (
+                                    <MatchBox key={match.id} match={match} rIndex={actualRIndex} isRight={true} />
+                                ))}
+                            </div>
+                        );
+                    })}
                 </div>
             </div>
         );
@@ -659,47 +642,49 @@ const Brackets = () => {
     const BracketModal = () => {
         if (!activeCategory || !categories[activeCategory]) return null;
         const cat = categories[activeCategory];
+        const champ = championships.find(c => c.id === selectedChampionship);
 
         return (
             <div className="modal-overlay" onClick={() => setShowBracketModal(false)}>
-                <div className="modal-content" style={{ maxWidth: '98vw', width: 'fit-content' }} onClick={e => e.stopPropagation()}>
-                    <div className="modal-header">
-                        <div>
-                            <h2 className="modal-title">
-                                {cat.classification_code ? (
-                                    <span>
-                                        <span className="badge badge-primary" style={{ marginRight: 'var(--spacing-2)', fontSize: '12px', fontWeight: 'bold' }}>
-                                            {cat.classification_code}
-                                        </span>
-                                        {cat.classification_name}
-                                    </span>
-                                ) : (
-                                    'Chaveamento'
-                                )}
-                            </h2>
-                            <p style={{ margin: 0 }}>
-                                {cat.info.age} - {cat.info.gender} • {cat.classification_code ? cat.info.weight : `${cat.info.belt} • ${cat.info.modality}`}
-                            </p>
+                <div className="modal-content" style={{ maxWidth: '98vw', width: 'fit-content', padding: '40px' }} onClick={e => e.stopPropagation()}>
+                    <div className="modal-header" style={{ border: 'none', alignItems: 'flex-start', marginBottom: '20px' }}>
+                        <div style={{ display: 'flex', gap: '30px', flex: 1 }}>
+                            <Trophy size={60} color="#2ecc71" />
+                            <div style={{ flex: 1, textAlign: 'center' }}>
+                                <h1 style={{ color: '#2ecc71', margin: 0, fontSize: '24px', textTransform: 'uppercase' }}>
+                                    {champ?.name || 'CONTAGEM TAEKWONDO CHAMPIONSHIP'}
+                                </h1>
+                                <p style={{ color: '#8b5e3c', margin: '4px 0', fontSize: '14px', fontWeight: 'bold' }}>
+                                    Tournament date: {champ?.date ? new Date(champ.date).toLocaleDateString() : '---'}
+                                </p>
+                                <h2 style={{ color: '#e74c3c', margin: '8px 0', fontSize: '20px' }}>
+                                    {cat.info.age} {cat.info.gender} {cat.info.weight} - Contestants: {cat.athletes.length}
+                                </h2>
+                                <p style={{ margin: '4px 0', fontSize: '14px', fontWeight: 'bold' }}>
+                                    Competition date: {champ?.date ? new Date(champ.date).toLocaleDateString() : '---'}
+                                </p>
+                            </div>
                         </div>
                         <div style={{ display: 'flex', gap: 'var(--spacing-2)' }}>
-                            <button
-                                className="btn btn-success"
-                                onClick={() => saveBracket(activeCategory)}
-                                disabled={saving}
-                            >
-                                <Save size={18} /> {saving ? 'Salvando...' : 'Salvar Chave'}
-                            </button>
-                            <button
-                                className="btn btn-outline"
-                                onClick={() => window.print()}
-                            >
-                                <Printer size={18} /> Imprimir
-                            </button>
+                            <button className="btn btn-success" onClick={() => saveBracket(activeCategory)} disabled={saving}><Save size={18} /> Salvar</button>
+                            <button className="btn btn-outline" onClick={() => window.print()}><Printer size={18} /> Imprimir</button>
                             <button className="modal-close" onClick={() => setShowBracketModal(false)}>&times;</button>
                         </div>
                     </div>
 
                     <BracketView cat={cat} />
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: '40px', marginTop: '40px' }}>
+                        <div style={{ fontSize: '10px', color: '#000' }}>
+                            <strong>Result legend:</strong><br />
+                            (WDR) Withdrawal &nbsp;&nbsp;&nbsp; (PUN) Punishment &nbsp;&nbsp;&nbsp; (GDP) Golden Point<br />
+                            (DSQ) Disqualified &nbsp;&nbsp; (RSC) Ref. stop contest &nbsp; (PTG) Points win (gap)<br />
+                            (SUP) Superiority &nbsp;&nbsp;&nbsp; (PTF) Points win (normal)
+                        </div>
+                        <div style={{ border: '2px solid #000', padding: '15px', height: '100px', position: 'relative' }}>
+                            <span style={{ fontWeight: 'bold', fontSize: '12px', color: '#000' }}>Prize winners:</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         );
@@ -986,42 +971,48 @@ const Brackets = () => {
 
                 {/* Print view for 'Print All' */}
                 <div className="print-all-containers">
-                    {Object.keys(categories).filter(k => categories[k].bracket).map(key => (
-                        <div key={key} className="print-bracket-page">
-                            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '2px solid black', paddingBottom: '10px', marginBottom: '20px' }}>
-                                <div>
-                                    <h1 style={{ margin: 0, color: 'black' }}>{categories[key].classification_name || 'CHAVEAMENTO'}</h1>
-                                    <p style={{ margin: 0, color: 'black', fontSize: '18px', fontWeight: 'bold' }}>
-                                        {categories[key].info.age} - {categories[key].info.gender} • {categories[key].info.weight}
-                                    </p>
+                    {Object.keys(categories).filter(k => categories[k].bracket).map(key => {
+                        const cat = categories[key];
+                        const champ = championships.find(c => c.id === selectedChampionship);
+                        return (
+                            <div key={key} className="print-bracket-page" style={{ padding: '0.5cm' }}>
+                                <div style={{ display: 'flex', gap: '40px', marginBottom: '30px', alignItems: 'flex-start' }}>
+                                    <Trophy size={60} color="#2ecc71" />
+                                    <div style={{ flex: 1, textAlign: 'center' }}>
+                                        <h1 style={{ color: '#2ecc71', margin: 0, fontSize: '24px', textTransform: 'uppercase' }}>
+                                            {champ?.name || 'CONTAGEM TAEKWONDO CHAMPIONSHIP'}
+                                        </h1>
+                                        <p style={{ color: '#8b5e3c', margin: '4px 0', fontSize: '14px', fontWeight: 'bold' }}>
+                                            Tournament date: {champ?.date ? new Date(champ.date).toLocaleDateString() : '---'}
+                                        </p>
+                                        <h2 style={{ color: '#e74c3c', margin: '8px 0', fontSize: '20px' }}>
+                                            {cat.info.age} {cat.info.gender} {cat.info.weight} - Contestants: {cat.athletes.length}
+                                        </h2>
+                                        <p style={{ margin: '4px 0', fontSize: '14px', fontWeight: 'bold' }}>
+                                            Competition date: {champ?.date ? new Date(champ.date).toLocaleDateString() : '---'}
+                                        </p>
+                                    </div>
                                 </div>
-                                <div style={{ textAlign: 'right' }}>
-                                    <h2 style={{ margin: 0, color: 'black' }}>{categories[key].classification_code}</h2>
-                                    <p style={{ margin: 0, color: 'black' }}>{championships.find(c => c.id === selectedChampionship)?.name}</p>
+                                <div className="print-bracket-wrapper" style={{ border: '1px solid #000', padding: '20px', minHeight: '500px', background: '#fff' }}>
+                                    <BracketView cat={cat} />
                                 </div>
-                            </div>
-
-                            {/* Reusing the professional bracket view for print */}
-                            <div className="print-bracket-wrapper" style={{ border: '2px solid black', overflow: 'hidden' }}>
-                                <BracketView cat={categories[key]} />
-                            </div>
-
-                            <div style={{ marginTop: '40px', padding: '20px', borderTop: '1px solid #ccc' }}>
-                                <h3 style={{ color: 'black', marginBottom: '15px' }}>Lista de Atletas:</h3>
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' }}>
-                                    {categories[key].athletes.map((a, i) => (
-                                        <div key={a.id} style={{ fontSize: '12px', color: 'black' }}>
-                                            <strong>{i + 1}. {a.full_name}</strong>
-                                            <div style={{ fontSize: '10px' }}>{a.organizations?.name}</div>
-                                        </div>
-                                    ))}
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: '40px', marginTop: '40px' }}>
+                                    <div style={{ fontSize: '10px', color: '#000' }}>
+                                        <strong>Result legend:</strong><br />
+                                        (WDR) Withdrawal &nbsp;&nbsp;&nbsp; (PUN) Punishment &nbsp;&nbsp;&nbsp; (GDP) Golden Point<br />
+                                        (DSQ) Disqualified &nbsp;&nbsp; (RSC) Ref. stop contest &nbsp; (PTG) Points win (gap)<br />
+                                        (SUP) Superiority &nbsp;&nbsp;&nbsp; (PTF) Points win (normal)
+                                    </div>
+                                    <div style={{ border: '2px solid #000', padding: '15px', height: '100px', position: 'relative' }}>
+                                        <span style={{ fontWeight: 'bold', fontSize: '12px', color: '#000' }}>Prize winners:</span>
+                                    </div>
                                 </div>
-                                <p style={{ marginTop: '30px', textAlign: 'center', fontSize: '12px', fontStyle: 'italic', color: 'black' }}>
+                                <div style={{ marginTop: '30px', textAlign: 'center', fontSize: '10px' }}>
                                     Documento oficial gerado em {new Date().toLocaleDateString('pt-BR')} às {new Date().toLocaleTimeString('pt-BR')}
-                                </p>
+                                </div>
                             </div>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
             </div>
         </div>
