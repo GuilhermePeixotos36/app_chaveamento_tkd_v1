@@ -162,7 +162,7 @@ const Brackets = () => {
             }
 
             // Brackets load
-            const { data: bData } = await supabase.from('brackets').eq('championship_id', champId).select('*');
+            const { data: bData } = await supabase.from('brackets').select('*').eq('championship_id', champId);
             if (bData) {
                 bData.forEach(b => {
                     const k = `classification_${b.kyorugi_classification_id}`;
