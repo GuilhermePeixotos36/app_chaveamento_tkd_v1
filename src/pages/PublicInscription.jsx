@@ -126,7 +126,7 @@ const PublicInscription = () => {
       const { data: beltData, error: beltError } = await supabase
         .from('belt_categories')
         .select('*')
-        .order('min_level');
+        .order('name'); // Mudar para order por name em vez de min_level
 
       if (beltError) {
         console.error('❌ Erro ao carregar belt categories:', beltError);
@@ -142,8 +142,8 @@ const PublicInscription = () => {
         console.log('Estrutura das belt categories:', beltData?.map(cat => ({
           id: cat.id,
           name: cat.name,
-          min_level: cat.min_level,
-          max_level: cat.max_level
+          // Mostrar todos os campos disponíveis para debug
+          ...cat
         })));
       }
 
@@ -332,14 +332,49 @@ const PublicInscription = () => {
     console.log('BeltLevel:', beltLevel);
     console.log('Belt categories disponíveis:', beltCategories);
     
+    // Se não conseguir carregar da tabela (erro de permissões), usar hardcoded
     if (!beltCategories || beltCategories.length === 0) {
-      console.log('Nenhuma belt category disponível, retornando null');
-      return null;
+      console.log('⚠️ Usando fallback hardcoded devido a erro de permissões na tabela belt_categories');
+      
+      // Mapeamento hardcoded baseado na estrutura comum de faixas
+      const beltCategoriesHardcoded = [
+        { id: 'belt-1', name: 'Branca', min_level: 1, max_level: 1 },
+        { id: 'belt-2', name: 'Branca Ponta Amarela', min_level: 2, max_level: 2 },
+        { id: 'belt-3', name: 'Amarela', min_level: 3, max_level: 3 },
+        { id: 'belt-4', name: 'Amarela Ponta Verde', min_level: 4, max_level: 4 },
+        { id: 'belt-5', name: 'Verde', min_level: 5, max_level: 5 },
+        { id: 'belt-6', name: 'Verde Ponta Azul', min_level: 6, max_level: 6 },
+        { id: 'belt-7', name: 'Azul', min_level: 7, max_level: 7 },
+        { id: 'belt-8', name: 'Azul Ponta Vermelha', min_level: 8, max_level: 8 },
+        { id: 'belt-9', name: 'Vermelha', min_level: 9, max_level: 9 },
+        { id: 'belt-10', name: 'Vermelha Ponta Preta', min_level: 10, max_level: 10 },
+        { id: 'belt-11', name: 'Preta', min_level: 11, max_level: 11 }
+      ];
+      
+      const found = beltCategoriesHardcoded.find(cat => {
+        console.log('Comparando com categoria hardcoded:', {
+          beltLevel: beltLevel,
+          cat_name: cat.name,
+          cat_min_level: cat.min_level,
+          cat_max_level: cat.max_level,
+          match: beltLevel >= cat.min_level && beltLevel <= cat.max_level
+        });
+        
+        return beltLevel >= cat.min_level && beltLevel <= cat.max_level;
+      });
+      
+      if (found) {
+        console.log('✅ Belt category encontrada (hardcoded):', found);
+        return found.id;
+      } else {
+        console.log('❌ Nenhuma belt category encontrada (hardcoded) para nível:', beltLevel);
+        return null;
+      }
     }
     
-    // Usar a estrutura exata da tabela: name, min_level, max_level
+    // Se conseguir carregar da tabela, usar lógica normal
     const found = beltCategories.find(cat => {
-      console.log('Comparando com categoria:', {
+      console.log('Comparando com categoria da tabela:', {
         beltLevel: beltLevel,
         cat_name: cat.name,
         cat_min_level: cat.min_level,
@@ -351,12 +386,10 @@ const PublicInscription = () => {
     });
     
     if (found) {
-      console.log('✅ Belt category encontrada:', found);
+      console.log('✅ Belt category encontrada (tabela):', found);
       return found.id;
     } else {
       console.log('❌ Nenhuma belt category encontrada para nível:', beltLevel);
-      console.log('Verifique se os níveis de faixa estão configurados corretamente na tabela');
-      console.log('Estrutura esperada: min_level <= beltLevel <= max_level');
       return null;
     }
   };
