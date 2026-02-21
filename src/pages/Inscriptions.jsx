@@ -241,26 +241,6 @@ const Inscriptions = () => {
       setLoading(false);
     }
   };
-
-  const handleDelete = async (id) => {
-    if (!confirm('Tem certeza que deseja excluir esta inscrição?')) return;
-    setLoading(true);
-    try {
-      const { error } = await supabase
-        .from('registrations')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
-      setMessage('Inscrição excluída com sucesso!');
-      loadInscriptions(selectedChampionship);
-    } catch (error) {
-      console.error('Erro ao excluir:', error);
-      alert('Erro ao excluir inscrição');
-    } finally {
-      setLoading(false);
-    }
-  };
   useEffect(() => {
     loadData();
   }, []);
