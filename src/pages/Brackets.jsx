@@ -309,7 +309,7 @@ const Brackets = () => {
         return matchingClassification;
     };
     
-    // Forçar deploy na Vercel
+    // Forçar deploy na Vercel - versão corrigida com getBeltGroup funcional
 
     const getBeltName = (level) => {
         const belts = [
