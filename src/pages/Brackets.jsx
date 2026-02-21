@@ -512,20 +512,20 @@ const Brackets = () => {
             return (
                 <div style={{
                     borderBottom: '1px solid #000',
-                    padding: '2px 0',
+                    padding: '4px 0',
                     width: '180px',
                     position: 'relative',
                     textAlign: isRight ? 'right' : 'left',
                     color: isBlue ? '#0000ff' : '#ff0000',
                     fontSize: '11px',
-                    minHeight: '35px'
+                    minHeight: '40px'
                 }}>
-                    <div style={{ fontWeight: 'bold' }}>
+                    <div style={{ fontWeight: 'bold', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                         <span style={{ fontSize: '10px', marginRight: '5px', color: '#000' }}>{code}</span>
-                        {player?.full_name || (player === undefined ? '---' : 'Free draw')}
+                        {player?.full_name || 'Saída livre'}
                     </div>
-                    <div style={{ fontSize: '9px', color: '#000' }}>
-                        {player?.organizations?.name || ''}
+                    <div style={{ fontSize: '9px', color: '#000', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {player?.organizations?.name || player?.organizations_name || ''}
                     </div>
                 </div>
             );
@@ -652,16 +652,16 @@ const Brackets = () => {
                             <Trophy size={60} color="#2ecc71" />
                             <div style={{ flex: 1, textAlign: 'center' }}>
                                 <h1 style={{ color: '#2ecc71', margin: 0, fontSize: '24px', textTransform: 'uppercase' }}>
-                                    {champ?.name || 'CONTAGEM TAEKWONDO CHAMPIONSHIP'}
+                                    {champ?.name || 'CAMPEONATO DE TAEKWONDO'}
                                 </h1>
                                 <p style={{ color: '#8b5e3c', margin: '4px 0', fontSize: '14px', fontWeight: 'bold' }}>
-                                    Tournament date: {champ?.date ? new Date(champ.date).toLocaleDateString() : '---'}
+                                    Data do torneio: {champ?.date ? new Date(champ.date).toLocaleDateString('pt-BR') : '---'}
                                 </p>
                                 <h2 style={{ color: '#e74c3c', margin: '8px 0', fontSize: '20px' }}>
-                                    {cat.info.age} {cat.info.gender} {cat.info.weight} - Contestants: {cat.athletes.length}
+                                    {cat.info.age} {cat.info.gender} {cat.info.weight} - Atletas: {cat.athletes.length}
                                 </h2>
                                 <p style={{ margin: '4px 0', fontSize: '14px', fontWeight: 'bold' }}>
-                                    Competition date: {champ?.date ? new Date(champ.date).toLocaleDateString() : '---'}
+                                    Data da competição: {champ?.date ? new Date(champ.date).toLocaleDateString('pt-BR') : '---'}
                                 </p>
                             </div>
                         </div>
@@ -676,13 +676,13 @@ const Brackets = () => {
 
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: '40px', marginTop: '40px' }}>
                         <div style={{ fontSize: '10px', color: '#000' }}>
-                            <strong>Result legend:</strong><br />
-                            (WDR) Withdrawal &nbsp;&nbsp;&nbsp; (PUN) Punishment &nbsp;&nbsp;&nbsp; (GDP) Golden Point<br />
-                            (DSQ) Disqualified &nbsp;&nbsp; (RSC) Ref. stop contest &nbsp; (PTG) Points win (gap)<br />
-                            (SUP) Superiority &nbsp;&nbsp;&nbsp; (PTF) Points win (normal)
+                            <strong>Legenda de resultados:</strong><br />
+                            (WDR) Desistência &nbsp;&nbsp;&nbsp; (PUN) Punição &nbsp;&nbsp;&nbsp; (GDP) Ponto de Ouro<br />
+                            (DSQ) Desclassificado &nbsp;&nbsp; (RSC) Interrupção Árbitro &nbsp; (PTG) Vitória por Superioridade (Gap)<br />
+                            (SUP) Superioridade &nbsp;&nbsp;&nbsp; (PTF) Vitória por Pontos (Normal)
                         </div>
                         <div style={{ border: '2px solid #000', padding: '15px', height: '100px', position: 'relative' }}>
-                            <span style={{ fontWeight: 'bold', fontSize: '12px', color: '#000' }}>Prize winners:</span>
+                            <span style={{ fontWeight: 'bold', fontSize: '12px', color: '#000' }}>Vencedores:</span>
                         </div>
                     </div>
                 </div>
@@ -980,16 +980,16 @@ const Brackets = () => {
                                     <Trophy size={60} color="#2ecc71" />
                                     <div style={{ flex: 1, textAlign: 'center' }}>
                                         <h1 style={{ color: '#2ecc71', margin: 0, fontSize: '24px', textTransform: 'uppercase' }}>
-                                            {champ?.name || 'CONTAGEM TAEKWONDO CHAMPIONSHIP'}
+                                            {champ?.name || 'CAMPEONATO DE TAEKWONDO'}
                                         </h1>
                                         <p style={{ color: '#8b5e3c', margin: '4px 0', fontSize: '14px', fontWeight: 'bold' }}>
-                                            Tournament date: {champ?.date ? new Date(champ.date).toLocaleDateString() : '---'}
+                                            Data do torneio: {champ?.date ? new Date(champ.date).toLocaleDateString('pt-BR') : '---'}
                                         </p>
                                         <h2 style={{ color: '#e74c3c', margin: '8px 0', fontSize: '20px' }}>
-                                            {cat.info.age} {cat.info.gender} {cat.info.weight} - Contestants: {cat.athletes.length}
+                                            {cat.info.age} {cat.info.gender} {cat.info.weight} - Atletas: {cat.athletes.length}
                                         </h2>
                                         <p style={{ margin: '4px 0', fontSize: '14px', fontWeight: 'bold' }}>
-                                            Competition date: {champ?.date ? new Date(champ.date).toLocaleDateString() : '---'}
+                                            Data da competição: {champ?.date ? new Date(champ.date).toLocaleDateString('pt-BR') : '---'}
                                         </p>
                                     </div>
                                 </div>
@@ -998,13 +998,13 @@ const Brackets = () => {
                                 </div>
                                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: '40px', marginTop: '40px' }}>
                                     <div style={{ fontSize: '10px', color: '#000' }}>
-                                        <strong>Result legend:</strong><br />
-                                        (WDR) Withdrawal &nbsp;&nbsp;&nbsp; (PUN) Punishment &nbsp;&nbsp;&nbsp; (GDP) Golden Point<br />
-                                        (DSQ) Disqualified &nbsp;&nbsp; (RSC) Ref. stop contest &nbsp; (PTG) Points win (gap)<br />
-                                        (SUP) Superiority &nbsp;&nbsp;&nbsp; (PTF) Points win (normal)
+                                        <strong>Legenda de resultados:</strong><br />
+                                        (WDR) Desistência &nbsp;&nbsp;&nbsp; (PUN) Punição &nbsp;&nbsp;&nbsp; (GDP) Ponto de Ouro<br />
+                                        (DSQ) Desclassificado &nbsp;&nbsp; (RSC) Interrupção Árbitro &nbsp; (PTG) Vitória por Superioridade (Gap)<br />
+                                        (SUP) Superiority &nbsp;&nbsp;&nbsp; (PTF) Vitória por Pontos (Normal)
                                     </div>
                                     <div style={{ border: '2px solid #000', padding: '15px', height: '100px', position: 'relative' }}>
-                                        <span style={{ fontWeight: 'bold', fontSize: '12px', color: '#000' }}>Prize winners:</span>
+                                        <span style={{ fontWeight: 'bold', fontSize: '12px', color: '#000' }}>Vencedores:</span>
                                     </div>
                                 </div>
                                 <div style={{ marginTop: '30px', textAlign: 'center', fontSize: '10px' }}>
