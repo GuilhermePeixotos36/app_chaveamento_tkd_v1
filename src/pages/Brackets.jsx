@@ -1,5 +1,5 @@
 const BracketView = ({ cat }) => {
-        const rounds = cat.bracket;
+        const rounds = cat?.bracket;
         if (!rounds || rounds.length === 0) return null;
         const numRounds = rounds.length;
         
