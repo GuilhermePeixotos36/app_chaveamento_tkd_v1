@@ -271,7 +271,7 @@ const Brackets = () => {
                 console.log('Registration weight_category_id (string):', registration.weight_category_id);
                 console.log('São iguais?', classification.weight_category_id === registration.weight_category_id);
                 
-                return match;
+                return matchingClassification;
             });
         }
         
