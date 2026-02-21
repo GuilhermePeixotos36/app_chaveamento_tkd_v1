@@ -67,8 +67,8 @@ export default function Login() {
             console.log('Organizer encontrado:', organizer);
             console.log('Error organizer:', organizerError);
 
-            if (organizer && organizer.password_hash === 'temp_test_user') {
-              setMessage('Login de teste realizado! (Modo desenvolvimento)');
+            if (organizer && (organizer.password_hash === 'temp_test_user' || organizer.password_hash === formData.password)) {
+              setMessage('Login realizado! (Modo Gerenciador)');
               setTimeout(() => {
                 window.location.href = '/dashboard';
               }, 1000);
@@ -156,7 +156,7 @@ export default function Login() {
           borderRadius: '50%',
           pointerEvents: 'none'
         }} />
-        
+
         <div style={{
           position: 'absolute',
           top: '20%',
@@ -190,9 +190,9 @@ export default function Login() {
           {/* Form */}
           <form onSubmit={handleSubmit} style={{ marginBottom: '24px' }}>
             <div style={{ marginBottom: '20px' }}>
-              <label style={{ 
-                display: 'block', 
-                marginBottom: '8px', 
+              <label style={{
+                display: 'block',
+                marginBottom: '8px',
                 fontSize: '14px',
                 fontWeight: '500',
                 color: 'var(--text-primary)'
@@ -211,9 +211,9 @@ export default function Login() {
             </div>
 
             <div style={{ marginBottom: '20px' }}>
-              <label style={{ 
-                display: 'block', 
-                marginBottom: '8px', 
+              <label style={{
+                display: 'block',
+                marginBottom: '8px',
                 fontSize: '14px',
                 fontWeight: '500',
                 color: 'var(--text-primary)'
@@ -233,9 +233,9 @@ export default function Login() {
 
             {!isLogin && (
               <div style={{ marginBottom: '20px' }}>
-                <label style={{ 
-                  display: 'block', 
-                  marginBottom: '8px', 
+                <label style={{
+                  display: 'block',
+                  marginBottom: '8px',
                   fontSize: '14px',
                   fontWeight: '500',
                   color: 'var(--text-primary)'
@@ -260,16 +260,15 @@ export default function Login() {
                 borderRadius: 'var(--border-radius-md)',
                 marginBottom: '20px',
                 fontSize: '14px',
-                background: message.includes('sucesso') 
-                  ? 'rgba(16, 185, 129, 0.1)' 
+                background: message.includes('sucesso')
+                  ? 'rgba(16, 185, 129, 0.1)'
                   : 'rgba(239, 68, 68, 0.1)',
-                border: `1px solid ${
-                  message.includes('sucesso') 
-                    ? 'rgba(16, 185, 129, 0.3)' 
+                border: `1px solid ${message.includes('sucesso')
+                    ? 'rgba(16, 185, 129, 0.3)'
                     : 'rgba(239, 68, 68, 0.3)'
-                }`,
-                color: message.includes('sucesso') 
-                  ? '#10b981' 
+                  }`,
+                color: message.includes('sucesso')
+                  ? '#10b981'
                   : '#ef4444'
               }}>
                 {message}
@@ -280,7 +279,7 @@ export default function Login() {
               type="submit"
               disabled={loading}
               className="btn btn-primary"
-              style={{ 
+              style={{
                 width: '100%',
                 padding: '16px',
                 fontSize: '16px',
@@ -309,8 +308,8 @@ export default function Login() {
               className="btn btn-secondary"
               style={{ fontSize: '14px' }}
             >
-              {isLogin 
-                ? 'Não tem uma conta? Criar conta' 
+              {isLogin
+                ? 'Não tem uma conta? Criar conta'
                 : 'Já tem uma conta? Fazer login'
               }
             </button>
