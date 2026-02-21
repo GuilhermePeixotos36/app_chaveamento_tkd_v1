@@ -317,9 +317,27 @@ const Brackets = () => {
     const BracketModal = () => {
         const cat = categories[activeCategory];
         const champ = championships.find(c => c.id === selectedChampionship);
+        const [scale, setScale] = useState(1);
+        const bracketRef = React.useRef(null);
+        const containerRef = React.useRef(null);
+
+        React.useLayoutEffect(() => {
+            if (bracketRef.current && containerRef.current) {
+                const containerWidth = containerRef.current.offsetWidth - 80; // Padding safe area
+                const contentWidth = bracketRef.current.scrollWidth;
+
+                if (contentWidth > containerWidth) {
+                    const newScale = containerWidth / contentWidth;
+                    setScale(Math.max(0.3, newScale)); // Minimum scale of 0.3 for legibility
+                } else {
+                    setScale(1);
+                }
+            }
+        }, [cat]);
+
         return (
-            <div className="modal-overlay" style={{ display: 'flex', padding: '0', alignItems: 'flex-start', overflowY: 'auto', backgroundColor: 'rgba(0,0,0,0.85)' }}>
-                <div className="modal-content" style={{ width: '100%', minWidth: 'fit-content', padding: '60px 40px', borderRadius: '0', background: '#FFF', minHeight: '100vh', boxShadow: 'none', position: 'relative' }}>
+            <div className="modal-overlay" style={{ display: 'flex', padding: '0', alignItems: 'flex-start', overflowY: 'auto', backgroundColor: 'rgba(0,0,0,0.85)', zIndex: 1000 }}>
+                <div ref={containerRef} className="modal-content" style={{ width: '100%', maxWidth: '100vw', padding: '60px 40px', borderRadius: '0', background: '#FFF', minHeight: '100vh', boxShadow: 'none', position: 'relative', overflowX: 'hidden' }}>
                     <div style={{ width: '100%', margin: '0 auto' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '5px solid #10151C', paddingBottom: '32px', marginBottom: '40px', maxWidth: '1400px', margin: '0 auto' }}>
                             <div style={{ display: 'flex', gap: '32px', alignItems: 'center' }}>
@@ -345,9 +363,17 @@ const Brackets = () => {
                             </div>
                         </div>
 
-                        <div style={{ width: '100%', overflowX: 'auto', padding: '40px 0', display: 'flex', justifyContent: 'flex-start' }}>
-                            <div style={{ minWidth: 'min-content' }}>
-                                <BracketView cat={cat} />
+                        <div style={{ width: '100%', display: 'flex', justifyContent: 'center', overflow: 'hidden' }}>
+                            <div style={{
+                                transform: `scale(${scale})`,
+                                transformOrigin: 'top center',
+                                width: 'fit-content',
+                                height: 'fit-content',
+                                marginBottom: `calc(${(1 - scale) * -100}%)` // Compensate height collapse due to scale
+                            }}>
+                                <div ref={bracketRef}>
+                                    <BracketView cat={cat} />
+                                </div>
                             </div>
                         </div>
 
