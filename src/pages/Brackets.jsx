@@ -23,7 +23,7 @@ const Brackets = () => {
         if (selectedChampionship) {
             loadRegistrations(selectedChampionship);
         }
-    }, [selectedChampionship]);
+    }, [selectedChampionship, kyorugiClassifications]);
 
     const loadChampionships = async () => {
         try {
