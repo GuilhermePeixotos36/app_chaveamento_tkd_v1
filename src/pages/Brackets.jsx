@@ -604,7 +604,7 @@ const Brackets = () => {
                     <div style={{ textAlign: 'center', margin: '0 40px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                         <div style={{ fontWeight: 'bold', fontSize: '18px', marginBottom: '10px', color: '#334155' }}>Final</div>
 
-                        <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px' }}>
+                        <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '30px' }}>
                             <PlayerLine
                                 player={finalMatch.player1}
                                 isBlue={true}
@@ -620,7 +620,7 @@ const Brackets = () => {
                                 fontWeight: 'bold',
                                 zIndex: 10,
                                 color: '#000',
-                                margin: '10px 0'
+                                minWidth: '40px'
                             }}>
                                 {finalMatch.match_number}
                             </div>
@@ -628,23 +628,9 @@ const Brackets = () => {
                             <PlayerLine
                                 player={finalMatch.player2}
                                 isBlue={false}
-                                isRight={false}
+                                isRight={true}
                                 fallbackText={numRounds > 1 ? "Vencedor Luta..." : ""}
                             />
-
-                            {/* Decorative lines for the final central match */}
-                            <div style={{
-                                position: 'absolute',
-                                left: '-40px',
-                                right: '-40px',
-                                top: '20px',
-                                bottom: '20px',
-                                border: numRounds > 1 ? '1px solid #94a3b8' : 'none',
-                                borderRight: 'none',
-                                borderLeft: 'none',
-                                pointerEvents: 'none',
-                                zIndex: 0
-                            }} />
                         </div>
 
                         <div style={{ marginTop: '20px', color: '#d97706', fontWeight: 'bold' }}>🏆 CAMPEÃO</div>
