@@ -305,52 +305,99 @@ const PublicInscription = () => {
     console.log('BeltLevel:', beltLevel);
     console.log('Belt categories disponíveis:', beltCategories);
     
-    // Se não tiver categorias carregadas, usar fallback hardcoded
     if (!beltCategories || beltCategories.length === 0) {
-      console.log('Usando fallback hardcoded para belt categories');
-      
-      // Mapeamento hardcoded baseado na estrutura comum
-      const beltMapping = {
-        1: 'Branca',
-        2: 'Branca Ponta Amarela', 
-        3: 'Amarela',
-        4: 'Amarela Ponta Verde',
-        5: 'Verde',
-        6: 'Verde Ponta Azul',
-        7: 'Azul',
-        8: 'Azul Ponta Vermelha',
-        9: 'Vermelha',
-        10: 'Vermelha Ponta Preta',
-        11: 'Preta'
-      };
-      
-      const beltName = beltMapping[beltLevel];
-      console.log('Belt name (fallback):', beltName);
-      
-      // Tentar encontrar por nome nas categorias disponíveis
-      const found = beltCategories.find(cat => cat.name === beltName);
-      if (found) {
-        console.log('Belt category encontrada por nome:', found);
-        return found.id;
-      }
-      
-      console.log('Nenhuma belt category encontrada, retornando null');
+      console.log('Nenhuma belt category disponível, retornando null');
       return null;
     }
     
-    // Lógica original se tiver categorias carregadas
-    const found = beltCategories.find(cat => {
-      console.log('Comparando:', {
-        beltLevel: beltLevel,
-        cat_min_level: cat.min_level,
-        cat_max_level: cat.max_level,
-        match: beltLevel >= cat.min_level && beltLevel <= cat.max_level
-      });
-      return beltLevel >= cat.min_level && beltLevel <= cat.max_level;
+    // Tentar diferentes estruturas possíveis
+    let found = null;
+    
+    // 1. Tentar por min_level/max_level (estrutura original)
+    found = beltCategories.find(cat => {
+      const match = cat.min_level !== undefined && cat.max_level !== undefined &&
+                   beltLevel >= cat.min_level && beltLevel <= cat.max_level;
+      if (match) {
+        console.log('Encontrado por min_level/max_level:', cat);
+      }
+      return match;
     });
     
-    console.log('Belt category encontrada:', found);
-    return found ? found.id : null;
+    if (found) {
+      console.log('Belt category encontrada (min/max):', found);
+      return found.id;
+    }
+    
+    // 2. Tentar por level exato
+    found = beltCategories.find(cat => {
+      const match = cat.level !== undefined && cat.level === beltLevel;
+      if (match) {
+        console.log('Encontrado por level exato:', cat);
+      }
+      return match;
+    });
+    
+    if (found) {
+      console.log('Belt category encontrada (level):', found);
+      return found.id;
+    }
+    
+    // 3. Tentar por belt_level exato
+    found = beltCategories.find(cat => {
+      const match = cat.belt_level !== undefined && cat.belt_level === beltLevel;
+      if (match) {
+        console.log('Encontrado por belt_level exato:', cat);
+      }
+      return match;
+    });
+    
+    if (found) {
+      console.log('Belt category encontrada (belt_level):', found);
+      return found.id;
+    }
+    
+    // 4. Tentar por nome (fallback)
+    const beltMapping = {
+      1: 'Branca',
+      2: 'Branca Ponta Amarela', 
+      3: 'Amarela',
+      4: 'Amarela Ponta Verde',
+      5: 'Verde',
+      6: 'Verde Ponta Azul',
+      7: 'Azul',
+      8: 'Azul Ponta Vermelha',
+      9: 'Vermelha',
+      10: 'Vermelha Ponta Preta',
+      11: 'Preta'
+    };
+    
+    const beltName = beltMapping[beltLevel];
+    if (beltName) {
+      found = beltCategories.find(cat => {
+        const match = cat.name === beltName || cat.belt_name === beltName;
+        if (match) {
+          console.log('Encontrado por nome:', cat);
+        }
+        return match;
+      });
+      
+      if (found) {
+        console.log('Belt category encontrada (nome):', found);
+        return found.id;
+      }
+    }
+    
+    console.log('Nenhuma belt category encontrada para nível:', beltLevel);
+    console.log('Estrutura das categorias disponíveis:', beltCategories.map(cat => ({
+      id: cat.id,
+      name: cat.name,
+      level: cat.level,
+      belt_level: cat.belt_level,
+      min_level: cat.min_level,
+      max_level: cat.max_level
+    })));
+    
+    return null;
   };
 
   const handleOrganizationChange = (e) => {
