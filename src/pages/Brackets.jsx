@@ -278,30 +278,37 @@ const Brackets = () => {
         const MatchBox = ({ match, rIndex, isRight }) => {
             const verticalSpace = Math.pow(2, rIndex) * 55;
             const connectorWidth = 32;
-            const playerHeight = 48; // minHeight de PlayerLine
+            const playerHeight = 48;
+            const totalH = verticalSpace * 2;
 
             return (
                 <div style={{
                     display: 'flex',
                     flexDirection: 'column',
-                    height: `${verticalSpace * 2}px`,
+                    height: `${totalH}px`,
                     position: 'relative',
                     margin: isRight ? `0 0 0 ${connectorWidth}px` : `0 ${connectorWidth}px 0 0`,
-                    justifyContent: 'space-between'
                 }}>
-                    <PlayerLine player={match.player1} isBlue={true} isRight={isRight} />
-                    <PlayerLine player={match.player2} isBlue={false} isRight={isRight} />
+                    {/* Jogador 1 (Topo) */}
+                    <div style={{ position: 'absolute', top: 0, [isRight ? 'right' : 'left']: 0 }}>
+                        <PlayerLine player={match.player1} isBlue={true} isRight={isRight} />
+                    </div>
 
-                    {/* L-Shape Connectors and Match Number */}
+                    {/* Jogador 2 (Base) */}
+                    <div style={{ position: 'absolute', bottom: 0, [isRight ? 'right' : 'left']: 0 }}>
+                        <PlayerLine player={match.player2} isBlue={false} isRight={isRight} />
+                    </div>
+
+                    {/* Sistema de Conectores em "L" */}
                     <div style={{
                         position: 'absolute',
                         [isRight ? 'left' : 'right']: `-${connectorWidth}px`,
-                        top: '48px', // Top do container do primeiro jogador
-                        bottom: '0px', // Chega até o final (onde está o border-bottom do segundo jogador)
+                        top: playerHeight,
+                        bottom: playerHeight,
                         width: `${connectorWidth}px`,
                         zIndex: 1
                     }}>
-                        {/* Linha Vertical Conectora */}
+                        {/* Linha Vertical Barra */}
                         <div style={{
                             position: 'absolute',
                             [isRight ? 'left' : 'right']: '0',
@@ -311,7 +318,7 @@ const Brackets = () => {
                             background: '#111'
                         }} />
 
-                        {/* Linha Horizontal Topo (L de cima) */}
+                        {/* Linha Horizontal Topo */}
                         <div style={{
                             position: 'absolute',
                             top: 0,
@@ -321,7 +328,7 @@ const Brackets = () => {
                             background: '#111'
                         }} />
 
-                        {/* Linha Horizontal Base (L de baixo) */}
+                        {/* Linha Horizontal Base */}
                         <div style={{
                             position: 'absolute',
                             bottom: 0,
@@ -331,47 +338,30 @@ const Brackets = () => {
                             background: '#111'
                         }} />
 
-                        {/* Caixa com o Número da Luta (Centralizada ao lado da barra) */}
+                        {/* Caixa com o Número e Saída */}
                         <div style={{
                             position: 'absolute',
                             top: '50%',
-                            [isRight ? 'left' : 'right']: '8px',
-                            transform: 'translateY(-50%)',
+                            [isRight ? 'left' : 'right']: '0',
+                            width: `${connectorWidth * 2}px`,
+                            transform: `translateY(-50%) ${isRight ? 'translateX(-100%)' : ''}`,
                             display: 'flex',
                             alignItems: 'center',
-                            gap: '4px'
+                            flexDirection: isRight ? 'row-reverse' : 'row',
+                            pointerEvents: 'none'
                         }}>
+                            <div style={{ width: '8px', height: '1.5px', background: '#111', flexShrink: 0 }} />
                             <div style={{
-                                width: '12px',
-                                height: '1.5px',
-                                background: '#111'
-                            }} />
-                            <div style={{
-                                background: '#111',
-                                color: '#FFF',
-                                fontSize: '10px',
-                                padding: '3px 6px',
-                                fontWeight: 950,
-                                borderRadius: '3px',
+                                background: '#111', color: '#FFF', fontSize: '10px', padding: '3px 6px',
+                                fontWeight: 950, borderRadius: '3px', boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
                                 whiteSpace: 'nowrap'
                             }}>{match.match_number}</div>
+                            <div style={{ width: `${connectorWidth}px`, height: '1.5px', background: '#111', flexShrink: 0 }} />
                         </div>
-
-                        {/* Saída horizontal para a próxima etapa (Lado oposto dos jogadores) */}
-                        <div style={{
-                            position: 'absolute',
-                            top: '50%',
-                            [isRight ? 'right' : 'left']: '0',
-                            width: `${connectorWidth}px`,
-                            height: '1.5px',
-                            background: '#111',
-                            transform: 'translateY(-50%)'
-                        }} />
                     </div>
                 </div>
             );
         };
-
         return (
             <div className="bracket-container" style={{ padding: '60px 40px', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', overflowX: 'auto' }}>
                 <div style={{ display: 'flex', alignItems: 'center' }}>
