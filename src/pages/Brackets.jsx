@@ -341,14 +341,14 @@ const Brackets = () => {
                     {/* FINAL CENTRAL */}
                     <div style={{ width: '400px', height: `${totalH}px`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative', margin: '0 60px' }}>
                         <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
-                            <div style={{ position: 'absolute', top: '50%', transform: 'translateY(-50%)', width: '80px', height: '30px', background: '#000', padding: '5px', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '80px', height: '30px', background: '#000', padding: '5px', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                 <div style={{ color: '#fff', fontWeight: 950, fontSize: '10px' }}>{finalMatch.match_number}</div>
                             </div>
                         </div>
 
-                        <div style={{ marginTop: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
-                            <Trophy size={60} color="#FBCB37" fill="#FBCB37" />
-                            <div style={{ fontWeight: 950, fontSize: '20px', letterSpacing: '1px' }}>CAMPEÃO</div>
+                        <div style={{ marginTop: '10px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px' }}>
+                            <Trophy size={40} color="#FBCB37" fill="#FBCB37" />
+                            <div style={{ fontWeight: 950, fontSize: '14px', letterSpacing: '1px' }}>CAMPEÃO</div>
                         </div>
                     </div>
 
