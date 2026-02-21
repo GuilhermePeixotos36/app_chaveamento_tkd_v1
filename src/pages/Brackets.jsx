@@ -46,7 +46,7 @@ const Brackets = () => {
         try {
             console.log('=== DEBUG LOAD CLASSIFICATIONS (BRACKETS) ===');
             console.log('Carregando classificações...');
-            
+
             const [classificationsData, weightCategoriesData] = await Promise.all([
                 supabase
                     .from('kyorugi_classifications')
@@ -64,7 +64,7 @@ const Brackets = () => {
             console.log('Classifications carregadas:', classificationsData.data?.length || 0);
             console.log('Weight categories carregadas:', weightCategoriesData.data?.length || 0);
             console.log('Exemplo de classificação:', classificationsData.data?.[0]);
-            
+
             setKyorugiClassifications(classificationsData.data || []);
         } catch (error) {
             console.error('Erro ao carregar classificações:', error);
@@ -102,17 +102,17 @@ const Brackets = () => {
 
             data.forEach(reg => {
                 const classification = findMatchingClassification(reg);
-                
+
                 console.log('--- DEBUG AGRUPAMENTO ---');
                 console.log('Atleta:', reg.full_name);
                 console.log('Classificação encontrada:', classification ? classification.name : 'NENHUMA');
-                
+
                 if (classification) {
                     console.log('✅ Atleta será agrupado na classificação:', classification.name);
-                    
+
                     // Use classification ID as key
                     const catKey = `classification_${classification.id}`;
-                    
+
                     if (!grouped[catKey]) {
                         grouped[catKey] = {
                             id: catKey,
@@ -136,7 +136,7 @@ const Brackets = () => {
                             bracket: null
                         };
                     }
-                    
+
                     console.log('✅ Adicionando atleta ao grupo:', catKey);
                     grouped[catKey].athletes.push(reg);
                 } else {
@@ -157,7 +157,7 @@ const Brackets = () => {
                     // Find matching group by classification_id or by category_params
                     Object.keys(grouped).forEach(key => {
                         const g = grouped[key];
-                        
+
                         // If group has classification_id, match by that
                         if (g.classification_id && b.kyorugi_classification_id === g.classification_id) {
                             grouped[key].bracket = b.bracket_data;
@@ -177,7 +177,7 @@ const Brackets = () => {
             }
 
             setCategories(grouped);
-            
+
             console.log('--- DEBUG GROUPED CATEGORIES ---');
             console.log('Total grouped categories:', Object.keys(grouped).length);
             console.log('Grouped data:', grouped);
@@ -205,7 +205,19 @@ const Brackets = () => {
         if (age <= 44) return 'Master 2';
         return 'Master 3';
     };
-        
+
+    const getBeltGroup = (level) => {
+        if (level <= 1) return 1; // Branca
+        if (level <= 4) return 2; // Amarela, Verde
+        if (level <= 7) return 3; // Roxa, Azul, Marrom
+        if (level <= 9) return 4; // Vermelha
+        return 5; // Preta
+    };
+
+    const findMatchingClassification = (registration) => {
+        const ageGroup = getAgeGroup(registration.age);
+        const beltGroup = getBeltGroup(registration.belt_level);
+
         console.log('--- DEBUG CLASSIFICATION MATCH ---');
         console.log('Atleta:', registration.full_name);
         console.log('Idade:', registration.age, '→ AgeGroup:', ageGroup);
@@ -213,7 +225,7 @@ const Brackets = () => {
         console.log('Nível Faixa:', registration.belt_level, '→ BeltGroup:', beltGroup);
         console.log('Peso Category ID:', registration.weight_category_id);
         console.log('Peso real:', registration.weight, 'kg');
-        
+
         // Log todas as classificações disponíveis para comparação
         console.log('=== TODAS AS CLASSIFICAÇÕES DISPONÍVEIS ===');
         kyorugiClassifications.forEach((classification, index) => {
@@ -226,23 +238,23 @@ const Brackets = () => {
                 weight_category_id: classification.weight_category_id
             });
         });
-        
+
         // Lógica corrigida: priorizar weight_category_id da inscrição, mesmo que seja null
         let matchingClassification = null;
-        
+
         console.log('=== DEBUG CLASSIFICATION MATCH INÍCIO ===');
         console.log('Atleta:', registration.full_name);
         console.log('Dados completos do atleta:', {
-          full_name: registration.full_name,
-          age: registration.age,
-          gender: registration.gender,
-          belt_level: registration.belt_level,
-          weight: registration.weight,
-          weight_category_id: registration.weight_category_id,
-          age_category_id: registration.age_category_id,
-          belt_category_id: registration.belt_category_id
+            full_name: registration.full_name,
+            age: registration.age,
+            gender: registration.gender,
+            belt_level: registration.belt_level,
+            weight: registration.weight,
+            weight_category_id: registration.weight_category_id,
+            age_category_id: registration.age_category_id,
+            belt_category_id: registration.belt_category_id
         });
-        
+
         // Tentar encontrar por weight_category_id da inscrição primeiro
         if (registration.weight_category_id) {
             console.log('=== TENTANDO ENCONTRAR POR WEIGHT_CATEGORY_ID ===');
@@ -257,27 +269,27 @@ const Brackets = () => {
                     classification_weight_category_id: classification.weight_category_id,
                     expected_weight_category_id: registration.weight_category_id
                 });
-                
+
                 const match = classification.age_category === ageGroup &&
-                              classification.gender === registration.gender &&
-                              classification.belt_group === beltGroup &&
-                              classification.weight_category_id === registration.weight_category_id;
-                
+                    classification.gender === registration.gender &&
+                    classification.belt_group === beltGroup &&
+                    classification.weight_category_id === registration.weight_category_id;
+
                 console.log('Match por ID (string):', classification.weight_category_id === registration.weight_category_id);
                 console.log('Classification weight_category_id (string):', classification.weight_category_id);
                 console.log('Registration weight_category_id (string):', registration.weight_category_id);
                 console.log('São iguais?', classification.weight_category_id === registration.weight_category_id);
-                
-                return matchingClassification;
+
+                return match;
             });
         }
-        
+
         // Se não encontrar por ID, tentar encontrar pelo peso real (fallback)
         if (!matchingClassification && registration.weight) {
             console.log('=== TENTANDO ENCONTRAR POR PESO REAL ===');
             console.log('Peso do atleta:', registration.weight);
             console.log('Verificando classifications por peso real...');
-            
+
             matchingClassification = kyorugiClassifications.find(classification => {
                 console.log('Comparando com classificação (por peso):', {
                     classification_name: classification.name,
@@ -286,29 +298,29 @@ const Brackets = () => {
                     athlete_weight: registration.weight,
                     match: registration.weight >= classification.min_weight && registration.weight <= classification.max_weight
                 });
-                
+
                 const match = classification.age_category === ageGroup &&
-                              classification.gender === registration.gender &&
-                              classification.belt_group === beltGroup &&
-                              registration.weight >= classification.min_weight &&
-                              registration.weight <= classification.max_weight;
-                
+                    classification.gender === registration.gender &&
+                    classification.belt_group === beltGroup &&
+                    registration.weight >= classification.min_weight &&
+                    registration.weight <= classification.max_weight;
+
                 console.log('Match por peso:', match);
                 return match;
             });
         }
-        
+
         // Se ainda não encontrou, retornar null
         if (!matchingClassification) {
             console.log('❌ Nenhuma classificação encontrada para:', registration.full_name);
         }
-        
+
         console.log('=== RESULTADO FINAL ===');
         console.log('Classificação encontrada:', matchingClassification ? matchingClassification.name : 'NENHUMA');
-        
+
         return matchingClassification;
     };
-    
+
     // Forçar deploy na Vercel - versão corrigida com getBeltGroup funcional
 
     const getBeltName = (level) => {
