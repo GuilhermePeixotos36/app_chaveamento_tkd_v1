@@ -298,7 +298,7 @@ const Brackets = () => {
                         </div>
                         <div style={{ marginTop: '80px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '15px' }}>
                             <Trophy size={80} color="#FBCB37" fill="#FBCB37" strokeWidth={1} />
-                            <div style={{ fontWeight: 950, color: '#10151C', fontSize: '24px', letterSpacing: '2px' }}>CHAMPION</div>
+                            <div style={{ fontWeight: 950, color: '#10151C', fontSize: '24px', letterSpacing: '2px' }}>CAMPEÃO</div>
                         </div>
                     </div>
                     {[...rightBranch].reverse().map((round, reqIndex) => {
@@ -470,12 +470,60 @@ const Brackets = () => {
                 {message && <div className="toast success show" style={{ zIndex: 10000 }}><Check size={24} /> {message}</div>}
                 <style>{`
                     @media print {
-                        @page { size: landscape; margin: 10mm; }
-                        .no-print, .btn, .header-title, .header-subtitle, .app-container > .content-wrapper > *:not(.modal-overlay), .navbar, .sidebar, .toast { display: none !important; }
-                        body, .app-container { background: #FFF !important; padding: 0 !important; margin: 0 !important; }
-                        .modal-overlay { background: #FFF !important; display: block !important; position: static !important; padding: 0 !important; overflow: visible !important; }
-                        .modal-content { box-shadow: none !important; border: none !important; margin: 0 !important; width: 100% !important; padding: 0 !important; }
-                        .bracket-container { padding: 40px 0 !important; width: 100% !important; }
+                        @page { 
+                          size: landscape; 
+                          margin: 0mm; 
+                        }
+                        
+                        html, body {
+                          height: 100%;
+                          margin: 0 !important;
+                          padding: 0 !important;
+                          overflow: hidden;
+                        }
+
+                        .no-print, .btn, .header-title, .header-subtitle, 
+                        .app-container > .content-wrapper > *:not(.modal-overlay), 
+                        .navbar, .sidebar, .toast { 
+                          display: none !important; 
+                        }
+
+                        .modal-overlay { 
+                          background: #FFF !important; 
+                          display: block !important; 
+                          position: fixed !important; 
+                          top: 0; left: 0; right: 0; bottom: 0;
+                          padding: 0 !important; 
+                          margin: 0 !important;
+                          overflow: visible !important; 
+                        }
+
+                        .modal-content { 
+                          box-shadow: none !important; 
+                          border: none !important; 
+                          margin: 0 !important; 
+                          width: 100vw !important; 
+                          height: 100vh !important;
+                          padding: 30px 40px !important; 
+                          display: flex !important;
+                          flex-direction: column !important;
+                          page-break-after: always !important;
+                          overflow: hidden !important;
+                        }
+
+                        /* Escalonamento automático para caber na página sem cortar */
+                        .bracket-container { 
+                          padding: 20px 0 !important; 
+                          width: 100% !important; 
+                          flex: 1 !important;
+                          display: flex !important;
+                          align-items: center !important;
+                          justify-content: center !important;
+                          transform: scale(0.9); /* Reduz levemente para garantir margens de segurança */
+                          transform-origin: center center;
+                        }
+
+                        h1, h2 { margin-top: 0 !important; }
                     }
                 `}</style>
             </div>
