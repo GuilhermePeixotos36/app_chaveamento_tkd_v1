@@ -257,7 +257,7 @@ const Brackets = () => {
         const leftBranch = rounds.slice(0, numRounds - 1).map(round => round.slice(0, Math.ceil(round.length / 2)));
         const rightBranch = rounds.slice(0, numRounds - 1).map(round => round.slice(Math.ceil(round.length / 2)));
 
-        const MatchHeight = 120; // Altura fixa base
+        const MatchHeight = 100; // Altura fixa base reduzida para melhor visualização
 
         const PlayerLine = ({ player, isBlue, isRight }) => (
             <div style={{
@@ -281,7 +281,7 @@ const Brackets = () => {
 
         const SimpleMatch = ({ match, rIndex, isRight }) => {
             const h = MatchHeight * Math.pow(2, rIndex);
-            const connectorW = 40;
+            const connectorW = 30; // Reduzir largura do conector
             return (
                 <div style={{
                     height: `${h}px`,
@@ -326,11 +326,11 @@ const Brackets = () => {
         const totalH = Math.pow(2, numRounds - 2) * MatchHeight;
 
         return (
-            <div className="bracket-container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '80px 40px', background: '#fff' }}>
+            <div className="bracket-container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '40px 20px', background: '#fff' }}>
                 <div style={{ display: 'flex', alignItems: 'center' }}>
 
                     {/* Ramos Esquerda */}
-                    <div style={{ display: 'flex' }}>
+                    <div style={{ display: 'flex', marginRight: '80px' }}>
                         {leftBranch.map((round, rIndex) => (
                             <div key={`l-${rIndex}`} style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                                 {round.map(m => <SimpleMatch key={m.id} match={m} rIndex={rIndex} isRight={false} />)}
@@ -339,7 +339,7 @@ const Brackets = () => {
                     </div>
 
                     {/* FINAL CENTRAL INTEGRADA */}
-                    <div style={{ width: '400px', height: `${totalH}px`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+                    <div style={{ width: '400px', height: `${totalH}px`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative', margin: '0 60px' }}>
                         <div style={{ position: 'absolute', top: '-100px', fontWeight: 950, fontSize: '32px', letterSpacing: '8px' }}>FINAL</div>
 
                         <div style={{ display: 'flex', alignItems: 'center', width: '100%', justifyContent: 'space-between', border: '2px solid #111', padding: '20px', borderRadius: '4px', background: '#fff', boxShadow: '0 4px 15px rgba(0,0,0,0.05)' }}>
@@ -359,7 +359,7 @@ const Brackets = () => {
                     </div>
 
                     {/* Ramos Direita */}
-                    <div style={{ display: 'flex', flexDirection: 'row-reverse' }}>
+                    <div style={{ display: 'flex', flexDirection: 'row-reverse', marginLeft: '80px' }}>
                         {rightBranch.map((round, rIndex) => (
                             <div key={`r-${rIndex}`} style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                                 {round.map(m => <SimpleMatch key={m.id} match={m} rIndex={rIndex} isRight={true} />)}
