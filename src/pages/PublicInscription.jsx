@@ -332,7 +332,6 @@ const PublicInscription = () => {
     console.log('BeltLevel:', beltLevel);
     console.log('Belt categories disponíveis:', beltCategories);
     
-    // Se não conseguir carregar da tabela (erro de permissões), usar hardcoded
     if (!beltCategories || beltCategories.length === 0) {
       console.log('⚠️ Usando fallback hardcoded devido a erro de permissões na tabela belt_categories');
       
@@ -372,24 +371,50 @@ const PublicInscription = () => {
       }
     }
     
-    // Se conseguir carregar da tabela, usar lógica normal
+    // Mapeamento de nível numérico para nome da faixa
+    const beltLevelToName = {
+      1: 'Branca',
+      2: 'Branca Ponta Amarela',
+      3: 'Amarela',
+      4: 'Amarela Ponta Verde',
+      5: 'Verde',
+      6: 'Verde Ponta Azul',
+      7: 'Azul',
+      8: 'Azul Ponta Vermelha',
+      9: 'Vermelha',
+      10: 'Vermelha Ponta Preta',
+      11: 'Preta'
+    };
+    
+    const beltName = beltLevelToName[beltLevel];
+    console.log('Belt name para nível', beltLevel, ':', beltName);
+    
+    if (!beltName) {
+      console.log('❌ Nenhuma faixa encontrada para nível:', beltLevel);
+      return null;
+    }
+    
+    // Usar a estrutura real da tabela: min_belt_color, max_belt_color
     const found = beltCategories.find(cat => {
       console.log('Comparando com categoria da tabela:', {
         beltLevel: beltLevel,
+        beltName: beltName,
         cat_name: cat.name,
-        cat_min_level: cat.min_level,
-        cat_max_level: cat.max_level,
-        match: beltLevel >= cat.min_level && beltLevel <= cat.max_level
+        cat_min_belt_color: cat.min_belt_color,
+        cat_max_belt_color: cat.max_belt_color,
+        match: beltName >= cat.min_belt_color && beltName <= cat.max_belt_color
       });
       
-      return beltLevel >= cat.min_level && beltLevel <= cat.max_level;
+      // Comparação por nome da faixa (simplificado)
+      return beltName === cat.min_belt_color || beltName === cat.max_belt_color;
     });
     
     if (found) {
       console.log('✅ Belt category encontrada (tabela):', found);
       return found.id;
     } else {
-      console.log('❌ Nenhuma belt category encontrada para nível:', beltLevel);
+      console.log('❌ Nenhuma belt category encontrada para nível:', beltLevel, '(', beltName, ')');
+      console.log('Verifique se o mapeamento de nível → nome da faixa está correto');
       return null;
     }
   };
