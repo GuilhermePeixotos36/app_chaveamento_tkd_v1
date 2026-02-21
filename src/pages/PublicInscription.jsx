@@ -181,7 +181,7 @@ const PublicInscription = () => {
           
           // Calcular IDs das outras categorias
           const age = calculateAge(formData.athlete_birthdate);
-          const beltLevel = parseInt(formData.athlete_belt);
+          const beltLevel = parseInt(formData.athlete_belt) || 1; // Garantir que seja número inteiro
           const ageCategoryId = findAgeCategoryId(age);
           const beltCategoryId = findBeltCategoryId(beltLevel);
           
