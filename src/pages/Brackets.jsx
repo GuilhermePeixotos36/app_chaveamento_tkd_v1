@@ -259,125 +259,88 @@ const Brackets = () => {
 
         const PlayerLine = ({ player, isBlue, isRight }) => (
             <div style={{
-                borderBottom: '1.5px solid #111',
-                padding: '2px 4px',
+                borderBottom: '1px solid #333',
                 width: '180px',
+                padding: '2px 0',
                 textAlign: isRight ? 'right' : 'left',
                 color: isBlue ? '#1782C8' : '#E71546',
-                height: '40px', // Fixed height for consistent mid-point
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'flex-end',
                 position: 'relative'
             }}>
-                <div style={{ fontWeight: 950, whiteSpace: 'nowrap', textTransform: 'uppercase', fontSize: '11px', lineHeight: '1' }}>
-                    <span style={{ fontSize: '7px', marginRight: '4px', color: '#111', fontWeight: 800 }}>{isBlue ? 'AZUL' : 'VERMELHO'}</span>
-                    {player?.full_name || ''}
+                <div style={{ fontWeight: 950, textTransform: 'uppercase', fontSize: '10px', lineHeight: '1.2' }}>
+                    <span style={{ fontSize: '7px', color: '#666', marginRight: '4px' }}>{isBlue ? 'AZUL' : 'VERMELHO'}</span>
+                    {player?.full_name || '---'}
                 </div>
-                <div style={{ fontSize: '7px', color: '#666', fontWeight: 800, lineHeight: '1' }}>{player?.organizations?.name || ''}</div>
+                <div style={{ fontSize: '7px', color: '#888', fontWeight: 700 }}>{player?.organizations?.name || ''}</div>
             </div>
         );
 
-        const Match = ({ match, isRight }) => {
-            const connectorWidth = 30;
-            return (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', position: 'relative', margin: isRight ? `0 0 0 ${connectorWidth}px` : `0 ${connectorWidth}px 0 0` }}>
-                    <PlayerLine player={match.player1} isBlue={true} isRight={isRight} />
-                    <PlayerLine player={match.player2} isBlue={false} isRight={isRight} />
+        const SimpleMatch = ({ match, isRight }) => (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', margin: '15px 0', position: 'relative' }}>
+                <PlayerLine player={match.player1} isBlue={true} isRight={isRight} />
 
-                    {/* Conector 'C' */}
+                {/* Connector Simple */}
+                <div style={{
+                    position: 'absolute',
+                    [isRight ? 'left' : 'right']: '-25px',
+                    top: '15px',
+                    bottom: '15px',
+                    width: '25px',
+                    border: '1px solid #333',
+                    [isRight ? 'borderRight' : 'borderLeft']: 'none',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                }}>
+                    <div style={{ width: '100%', height: '1px', background: '#333' }} />
                     <div style={{
-                        position: 'absolute',
-                        top: '20px', // Centro do Player 1 (40px height / 2)
-                        bottom: '20px', // Centro do Player 2 (40px height / 2)
-                        [isRight ? 'left' : 'right']: -connectorWidth,
-                        width: connectorWidth,
-                        border: '1.5px solid #111',
-                        [isRight ? 'borderRight' : 'borderLeft']: 'none',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: isRight ? 'flex-start' : 'flex-end'
-                    }}>
-                        {/* Linha de Saída para o centro */}
-                        <div style={{
-                            width: '100%',
-                            height: '1.5px',
-                            background: '#111',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            position: 'relative'
-                        }}>
-                            <div style={{
-                                width: '22px',
-                                height: '14px',
-                                background: '#EEE',
-                                border: '1px solid #111',
-                                borderRadius: '2px',
-                                fontSize: '8px',
-                                fontWeight: 950,
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                position: 'absolute'
-                            }}>{match.match_number}</div>
-                        </div>
-                    </div>
+                        position: 'absolute', background: '#fff', border: '1px solid #333',
+                        fontSize: '8px', fontWeight: 900, padding: '1px 3px', borderRadius: '2px'
+                    }}>{match.match_number}</div>
                 </div>
-            );
-        };
 
-        const totalHeight = Math.max(800, (leftBranch[0]?.length || 0) * 100);
+                <PlayerLine player={match.player2} isBlue={false} isRight={isRight} />
+            </div>
+        );
 
         return (
-            <div className="bracket-container" style={{ padding: '40px', background: '#fff', display: 'flex', justifyContent: 'center', overflowX: 'auto', minHeight: '1000px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', height: `${totalHeight}px`, gap: '0px' }}>
+            <div className="bracket-container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '60px 20px', background: '#fff', minHeight: '600px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '40px' }}>
 
-                    {/* Lado Esquerdo */}
-                    {leftBranch.map((round, rIndex) => (
-                        <div key={`l-${rIndex}`} style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-around', height: '100%', width: '210px' }}>
-                            {round.map(m => <Match key={m.id} match={m} isRight={false} />)}
-                        </div>
-                    ))}
+                    {/* Ramos Esquerda */}
+                    <div style={{ display: 'flex', gap: '30px' }}>
+                        {leftBranch.map((round, rIdx) => (
+                            <div key={`l-${rIdx}`} style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-around', height: '100%' }}>
+                                {round.map(m => <SimpleMatch key={m.id} match={m} isRight={false} />)}
+                            </div>
+                        ))}
+                    </div>
 
-                    {/* FINAL CENTRAL */}
-                    <div style={{ width: '400px', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
-                        <div style={{ position: 'absolute', top: '10%', fontWeight: 950, fontSize: '32px', color: '#10151C', textTransform: 'uppercase', letterSpacing: '4px' }}>FINAL</div>
+                    {/* FINAL */}
+                    <div style={{ textAlign: 'center', width: '300px' }}>
+                        <div style={{ fontWeight: 950, fontSize: '24px', letterSpacing: '4px', marginBottom: '40px' }}>FINAL</div>
 
-                        <div style={{ display: 'flex', alignItems: 'center', width: '100%', justifyContent: 'center', gap: '5px' }}>
-                            <div style={{ position: 'relative' }}>
-                                <PlayerLine player={finalMatch.player1} isBlue={true} isRight={false} />
-                                <div style={{ position: 'absolute', right: '-40px', top: '20px', width: '40px', height: '1.5px', background: '#111' }} />
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '30px' }}>
+                            <div style={{ border: '2px solid #111', padding: '15px', borderRadius: '4px', position: 'relative' }}>
+                                <div style={{ position: 'absolute', top: '-10px', left: '50%', transform: 'translateX(-50%)', background: '#111', color: '#fff', fontSize: '10px', padding: '2px 8px', borderRadius: '2px', fontWeight: 900 }}>{finalMatch.match_number}</div>
+                                <div style={{ width: '180px', marginBottom: '10px', borderBottom: '1px solid #333', color: '#1782C8', fontWeight: 900, fontSize: '12px' }}>{finalMatch.player1?.full_name || '---'}</div>
+                                <div style={{ width: '180px', color: '#E71546', fontWeight: 900, fontSize: '12px' }}>{finalMatch.player2?.full_name || '---'}</div>
                             </div>
 
-                            <div style={{
-                                background: '#EEE', border: '2px solid #111', color: '#111', fontSize: '32px', padding: '15px 35px',
-                                fontWeight: 950, borderRadius: '6px', boxShadow: '0 4px 15px rgba(0,0,0,0.1)', zIndex: 10,
-                                minWidth: '100px', textAlign: 'center'
-                            }}>{finalMatch.match_number}</div>
-
-                            <div style={{ position: 'relative' }}>
-                                <PlayerLine player={finalMatch.player2} isBlue={false} isRight={true} />
-                                <div style={{ position: 'absolute', left: '-40px', top: '20px', width: '40px', height: '1.5px', background: '#111' }} />
+                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
+                                <Trophy size={80} color="#FBCB37" fill="#FBCB37" />
+                                <div style={{ fontWeight: 950, fontSize: '22px', color: '#111' }}>CAMPEÃO</div>
                             </div>
-                        </div>
-
-                        <div style={{ position: 'absolute', bottom: '10%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '15px' }}>
-                            <div style={{ width: '1.5px', height: '60px', background: '#111' }} />
-                            <Trophy size={100} color="#FBCB37" fill="#FBCB37" strokeWidth={1} />
-                            <div style={{ fontWeight: 950, color: '#10151C', fontSize: '28px', letterSpacing: '2px' }}>CAMPEÃO</div>
                         </div>
                     </div>
 
-                    {/* Lado Direito */}
-                    {[...rightBranch].reverse().map((round, revIndex) => {
-                        const rIndex = rightBranch.length - 1 - revIndex;
-                        return (
-                            <div key={`r-${rIndex}`} style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-around', height: '100%', width: '210px' }}>
-                                {round.map(m => <Match key={m.id} match={m} isRight={true} />)}
+                    {/* Ramos Direita */}
+                    <div style={{ display: 'flex', flexDirection: 'row-reverse', gap: '30px' }}>
+                        {rightBranch.map((round, rIdx) => (
+                            <div key={`r-${rIdx}`} style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-around', height: '100%' }}>
+                                {round.map(m => <SimpleMatch key={m.id} match={m} isRight={true} />)}
                             </div>
-                        );
-                    })}
+                        ))}
+                    </div>
                 </div>
             </div>
         );
@@ -389,65 +352,54 @@ const Brackets = () => {
         const [scale, setScale] = useState(1);
         const bracketRef = React.useRef(null);
         const containerRef = React.useRef(null);
+        const [logoError, setLogoError] = useState(false);
 
         React.useLayoutEffect(() => {
             if (bracketRef.current && containerRef.current) {
-                const containerWidth = containerRef.current.offsetWidth - 120;
-                const containerHeight = window.innerHeight - 450; // Descontar cabeçalho e rodapé
-
+                const containerWidth = containerRef.current.offsetWidth - 80;
+                const containerHeight = window.innerHeight - 380;
                 const contentWidth = bracketRef.current.scrollWidth;
                 const contentHeight = bracketRef.current.scrollHeight;
-
-                let scaleW = containerWidth / contentWidth;
-                let scaleH = containerHeight / contentHeight;
-
-                let finalScale = Math.min(scaleW, scaleH);
-
-                if (finalScale < 1) {
-                    setScale(Math.max(0.25, finalScale));
-                } else {
-                    setScale(1);
-                }
+                let finalScale = Math.min(containerWidth / contentWidth, containerHeight / contentHeight);
+                setScale(finalScale < 1 ? Math.max(0.3, finalScale) : 1);
             }
         }, [cat]);
 
         return (
             <div className="modal-overlay" style={{ display: 'flex', padding: '0', alignItems: 'flex-start', overflowY: 'auto', backgroundColor: 'rgba(0,0,0,0.85)', zIndex: 1000 }}>
-                <div ref={containerRef} className="modal-content" style={{ width: '100%', maxWidth: '100vw', padding: '60px 40px', borderRadius: '0', background: '#FFF', minHeight: '100vh', boxShadow: 'none', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-                    <div style={{ width: '100%', margin: '0 auto', flex: 1, display: 'flex', flexDirection: 'column' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '5px solid #10151C', paddingBottom: '32px', marginBottom: '30px', maxWidth: '1400px', margin: '0 auto', width: '100%' }}>
-                            <div style={{ display: 'flex', gap: '32px', alignItems: 'center' }}>
-                                <div style={{
-                                    width: '100px',
-                                    height: '100px',
-                                    background: 'linear-gradient(135deg, #E71546 0%, #1782C8 100%)',
-                                    borderRadius: '12px',
-                                    display: 'flex',
-                                    padding: '10px',
-                                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    color: '#FFF',
-                                    fontSize: '18px',
-                                    fontWeight: 950,
-                                    textAlign: 'center',
-                                    lineHeight: '1.1'
-                                }}>
-                                    FETEMG<br /><span style={{ fontSize: '9px', fontWeight: 600 }}>Institucional</span>
-                                </div>
+                <div ref={containerRef} className="modal-content" style={{ width: '100%', maxWidth: '100vw', padding: '40px', borderRadius: '0', background: '#FFF', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+                    <div style={{ width: '100%', maxWidth: '1400px', margin: '0 auto', flex: 1 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '3px solid #111', paddingBottom: '24px', marginBottom: '24px' }}>
+                            <div style={{ display: 'flex', gap: '24px', alignItems: 'center' }}>
+                                {!logoError ? (
+                                    <img
+                                        src="/logo.png"
+                                        alt="Logo"
+                                        style={{ width: '90px', height: '90px', objectFit: 'contain' }}
+                                        onError={() => setLogoError(true)}
+                                    />
+                                ) : (
+                                    <div style={{
+                                        width: '90px', height: '90px', background: 'linear-gradient(135deg, #E71546 0%, #1782C8 100%)',
+                                        borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FFF',
+                                        fontSize: '14px', fontWeight: 950, textAlign: 'center', lineHeight: '1.2'
+                                    }}>
+                                        FETEMG<br /><span style={{ fontSize: '8px', fontWeight: 600 }}>Institucional</span>
+                                    </div>
+                                )}
                                 <div>
-                                    <h1 style={{ margin: 0, fontSize: '32px', color: '#10151C', textTransform: 'uppercase', fontWeight: 950, letterSpacing: '2px' }}>{champ?.name}</h1>
-                                    <p style={{ margin: '8px 0 0 0', color: 'var(--brand-blue)', fontWeight: 900, fontSize: '1.2rem' }}>FEDERAÇÃO DE TAEKWONDO DO ESTADO DE MINAS GERAIS</p>
+                                    <h1 style={{ margin: 0, fontSize: '28px', color: '#10151C', fontWeight: 950, textTransform: 'uppercase' }}>{champ?.name}</h1>
+                                    <p style={{ margin: '4px 0 0 0', color: '#1782C8', fontWeight: 800, fontSize: '1rem' }}>FEDERAÇÃO DE TAEKWONDO DO ESTADO DE MINAS GERAIS</p>
                                 </div>
                             </div>
-                            <div className="no-print" style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-                                <button className="btn btn-primary" onClick={() => saveBracket(activeCategory)} disabled={saving}><Save size={24} /> SALVAR</button>
-                                <button className="btn btn-secondary" onClick={() => window.print()}><Printer size={24} /> IMPRIMIR</button>
-                                <button className="btn btn-ghost" onClick={() => setShowBracketModal(false)}><X size={40} /></button>
+                            <div className="no-print" style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                                <button className="btn btn-primary" onClick={() => saveBracket(activeCategory)} disabled={saving}><Save size={20} /> SALVAR</button>
+                                <button className="btn btn-secondary" onClick={() => window.print()}><Printer size={20} /> IMPRIMIR</button>
+                                <button className="btn btn-ghost" onClick={() => setShowBracketModal(false)}><X size={32} /></button>
                             </div>
                         </div>
-                        <div style={{ textAlign: 'center', marginBottom: '30px' }}>
-                            <h2 style={{ fontSize: '1.8rem', fontWeight: 950, margin: '0 0 8px 0', textTransform: 'uppercase', color: '#10151C' }}>{cat.classification_name}</h2>
+                        <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+                            <h2 style={{ fontSize: '1.5rem', fontWeight: 950, margin: '0', textTransform: 'uppercase' }}>{cat.classification_name}</h2>
                             <div style={{ display: 'flex', justifyContent: 'center', gap: '40px', fontWeight: 800, color: '#333', fontSize: '1rem' }}>
                                 <span className="badge badge-primary" style={{ padding: '6px 16px', fontSize: '0.9rem' }}>{cat.classification_code}</span>
                                 <span>{cat.info.gender}</span>
