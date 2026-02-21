@@ -361,40 +361,68 @@ const Brackets = () => {
             );
         };
         return (
-            <div className="bracket-container" style={{ padding: '120px 40px', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', overflowX: 'auto' }}>
+            <div className="bracket-container" style={{ padding: '140px 40px', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', overflowX: 'auto' }}>
                 <div style={{ display: 'flex', alignItems: 'center', position: 'relative' }}>
+
+                    {/* Lado Esquerdo */}
                     {leftBranch.map((round, rIndex) => (
                         <div key={`l-${rIndex}`} style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
                             {round.map(m => <MatchBox key={m.id} match={m} rIndex={rIndex} isRight={false} />)}
                         </div>
                     ))}
 
-                    <div style={{ position: 'relative', margin: '0 40px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                        {/* Absolute Header */}
-                        <div style={{ position: 'absolute', top: '-100px', fontWeight: 950, fontSize: '32px', color: '#10151C', textTransform: 'uppercase', letterSpacing: '4px' }}>FINAL</div>
+                    {/* Centro - FINAL */}
+                    <div style={{ position: 'relative', margin: '0', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                        {/* Título FINAL */}
+                        <div style={{ position: 'absolute', top: '-110px', left: '50%', transform: 'translateX(-50%)', fontWeight: 950, fontSize: '32px', color: '#10151C', textTransform: 'uppercase', letterSpacing: '4px', whiteSpace: 'nowrap' }}>FINAL</div>
 
-                        <div style={{ display: 'flex', alignItems: 'center' }}>
-                            <PlayerLine player={finalMatch.player1} isBlue={true} isRight={false} />
-                            <div style={{ width: '40px', height: '1.5px', background: '#111', marginTop: '40px' }} />
+                        <div style={{ display: 'flex', alignItems: 'center', height: '120px' }}>
+                            {/* Jogador 1 (Vindo da Esquerda) */}
+                            <div style={{ display: 'flex', alignItems: 'center' }}>
+                                <div style={{ height: '80px', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start' }}>
+                                    <PlayerLine player={finalMatch.player1} isBlue={true} isRight={false} />
+                                </div>
+                                <div style={{ width: '60px', height: '1.5px', background: '#111', transform: 'translateY(-1px)' }} />
+                            </div>
 
+                            {/* Caixa 103 */}
                             <div style={{
-                                background: '#EEE', border: '2px solid #111', color: '#000', fontSize: '24px', padding: '12px 24px',
-                                fontWeight: 950, borderRadius: '4px', boxShadow: '0 4px 15px rgba(0,0,0,0.1)', margin: '0 10px',
-                                zIndex: 10, minWidth: '60px', textAlign: 'center'
+                                background: '#EEE',
+                                border: '1.5px solid #111',
+                                color: '#000',
+                                fontSize: '28px',
+                                padding: '10px 20px',
+                                lineHeight: '1',
+                                fontWeight: 950,
+                                borderRadius: '2px',
+                                boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                                margin: '0',
+                                zIndex: 10,
+                                minWidth: '70px',
+                                textAlign: 'center',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center'
                             }}>{finalMatch.match_number}</div>
 
-                            <div style={{ width: '40px', height: '1.5px', background: '#111', marginTop: '40px' }} />
-                            <PlayerLine player={finalMatch.player2} isBlue={false} isRight={true} />
+                            {/* Jogador 2 (Vindo da Direita) */}
+                            <div style={{ display: 'flex', alignItems: 'center', flexDirection: 'row-reverse' }}>
+                                <div style={{ height: '80px', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start' }}>
+                                    <PlayerLine player={finalMatch.player2} isBlue={false} isRight={true} />
+                                </div>
+                                <div style={{ width: '60px', height: '1.5px', background: '#111', transform: 'translateY(-1px)' }} />
+                            </div>
                         </div>
 
-                        {/* Absolute Winner Section */}
-                        <div style={{ position: 'absolute', bottom: '-220px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '15px' }}>
-                            <div style={{ width: '1.5px', height: '100px', background: '#111' }} />
-                            <Trophy size={80} color="#FBCB37" fill="#FBCB37" strokeWidth={1} />
-                            <div style={{ fontWeight: 950, color: '#10151C', fontSize: '24px', letterSpacing: '2px' }}>CAMPEÃO</div>
+                        {/* Seção Campeão */}
+                        <div style={{ position: 'absolute', bottom: '-240px', left: '50%', transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '15px', width: '300px' }}>
+                            <div style={{ width: '1.5px', height: '80px', background: '#111' }} />
+                            <Trophy size={90} color="#FBCB37" fill="#FBCB37" strokeWidth={1} />
+                            <div style={{ fontWeight: 950, color: '#10151C', fontSize: '26px', letterSpacing: '2px', textAlign: 'center' }}>CAMPEÃO</div>
                         </div>
                     </div>
 
+                    {/* Lado Direito */}
                     {[...rightBranch].reverse().map((round, reqIndex) => {
                         const rIndex = rightBranch.length - 1 - reqIndex;
                         return (
