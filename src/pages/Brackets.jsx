@@ -386,6 +386,11 @@ const Brackets = () => {
         setShowBracketModal(true);
     };
 
+    const viewBracket = (catKey) => {
+        setActiveCategory(catKey);
+        setShowBracketModal(true);
+    };
+
     const saveBracket = async (catKey) => {
         setSaving(true);
         const cat = categories[catKey];
