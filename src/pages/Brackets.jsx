@@ -323,12 +323,19 @@ const Brackets = () => {
 
         React.useLayoutEffect(() => {
             if (bracketRef.current && containerRef.current) {
-                const containerWidth = containerRef.current.offsetWidth - 80; // Padding safe area
-                const contentWidth = bracketRef.current.scrollWidth;
+                const containerWidth = containerRef.current.offsetWidth - 120;
+                const containerHeight = window.innerHeight - 450; // Descontar cabeçalho e rodapé
 
-                if (contentWidth > containerWidth) {
-                    const newScale = containerWidth / contentWidth;
-                    setScale(Math.max(0.3, newScale)); // Minimum scale of 0.3 for legibility
+                const contentWidth = bracketRef.current.scrollWidth;
+                const contentHeight = bracketRef.current.scrollHeight;
+
+                let scaleW = containerWidth / contentWidth;
+                let scaleH = containerHeight / contentHeight;
+
+                let finalScale = Math.min(scaleW, scaleH);
+
+                if (finalScale < 1) {
+                    setScale(Math.max(0.25, finalScale));
                 } else {
                     setScale(1);
                 }
@@ -337,9 +344,9 @@ const Brackets = () => {
 
         return (
             <div className="modal-overlay" style={{ display: 'flex', padding: '0', alignItems: 'flex-start', overflowY: 'auto', backgroundColor: 'rgba(0,0,0,0.85)', zIndex: 1000 }}>
-                <div ref={containerRef} className="modal-content" style={{ width: '100%', maxWidth: '100vw', padding: '60px 40px', borderRadius: '0', background: '#FFF', minHeight: '100vh', boxShadow: 'none', position: 'relative', overflowX: 'hidden' }}>
-                    <div style={{ width: '100%', margin: '0 auto' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '5px solid #10151C', paddingBottom: '32px', marginBottom: '40px', maxWidth: '1400px', margin: '0 auto' }}>
+                <div ref={containerRef} className="modal-content" style={{ width: '100%', maxWidth: '100vw', padding: '60px 40px', borderRadius: '0', background: '#FFF', minHeight: '100vh', boxShadow: 'none', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+                    <div style={{ width: '100%', margin: '0 auto', flex: 1, display: 'flex', flexDirection: 'column' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '5px solid #10151C', paddingBottom: '32px', marginBottom: '30px', maxWidth: '1400px', margin: '0 auto', width: '100%' }}>
                             <div style={{ display: 'flex', gap: '32px', alignItems: 'center' }}>
                                 <Trophy size={72} color="var(--brand-blue)" />
                                 <div>
@@ -353,23 +360,22 @@ const Brackets = () => {
                                 <button className="btn btn-ghost" onClick={() => setShowBracketModal(false)}><X size={40} /></button>
                             </div>
                         </div>
-                        <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-                            <h2 style={{ fontSize: '2rem', fontWeight: 950, margin: '0 0 12px 0', textTransform: 'uppercase', color: '#10151C' }}>{cat.classification_name}</h2>
-                            <div style={{ display: 'flex', justifyContent: 'center', gap: '40px', fontWeight: 800, color: '#333', fontSize: '1.1rem' }}>
-                                <span className="badge badge-primary" style={{ padding: '8px 20px', fontSize: '1rem' }}>{cat.classification_code}</span>
+                        <div style={{ textAlign: 'center', marginBottom: '30px' }}>
+                            <h2 style={{ fontSize: '1.8rem', fontWeight: 950, margin: '0 0 8px 0', textTransform: 'uppercase', color: '#10151C' }}>{cat.classification_name}</h2>
+                            <div style={{ display: 'flex', justifyContent: 'center', gap: '40px', fontWeight: 800, color: '#333', fontSize: '1rem' }}>
+                                <span className="badge badge-primary" style={{ padding: '6px 16px', fontSize: '0.9rem' }}>{cat.classification_code}</span>
                                 <span>{cat.info.gender}</span>
                                 <span>{cat.info.weight}</span>
                                 <span style={{ color: 'var(--brand-blue)' }}>{cat.athletes.length} ATLETAS</span>
                             </div>
                         </div>
 
-                        <div style={{ width: '100%', display: 'flex', justifyContent: 'center', overflow: 'hidden' }}>
+                        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', padding: '20px 0' }}>
                             <div style={{
                                 transform: `scale(${scale})`,
-                                transformOrigin: 'top center',
+                                transformOrigin: 'center center',
                                 width: 'fit-content',
-                                height: 'fit-content',
-                                marginBottom: `calc(${(1 - scale) * -100}%)` // Compensate height collapse due to scale
+                                height: 'fit-content'
                             }}>
                                 <div ref={bracketRef}>
                                     <BracketView cat={cat} />
@@ -377,16 +383,16 @@ const Brackets = () => {
                             </div>
                         </div>
 
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '80px', borderTop: '2px solid #EEE', paddingTop: '40px', maxWidth: '1400px', margin: '0 auto' }}>
-                            <div style={{ fontSize: '13px', color: '#555', maxWidth: '750px', lineHeight: '1.8' }}>
+                        <div className="bracket-footer" style={{ display: 'flex', justifyContent: 'space-between', marginTop: 'auto', borderTop: '2px solid #EEE', paddingTop: '30px', maxWidth: '1400px', margin: '0 auto', width: '100%' }}>
+                            <div style={{ fontSize: '12px', color: '#555', maxWidth: '700px', lineHeight: '1.6' }}>
                                 <strong style={{ color: '#10151C' }}>LEGENDA TÉCNICA OFICIAL:</strong><br />
                                 (PTF) Pontos, (PTG) Superioridade Técnica, (GDP) Ponto de Ouro, (SUP) Superioridade por Decisão,<br />
                                 (WDR) Desistência, (DSQ) Desclassificação, (PUN) Punição, (RSC) Interrupção pelo Árbitro
                             </div>
-                            <div style={{ width: '350px', border: '3px solid #10151C', padding: '24px' }}>
-                                <p style={{ margin: '0 0 20px 0', fontSize: '15px', fontWeight: 950, textTransform: 'uppercase' }}>Vencedor da Categoria:</p>
-                                <div style={{ height: '3px', background: '#DDD', margin: '15px 0' }} />
-                                <div style={{ height: '3px', background: '#DDD', margin: '15px 0' }} />
+                            <div style={{ width: '320px', border: '3px solid #10151C', padding: '15px' }}>
+                                <p style={{ margin: '0 0 10px 0', fontSize: '13px', fontWeight: 950, textTransform: 'uppercase' }}>Vencedor da Categoria:</p>
+                                <div style={{ height: '3px', background: '#DDD', margin: '10px 0' }} />
+                                <div style={{ height: '3px', background: '#DDD', margin: '10px 0' }} />
                             </div>
                         </div>
                     </div>
@@ -506,14 +512,14 @@ const Brackets = () => {
                     @media print {
                         @page { 
                           size: landscape; 
-                          margin: 0mm; 
+                          margin: 10mm; 
                         }
                         
                         html, body {
                           height: 100%;
                           margin: 0 !important;
                           padding: 0 !important;
-                          overflow: hidden;
+                          overflow: visible !important;
                         }
 
                         .no-print, .btn, .header-title, .header-subtitle, 
@@ -525,8 +531,7 @@ const Brackets = () => {
                         .modal-overlay { 
                           background: #FFF !important; 
                           display: block !important; 
-                          position: fixed !important; 
-                          top: 0; left: 0; right: 0; bottom: 0;
+                          position: static !important; 
                           padding: 0 !important; 
                           margin: 0 !important;
                           overflow: visible !important; 
@@ -538,23 +543,29 @@ const Brackets = () => {
                           margin: 0 !important; 
                           width: 100vw !important; 
                           height: 100vh !important;
-                          padding: 30px 40px !important; 
+                          padding: 40px !important; 
                           display: flex !important;
                           flex-direction: column !important;
                           page-break-after: always !important;
-                          overflow: hidden !important;
+                          position: relative !important;
                         }
 
-                        /* Escalonamento automático para caber na página sem cortar */
                         .bracket-container { 
-                          padding: 20px 0 !important; 
+                          padding: 0 !important; 
                           width: 100% !important; 
                           flex: 1 !important;
                           display: flex !important;
                           align-items: center !important;
                           justify-content: center !important;
-                          transform: scale(0.9); /* Reduz levemente para garantir margens de segurança */
-                          transform-origin: center center;
+                        }
+
+                        .bracket-footer {
+                          position: absolute !important;
+                          bottom: 40px !important;
+                          left: 40px !important;
+                          right: 40px !important;
+                          margin-top: 0 !important;
+                          border-top: 2px solid #10151C !important;
                         }
 
                         h1, h2 { margin-top: 0 !important; }
