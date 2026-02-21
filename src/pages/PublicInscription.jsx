@@ -94,31 +94,58 @@ const PublicInscription = () => {
       setModalities(modsData || []);
 
       // Buscar categorias de peso
-      const { data: weightData } = await supabase
+      console.log('=== CARREGANDO WEIGHT CATEGORIES ===');
+      const { data: weightData, error: weightError } = await supabase
         .from('weight_categories')
         .select('*')
         .order('age_category, gender, min_weight');
 
-      setWeightCategories(weightData || []);
-      console.log('Weight categories carregadas:', weightData);
+      if (weightError) {
+        console.error('Erro ao carregar weight categories:', weightError);
+      } else {
+        setWeightCategories(weightData || []);
+        console.log('✅ Weight categories carregadas:', weightData?.length || 0, 'itens');
+      }
 
       // Buscar categorias de idade
-      const { data: ageData } = await supabase
+      console.log('=== CARREGANDO AGE CATEGORIES ===');
+      const { data: ageData, error: ageError } = await supabase
         .from('age_categories')
         .select('*')
         .order('min_age');
 
-      setAgeCategories(ageData || []);
-      console.log('Age categories carregadas:', ageData);
+      if (ageError) {
+        console.error('Erro ao carregar age categories:', ageError);
+      } else {
+        setAgeCategories(ageData || []);
+        console.log('✅ Age categories carregadas:', ageData?.length || 0, 'itens');
+      }
 
       // Buscar categorias de faixa
-      const { data: beltData } = await supabase
+      console.log('=== CARREGANDO BELT CATEGORIES ===');
+      const { data: beltData, error: beltError } = await supabase
         .from('belt_categories')
         .select('*')
         .order('min_level');
 
-      setBeltCategories(beltData || []);
-      console.log('Belt categories carregadas:', beltData);
+      if (beltError) {
+        console.error('❌ Erro ao carregar belt categories:', beltError);
+        console.error('Detalhes do erro:', {
+          message: beltError.message,
+          details: beltError.details,
+          hint: beltError.hint
+        });
+        setBeltCategories([]);
+      } else {
+        setBeltCategories(beltData || []);
+        console.log('✅ Belt categories carregadas:', beltData?.length || 0, 'itens');
+        console.log('Estrutura das belt categories:', beltData?.map(cat => ({
+          id: cat.id,
+          name: cat.name,
+          min_level: cat.min_level,
+          max_level: cat.max_level
+        })));
+      }
 
     } catch (error) {
       console.error('Erro ao carregar dados:', error);
