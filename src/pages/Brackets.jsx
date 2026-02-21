@@ -268,7 +268,139 @@ const Brackets = () => {
         const rounds = cat.bracket;
         if (!rounds || rounds.length === 0) return null;
         const numRounds = rounds.length;
-        
+
+        // Função para renderizar uma luta
+        const renderMatch = (match, roundIndex, matchIndex, totalMatches) => {
+            const position = { x: 0, y: 0 }; // Posição simplificada para layout horizontal
+            const isFinal = roundIndex === numRounds - 1;
+            
+            return (
+                <div key={match.id} style={{
+                    position: 'absolute',
+                    left: `${position.x}px`,
+                    top: `${position.y}px`,
+                    width: '100%',
+                    height: '100%',
+                    zIndex: 10,
+                    background: '#fff',
+                    border: '2px solid #111',
+                    borderRadius: '4px'
+                }}>
+                    {/* Número da luta */}
+                    <div style={{
+                        position: 'absolute',
+                        top: '-30px',
+                        left: '50%',
+                        transform: 'translateX(-50%)',
+                        background: '#000',
+                        color: '#fff',
+                        fontSize: '11px',
+                        fontWeight: 900,
+                        padding: '4px 8px',
+                        borderRadius: '3px',
+                        minWidth: '35px',
+                        textAlign: 'center',
+                        zIndex: 20
+                    }}>
+                        {match.match_number}
+                    </div>
+                    
+                    {/* Container dos jogadores */}
+                    <div style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        height: '100%',
+                        position: 'relative'
+                    }}>
+                        {/* Linha vertical central */}
+                        <div style={{
+                            position: 'absolute',
+                            left: '50%',
+                            top: '0',
+                            bottom: '0',
+                            width: '2px',
+                            background: '#111',
+                            transform: 'translateX(-50%)',
+                            zIndex: 1
+                        }} />
+                        
+                        {/* Jogador 1 */}
+                        <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            padding: '8px 12px',
+                            borderBottom: '2px solid #111',
+                            minHeight: '40px',
+                            background: '#fff',
+                            position: 'relative',
+                            zIndex: 2
+                        }}>
+                            <div style={{ flex: 1 }}>
+                                <div style={{ 
+                                    fontSize: '9px', 
+                                    color: '#1782C8', 
+                                    fontWeight: 800, 
+                                    marginBottom: '2px'
+                                }}>AZUL</div>
+                                <div style={{ 
+                                    fontSize: '12px', 
+                                    fontWeight: 900, 
+                                    textTransform: 'uppercase',
+                                    lineHeight: '1.2'
+                                }}>
+                                    {match.player1?.full_name || '---'}
+                                </div>
+                                <div style={{ 
+                                    fontSize: '8px', 
+                                    color: '#666', 
+                                    fontWeight: 700,
+                                    marginTop: '2px'
+                                }}>
+                                    {match.player1?.organizations?.name || ''}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Jogador 2 */}
+                        <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            padding: '8px 12px',
+                            minHeight: '40px',
+                            background: '#fff',
+                            position: 'relative',
+                            zIndex: 2
+                        }}>
+                            <div style={{ flex: 1 }}>
+                                <div style={{ 
+                                    fontSize: '9px', 
+                                    color: '#E71546', 
+                                    fontWeight: 800,
+                                    marginBottom: '2px'
+                                }}>VERMELHO</div>
+                                <div style={{ 
+                                    fontSize: '12px', 
+                                    fontWeight: 900, 
+                                    textTransform: 'uppercase',
+                                    lineHeight: '1.2'
+                                }}>
+                                    {match.player2?.full_name || '---'}
+                                </div>
+                                <div style={{ 
+                                    fontSize: '8px', 
+                                    color: '#666', 
+                                    fontWeight: 700,
+                                    marginTop: '2px'
+                                }}>
+                                    {match.player2?.organizations?.name || ''}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
         // Verificar se é exatamente 4 atletas (2 semifinais + 1 final)
         const isExactly4Athletes = rounds.length === 2 && rounds[0].length === 2 && rounds[1].length === 1;
         
