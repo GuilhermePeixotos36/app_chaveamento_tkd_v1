@@ -48,26 +48,26 @@ const Inscriptions = () => {
 
   const handleEditChange = (e) => {
     const { name, value } = e.target;
-    
+
     console.log('=== HANDLE EDIT CHANGE ===');
     console.log('Campo alterado:', name, 'Valor:', value);
     console.log('EditData atual:', editData);
-    
+
     // Se o campo for peso, processar automaticamente a categoria de peso
     if (name === 'weight') {
       const weight = parseFloat(value);
       const age = editData.age || '';
       const gender = editData.gender || '';
-      
+
       console.log('=== PROCESSANDO PESO ===');
       console.log('Peso:', weight, 'Idade:', age, 'Gênero:', gender);
-      
+
       if (weight && age && gender) {
         const suggested = findWeightCategoryByWeight(weight, age, gender);
-        
+
         console.log('=== RESULTADO SUGESTÃO ===');
         console.log('Sugerido:', suggested);
-        
+
         if (suggested) {
           console.log('✅ Categoria de peso sugerida:', suggested.name, 'ID:', suggested.id);
           alert(`✅ Categoria sugerida: ${suggested.name}`);
@@ -97,21 +97,21 @@ const Inscriptions = () => {
       // Para outros campos, apenas atualizar normalmente
       console.log('🔄 Atualizando campo normal:', name, value);
       setEditData(prev => ({ ...prev, [name]: value }));
-      
+
       // Se idade ou gênero mudar, recalcular categoria de peso se peso já estiver preenchido
       if ((name === 'age' || name === 'gender') && editData.weight) {
         const weight = editData.weight;
         const newAge = name === 'age' ? value : editData.age;
         const newGender = name === 'gender' ? value : editData.gender;
-        
+
         console.log('=== RECALCULANDO CATEGORIA ===');
         console.log('Novos dados:', { weight, age: newAge, gender: newGender });
-        
+
         if (weight && newAge && newGender) {
           const suggested = findWeightCategoryByWeight(weight, newAge, newGender);
-          
+
           console.log('🔄 Categoria atualizada:', suggested);
-          
+
           if (suggested) {
             console.log('✅ Categoria de peso atualizada:', suggested.name, 'ID:', suggested.id);
             alert(`✅ Categoria atualizada: ${suggested.name}`);
@@ -168,9 +168,9 @@ const Inscriptions = () => {
   const handleAdd = async (e) => {
     e.preventDefault();
     setLoading(true);
-    
+
     console.log('Dados do formulario:', editData);
-    
+
     try {
       const { data, error } = await supabase
         .from('registrations')
@@ -192,7 +192,7 @@ const Inscriptions = () => {
         });
 
       console.log('Resultado:', { data, error });
-      
+
       if (error) {
         console.error('Erro:', error);
         alert('Erro ao criar inscrição: ' + error.message);
@@ -219,12 +219,12 @@ const Inscriptions = () => {
         loadInscriptions(selectedChampionship);
       }
     } catch (error) {
-    console.error('Erro ao criar inscrição:', error);
-    alert('Erro ao criar inscrição');
-  } finally {
-    setLoading(false);
-  }
-};
+      console.error('Erro ao criar inscrição:', error);
+      alert('Erro ao criar inscrição');
+    } finally {
+      setLoading(false);
+    }
+  };
   useEffect(() => {
     loadData();
   }, []);
@@ -247,7 +247,7 @@ const Inscriptions = () => {
       ]);
 
       console.log('Weight categories loaded:', weightCatsData.data); // Debug
-      
+
       setChampionships(champsData.data || []);
       setModalities(modsData.data || []);
       setOrganizations(orgsData.data || []);
@@ -269,24 +269,24 @@ const Inscriptions = () => {
   const findWeightCategoryByWeight = (weight, age, gender) => {
     console.log('--- DEBUG FIND WEIGHT CATEGORY ---');
     console.log('Parâmetros:', { weight, age, gender });
-    
+
     // Converter idade numérica para categoria
     const ageCategory = getAgeCategory(age);
     console.log('Idade convertida para categoria:', ageCategory);
     console.log('Weight categories disponíveis:', weightCategories);
-    
+
     if (!weight || !ageCategory || !gender) {
       console.log('Parâmetros faltando, retornando null');
       return null;
     }
-    
-    const found = weightCategories.find(cat => 
+
+    const found = weightCategories.find(cat =>
       cat.age_category === ageCategory &&
       cat.gender === gender &&
-      weight >= cat.min_weight && 
+      weight >= cat.min_weight &&
       weight <= cat.max_weight
     );
-    
+
     console.log('Categoria encontrada:', found);
     return found;
   };
@@ -294,11 +294,11 @@ const Inscriptions = () => {
   const handleWeightChange = (weight) => {
     const age = editData.age || '';
     const gender = editData.gender || '';
-    
+
     if (weight && age && gender) {
       const suggested = findWeightCategoryByWeight(parseFloat(weight), age, gender);
       setSuggestedWeightCategory(suggested);
-      
+
       if (suggested) {
         setEditData(prev => ({
           ...prev,
@@ -351,11 +351,16 @@ const Inscriptions = () => {
   const getBeltEmoji = (beltLevel) => {
     const colors = {
       1: '⚪',  // Branca
-      2: '🟡',  // Amarela
-      3: '🟢',  // Verde
-      4: '🔵',  // Azul
-      5: '🔴',  // Vermelha
-      6: '⚫'   // Preta
+      2: '🔘',  // Cinza
+      3: '🟡',  // Amarela
+      4: '🟠',  // Laranja
+      5: '🟢',  // Verde
+      6: '🟣',  // Roxa
+      7: '🔵',  // Azul
+      8: '🟤',  // Marrom
+      9: '🔴',  // Vermelha
+      10: '🥋', // Vermelha Ponteira Preta
+      11: '⚫'  // Preta
     };
     return colors[beltLevel] || '🥋';
   };
@@ -363,11 +368,16 @@ const Inscriptions = () => {
   const getBeltName = (beltLevel) => {
     const beltNames = {
       1: 'Branca',
-      2: 'Amarela',
-      3: 'Verde',
-      4: 'Azul',
-      5: 'Vermelha',
-      6: 'Preta'
+      2: 'Cinza',
+      3: 'Amarela',
+      4: 'Laranja',
+      5: 'Verde',
+      6: 'Roxa',
+      7: 'Azul',
+      8: 'Marrom',
+      9: 'Vermelha',
+      10: 'Vermelha Ponteira Preta',
+      11: 'Preta'
     };
     return beltNames[beltLevel] || 'Desconhecida';
   };
@@ -576,11 +586,16 @@ const Inscriptions = () => {
               >
                 <option value="all">Todas as faixas</option>
                 <option value="1">Branca</option>
-                <option value="2">Amarela</option>
-                <option value="3">Verde</option>
-                <option value="4">Azul</option>
-                <option value="5">Vermelha</option>
-                <option value="6">Preta</option>
+                <option value="2">Cinza</option>
+                <option value="3">Amarela</option>
+                <option value="4">Laranja</option>
+                <option value="5">Verde</option>
+                <option value="6">Roxa</option>
+                <option value="7">Azul</option>
+                <option value="8">Marrom</option>
+                <option value="9">Vermelha</option>
+                <option value="10">Vermelha Ponteira Preta</option>
+                <option value="11">Preta</option>
               </select>
             </div>
 
@@ -919,10 +934,10 @@ const Inscriptions = () => {
                       required
                     />
                     {suggestedWeightCategory && (
-                      <div style={{ 
-                        marginTop: 'var(--spacing-2)', 
-                        fontSize: 'var(--font-size-xs)', 
-                        color: 'var(--success-600)' 
+                      <div style={{
+                        marginTop: 'var(--spacing-2)',
+                        fontSize: 'var(--font-size-xs)',
+                        color: 'var(--success-600)'
                       }}>
                         ✅ Categoria sugerida: {suggestedWeightCategory.name}
                       </div>
@@ -949,11 +964,16 @@ const Inscriptions = () => {
                     className="select-modern"
                   >
                     <option value="1">Branca</option>
-                    <option value="2">Amarela</option>
-                    <option value="3">Verde</option>
-                    <option value="4">Azul</option>
-                    <option value="5">Vermelha</option>
-                    <option value="6">Preta</option>
+                    <option value="2">Cinza</option>
+                    <option value="3">Amarela</option>
+                    <option value="4">Laranja</option>
+                    <option value="5">Verde</option>
+                    <option value="6">Roxa</option>
+                    <option value="7">Azul</option>
+                    <option value="8">Marrom</option>
+                    <option value="9">Vermelha</option>
+                    <option value="10">Vermelha Ponteira Preta</option>
+                    <option value="11">Preta</option>
                   </select>
                 </div>
                 <div>
