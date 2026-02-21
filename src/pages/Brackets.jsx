@@ -318,42 +318,48 @@ const Brackets = () => {
         const cat = categories[activeCategory];
         const champ = championships.find(c => c.id === selectedChampionship);
         return (
-            <div className="modal-overlay" style={{ display: 'flex', padding: '20px', alignItems: 'flex-start', overflowY: 'auto' }}>
-                <div className="modal-content" style={{ maxWidth: '100%', width: 'auto', padding: '60px', borderRadius: '0', background: '#FFF', minHeight: '100vh', boxShadow: 'none' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '5px solid #10151C', paddingBottom: '32px', marginBottom: '40px' }}>
-                        <div style={{ display: 'flex', gap: '32px', alignItems: 'center' }}>
-                            <Trophy size={72} color="var(--brand-blue)" />
-                            <div>
-                                <h1 style={{ margin: 0, fontSize: '32px', color: '#10151C', textTransform: 'uppercase', fontWeight: 950, letterSpacing: '2px' }}>{champ?.name}</h1>
-                                <p style={{ margin: '8px 0 0 0', color: 'var(--brand-blue)', fontWeight: 900, fontSize: '1.2rem' }}>FEDERAÇÃO DE TAEKWONDO DO ESTADO DE MINAS GERAIS</p>
+            <div className="modal-overlay" style={{ display: 'flex', padding: '0', alignItems: 'flex-start', overflowY: 'auto', backgroundColor: 'rgba(0,0,0,0.85)' }}>
+                <div className="modal-content" style={{ width: '100%', minWidth: 'fit-content', padding: '60px 40px', borderRadius: '0', background: '#FFF', minHeight: '100vh', boxShadow: 'none', position: 'relative' }}>
+                    <div style={{ maxWidth: '1400px', margin: '0 auto', width: '100%' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '5px solid #10151C', paddingBottom: '32px', marginBottom: '40px' }}>
+                            <div style={{ display: 'flex', gap: '32px', alignItems: 'center' }}>
+                                <Trophy size={72} color="var(--brand-blue)" />
+                                <div>
+                                    <h1 style={{ margin: 0, fontSize: '32px', color: '#10151C', textTransform: 'uppercase', fontWeight: 950, letterSpacing: '2px' }}>{champ?.name}</h1>
+                                    <p style={{ margin: '8px 0 0 0', color: 'var(--brand-blue)', fontWeight: 900, fontSize: '1.2rem' }}>FEDERAÇÃO DE TAEKWONDO DO ESTADO DE MINAS GERAIS</p>
+                                </div>
+                            </div>
+                            <div className="no-print" style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+                                <button className="btn btn-primary" onClick={() => saveBracket(activeCategory)} disabled={saving}><Save size={24} /> SALVAR</button>
+                                <button className="btn btn-secondary" onClick={() => window.print()}><Printer size={24} /> IMPRIMIR</button>
+                                <button className="btn btn-ghost" onClick={() => setShowBracketModal(false)}><X size={40} /></button>
                             </div>
                         </div>
-                        <div className="no-print" style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-                            <button className="btn btn-primary" onClick={() => saveBracket(activeCategory)} disabled={saving}><Save size={24} /> SALVAR</button>
-                            <button className="btn btn-secondary" onClick={() => window.print()}><Printer size={24} /> IMPRIMIR</button>
-                            <button className="btn btn-ghost" onClick={() => setShowBracketModal(false)}><X size={40} /></button>
+                        <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+                            <h2 style={{ fontSize: '2rem', fontWeight: 950, margin: '0 0 12px 0', textTransform: 'uppercase', color: '#10151C' }}>{cat.classification_name}</h2>
+                            <div style={{ display: 'flex', justifyContent: 'center', gap: '40px', fontWeight: 800, color: '#333', fontSize: '1.1rem' }}>
+                                <span className="badge badge-primary" style={{ padding: '8px 20px', fontSize: '1rem' }}>{cat.classification_code}</span>
+                                <span>{cat.info.gender}</span>
+                                <span>{cat.info.weight}</span>
+                                <span style={{ color: 'var(--brand-blue)' }}>{cat.athletes.length} ATLETAS</span>
+                            </div>
                         </div>
-                    </div>
-                    <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-                        <h2 style={{ fontSize: '2rem', fontWeight: 950, margin: '0 0 12px 0', textTransform: 'uppercase', color: '#10151C' }}>{cat.classification_name}</h2>
-                        <div style={{ display: 'flex', justifyContent: 'center', gap: '40px', fontWeight: 800, color: '#333', fontSize: '1.1rem' }}>
-                            <span className="badge badge-primary" style={{ padding: '8px 20px', fontSize: '1rem' }}>{cat.classification_code}</span>
-                            <span>{cat.info.gender}</span>
-                            <span>{cat.info.weight}</span>
-                            <span style={{ color: 'var(--brand-blue)' }}>{cat.athletes.length} ATLETAS</span>
+
+                        <div style={{ width: '100%', overflowX: 'auto', padding: '20px 0', display: 'flex', justifyContent: 'center' }}>
+                            <BracketView cat={cat} />
                         </div>
-                    </div>
-                    <BracketView cat={cat} />
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '80px', borderTop: '2px solid #EEE', paddingTop: '40px' }}>
-                        <div style={{ fontSize: '13px', color: '#555', maxWidth: '750px', lineHeight: '1.8' }}>
-                            <strong style={{ color: '#10151C' }}>LEGENDA TÉCNICA OFICIAL:</strong><br />
-                            (PTF) Pontos, (PTG) Superioridade Técnica, (GDP) Ponto de Ouro, (SUP) Superioridade por Decisão,<br />
-                            (WDR) Desistência, (DSQ) Desclassificação, (PUN) Punição, (RSC) Interrupção pelo Árbitro
-                        </div>
-                        <div style={{ width: '350px', border: '3px solid #10151C', padding: '24px' }}>
-                            <p style={{ margin: '0 0 20px 0', fontSize: '15px', fontWeight: 950, textTransform: 'uppercase' }}>Vencedor da Categoria:</p>
-                            <div style={{ height: '3px', background: '#DDD', margin: '15px 0' }} />
-                            <div style={{ height: '3px', background: '#DDD', margin: '15px 0' }} />
+
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '80px', borderTop: '2px solid #EEE', paddingTop: '40px' }}>
+                            <div style={{ fontSize: '13px', color: '#555', maxWidth: '750px', lineHeight: '1.8' }}>
+                                <strong style={{ color: '#10151C' }}>LEGENDA TÉCNICA OFICIAL:</strong><br />
+                                (PTF) Pontos, (PTG) Superioridade Técnica, (GDP) Ponto de Ouro, (SUP) Superioridade por Decisão,<br />
+                                (WDR) Desistência, (DSQ) Desclassificação, (PUN) Punição, (RSC) Interrupção pelo Árbitro
+                            </div>
+                            <div style={{ width: '350px', border: '3px solid #10151C', padding: '24px' }}>
+                                <p style={{ margin: '0 0 20px 0', fontSize: '15px', fontWeight: 950, textTransform: 'uppercase' }}>Vencedor da Categoria:</p>
+                                <div style={{ height: '3px', background: '#DDD', margin: '15px 0' }} />
+                                <div style={{ height: '3px', background: '#DDD', margin: '15px 0' }} />
+                            </div>
                         </div>
                     </div>
                 </div>
