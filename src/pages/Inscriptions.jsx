@@ -244,15 +244,29 @@ const Inscriptions = () => {
     }
   };
 
-  const findWeightCategoryByWeight = (weight, ageCategory, gender) => {
-    if (!weight || !ageCategory || !gender) return null;
+  const findWeightCategoryByWeight = (weight, age, gender) => {
+    console.log('--- DEBUG FIND WEIGHT CATEGORY ---');
+    console.log('Parâmetros:', { weight, age, gender });
     
-    return weightCategories.find(cat => 
+    // Converter idade numérica para categoria
+    const ageCategory = getAgeCategory(age);
+    console.log('Idade convertida para categoria:', ageCategory);
+    console.log('Weight categories disponíveis:', weightCategories);
+    
+    if (!weight || !ageCategory || !gender) {
+      console.log('Parâmetros faltando, retornando null');
+      return null;
+    }
+    
+    const found = weightCategories.find(cat => 
       cat.age_category === ageCategory &&
       cat.gender === gender &&
       weight >= cat.min_weight && 
       weight <= cat.max_weight
     );
+    
+    console.log('Categoria encontrada:', found);
+    return found;
   };
 
   const handleWeightChange = (weight) => {
