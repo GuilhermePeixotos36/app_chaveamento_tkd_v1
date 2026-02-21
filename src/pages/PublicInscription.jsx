@@ -305,6 +305,40 @@ const PublicInscription = () => {
     console.log('BeltLevel:', beltLevel);
     console.log('Belt categories disponíveis:', beltCategories);
     
+    // Se não tiver categorias carregadas, usar fallback hardcoded
+    if (!beltCategories || beltCategories.length === 0) {
+      console.log('Usando fallback hardcoded para belt categories');
+      
+      // Mapeamento hardcoded baseado na estrutura comum
+      const beltMapping = {
+        1: 'Branca',
+        2: 'Branca Ponta Amarela', 
+        3: 'Amarela',
+        4: 'Amarela Ponta Verde',
+        5: 'Verde',
+        6: 'Verde Ponta Azul',
+        7: 'Azul',
+        8: 'Azul Ponta Vermelha',
+        9: 'Vermelha',
+        10: 'Vermelha Ponta Preta',
+        11: 'Preta'
+      };
+      
+      const beltName = beltMapping[beltLevel];
+      console.log('Belt name (fallback):', beltName);
+      
+      // Tentar encontrar por nome nas categorias disponíveis
+      const found = beltCategories.find(cat => cat.name === beltName);
+      if (found) {
+        console.log('Belt category encontrada por nome:', found);
+        return found.id;
+      }
+      
+      console.log('Nenhuma belt category encontrada, retornando null');
+      return null;
+    }
+    
+    // Lógica original se tiver categorias carregadas
     const found = beltCategories.find(cat => {
       console.log('Comparando:', {
         beltLevel: beltLevel,
