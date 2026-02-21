@@ -5,6 +5,8 @@ const PublicInscription = () => {
   const [championships, setChampionships] = useState([]);
   const [organizations, setOrganizations] = useState([]);
   const [modalities, setModalities] = useState([]);
+  const [weightCategories, setWeightCategories] = useState([]);
+  const [suggestedWeightCategory, setSuggestedWeightCategory] = useState(null);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [showSuccess, setShowSuccess] = useState(false);
@@ -16,6 +18,7 @@ const PublicInscription = () => {
     athlete_name: '',
     athlete_birthdate: '',
     athlete_weight: '',
+    weight_category_id: null,
     athlete_gender: '',
     athlete_belt: '',
     modality_id: '',
@@ -86,6 +89,15 @@ const PublicInscription = () => {
 
       setModalities(modsData || []);
 
+      // Buscar categorias de peso
+      const { data: weightData } = await supabase
+        .from('weight_categories')
+        .select('*')
+        .order('age_category, gender, min_weight');
+
+      setWeightCategories(weightData || []);
+      console.log('Weight categories carregadas:', weightData);
+
     } catch (error) {
       console.error('Erro ao carregar dados:', error);
       setMessage('Erro ao carregar dados do formulário');
@@ -96,10 +108,98 @@ const PublicInscription = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    
+    console.log('=== PUBLIC INSCRIPTION HANDLE CHANGE ===');
+    console.log('Campo:', name, 'Valor:', value);
+    
+    // Se o campo for peso, processar automaticamente a categoria de peso
+    if (name === 'athlete_weight') {
+      const weight = parseFloat(value);
+      const age = calculateAge(formData.athlete_birthdate);
+      const gender = formData.athlete_gender;
+      
+      console.log('=== PROCESSANDO PESO (PUBLIC) ===');
+      console.log('Peso:', weight, 'Idade:', age, 'Gênero:', gender);
+      
+      if (weight && age && gender) {
+        const suggested = findWeightCategoryByWeight(weight, age, gender);
+        
+        console.log('=== RESULTADO SUGESTÃO (PUBLIC) ===');
+        console.log('Sugerido:', suggested);
+        
+        if (suggested) {
+          console.log('✅ Categoria sugerida (PUBLIC):', suggested.name, 'ID:', suggested.id);
+          alert(`✅ Categoria sugerida: ${suggested.name}`);
+          setFormData(prev => ({
+            ...prev,
+            athlete_weight: value,
+            weight_category_id: suggested.id
+          }));
+          setSuggestedWeightCategory(suggested);
+        } else {
+          console.log('❌ Nenhuma categoria encontrada (PUBLIC):', { weight, age, gender });
+          alert(`❌ Nenhuma categoria encontrada para peso ${weight}kg, idade ${age}, gênero ${gender}`);
+          setFormData(prev => ({
+            ...prev,
+            athlete_weight: value,
+            weight_category_id: null
+          }));
+          setSuggestedWeightCategory(null);
+        }
+      } else {
+        console.log('⚠️ Dados incompletos para sugestão (PUBLIC)');
+        setFormData(prev => ({
+          ...prev,
+          athlete_weight: value,
+          weight_category_id: null
+        }));
+        setSuggestedWeightCategory(null);
+      }
+    } else if (name === 'athlete_birthdate' || name === 'athlete_gender') {
+      // Se idade ou gênero mudar, recalcular categoria se peso já estiver preenchido
+      const weight = formData.athlete_weight;
+      const age = name === 'athlete_birthdate' ? calculateAge(value) : calculateAge(formData.athlete_birthdate);
+      const gender = name === 'athlete_gender' ? value : formData.athlete_gender;
+      
+      console.log('=== RECALCULANDO CATEGORIA (PUBLIC) ===');
+      console.log('Novos dados:', { weight, age, gender });
+      
+      setFormData(prev => ({
+        ...prev,
+        [name]: value
+      }));
+      
+      if (weight && age && gender) {
+        const suggested = findWeightCategoryByWeight(weight, age, gender);
+        
+        console.log('🔄 Categoria atualizada (PUBLIC):', suggested);
+        
+        if (suggested) {
+          console.log('✅ Categoria atualizada (PUBLIC):', suggested.name, 'ID:', suggested.id);
+          alert(`✅ Categoria atualizada: ${suggested.name}`);
+          setFormData(prev => ({
+            ...prev,
+            weight_category_id: suggested.id
+          }));
+          setSuggestedWeightCategory(suggested);
+        } else {
+          console.log('❌ Nenhuma categoria encontrada após atualização (PUBLIC)');
+          alert(`❌ Nenhuma categoria encontrada para os novos dados`);
+          setFormData(prev => ({
+            ...prev,
+            weight_category_id: null
+          }));
+          setSuggestedWeightCategory(null);
+        }
+      }
+    } else {
+      // Para outros campos, apenas atualizar normalmente
+      console.log('🔄 Atualizando campo normal (PUBLIC):', name, value);
+      setFormData(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    }
   };
 
   const handleNewOrgChange = (e) => {
@@ -108,6 +208,41 @@ const PublicInscription = () => {
       ...prev,
       [name]: value
     }));
+  };
+
+  const getAgeCategory = (age) => {
+    if (age >= 4 && age <= 6) return 'Fraldinha';
+    if (age >= 7 && age <= 9) return 'Mirim';
+    if (age >= 10 && age <= 12) return 'Infantil';
+    if (age >= 13 && age <= 15) return 'Infantojuvenil';
+    if (age >= 16 && age <= 17) return 'Juvenil';
+    if (age >= 18) return 'Adulto';
+    return 'Adulto';
+  };
+
+  const findWeightCategoryByWeight = (weight, age, gender) => {
+    console.log('--- DEBUG FIND WEIGHT CATEGORY (PUBLIC) ---');
+    console.log('Parâmetros:', { weight, age, gender });
+    
+    // Converter idade numérica para categoria
+    const ageCategory = getAgeCategory(age);
+    console.log('Idade convertida para categoria (PUBLIC):', ageCategory);
+    console.log('Weight categories disponíveis (PUBLIC):', weightCategories);
+    
+    if (!weight || !ageCategory || !gender) {
+      console.log('Parâmetros faltando, retornando null (PUBLIC)');
+      return null;
+    }
+    
+    const found = weightCategories.find(cat => 
+      cat.age_category === ageCategory &&
+      cat.gender === gender &&
+      weight >= cat.min_weight && 
+      weight <= cat.max_weight
+    );
+    
+    console.log('Categoria encontrada (PUBLIC):', found);
+    return found;
   };
 
   const handleOrganizationChange = (e) => {
@@ -235,6 +370,7 @@ const PublicInscription = () => {
           full_name: formData.athlete_name,
           birth_date: formData.athlete_birthdate,
           weight: parseFloat(formData.athlete_weight),
+          weight_category_id: formData.weight_category_id,
           gender: formData.athlete_gender,
           belt_level: parseInt(formData.athlete_belt),
           modality_id: formData.modality_id,
@@ -245,6 +381,18 @@ const PublicInscription = () => {
           status: 'pending'
         });
 
+      console.log('=== RESULTADO INSERÇÃO (PUBLIC) ===');
+      console.log('Dados inseridos:', {
+        championship_id: formData.championship_id,
+        organization_id: formData.organization_id,
+        full_name: formData.athlete_name,
+        weight: parseFloat(formData.athlete_weight),
+        weight_category_id: formData.weight_category_id,
+        gender: formData.athlete_gender,
+        age: age
+      });
+      console.log('Resultado:', { data, error });
+
       if (error) throw error;
 
       setShowSuccess(true);
@@ -254,6 +402,7 @@ const PublicInscription = () => {
         athlete_name: '',
         athlete_birthdate: '',
         athlete_weight: '',
+        weight_category_id: null,
         athlete_gender: '',
         athlete_belt: '',
         modality_id: '',
