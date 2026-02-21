@@ -103,7 +103,13 @@ const Brackets = () => {
             data.forEach(reg => {
                 const classification = findMatchingClassification(reg);
                 
+                console.log('--- DEBUG AGRUPAMENTO ---');
+                console.log('Atleta:', reg.full_name);
+                console.log('Classificação encontrada:', classification ? classification.name : 'NENHUMA');
+                
                 if (classification) {
+                    console.log('✅ Atleta será agrupado na classificação:', classification.name);
+                    
                     // Use classification ID as key
                     const catKey = `classification_${classification.id}`;
                     
@@ -130,11 +136,13 @@ const Brackets = () => {
                             bracket: null
                         };
                     }
+                    
+                    console.log('✅ Adicionando atleta ao grupo:', catKey);
                     grouped[catKey].athletes.push(reg);
                 } else {
                     // Atletas sem classificação correspondente são ignorados por enquanto
                     unclassifiedAthletes.push(reg);
-                    console.log('Atleta sem classificação correspondente:', reg.full_name, 'Idade:', reg.age, 'Gênero:', reg.gender);
+                    console.log('❌ Atleta sem classificação correspondente:', reg.full_name, 'Idade:', reg.age, 'Gênero:', reg.gender);
                 }
             });
 
