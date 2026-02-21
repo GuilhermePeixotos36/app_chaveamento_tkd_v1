@@ -809,67 +809,73 @@ const Brackets = () => {
                         }
                     }
                     @media print {
-                        body * {
-                            visibility: hidden;
+                        @page {
+                            size: landscape;
+                            margin: 1cm;
                         }
-                        /* If modal is open, only print modal */
-                        .modal-overlay {
-                            position: absolute !important;
-                            left: 0 !important;
-                            top: 0 !important;
+                        
+                        body {
+                            background: white !important;
+                        }
+
+                        /* Hide everything by default */
+                        .app-container > *:not(.modal-overlay):not(.print-all-containers) {
+                            display: none !important;
+                        }
+                        
+                        .navbar, .sidebar, .btn, .toast, .modal-close {
+                            display: none !important;
+                        }
+
+                        /* Show only necessary containers */
+                        .app-container, .content-wrapper, .modal-overlay, .modal-content, .print-all-containers {
+                            display: block !important;
+                            visibility: visible !important;
+                            position: static !important;
                             width: 100% !important;
                             height: auto !important;
-                            background: white !important;
-                            visibility: visible !important;
-                            padding: 0 !important;
-                            display: block !important;
-                        }
-                        .modal-content {
-                            box-shadow: none !important;
-                            border: none !important;
-                            width: 100% !important;
-                            max-width: 100% !important;
-                            visibility: visible !important;
                             margin: 0 !important;
                             padding: 0 !important;
+                            background: white !important;
+                            box-shadow: none !important;
+                            border: none !important;
                         }
+
+                        .modal-overlay {
+                            visibility: visible !important;
+                        }
+                        
                         .modal-content * {
                             visibility: visible !important;
                         }
-                        .modal-close, .btn, .toast, .loading-spinner, .header-title, .header-subtitle, .app-container {
-                            display: none !important;
-                        }
+
                         .modal-header {
                             border-bottom: 2px solid #000 !important;
                             margin-bottom: 20px !important;
                         }
+
                         .modal-title {
                             color: black !important;
                             font-size: 24px !important;
                         }
+
                         .content-card {
                             border: 1px solid #000 !important;
                             background: white !important;
                             break-inside: avoid;
                         }
-                        .content-wrapper {
-                            padding: 0 !important;
-                            margin: 0 !important;
-                        }
-                        
-                        /* Layout for printing multiple brackets if needed */
-                        .print-all-containers {
-                            visibility: visible !important;
-                            display: block !important;
-                            position: absolute !important;
-                            left: 0 !important;
-                            top: 0 !important;
-                            width: 100% !important;
-                        }
+
                         .print-bracket-page {
                             visibility: visible !important;
                             page-break-after: always !important;
-                            padding: 1cm !important;
+                            padding: 0 !important;
+                            margin-bottom: 2cm !important;
+                            color: black !important;
+                        }
+                        
+                        .print-all-containers * {
+                            visibility: visible !important;
+                            color: black !important;
                         }
                     }
                     `}
