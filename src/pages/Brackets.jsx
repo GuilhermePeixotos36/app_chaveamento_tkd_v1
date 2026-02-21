@@ -512,28 +512,34 @@ const Brackets = () => {
                     @media print {
                         @page { 
                           size: landscape; 
-                          margin: 10mm; 
+                          margin: 5mm; 
                         }
                         
                         html, body {
-                          height: 100%;
+                          background: #FFF !important;
+                          height: auto !important;
                           margin: 0 !important;
                           padding: 0 !important;
                           overflow: visible !important;
                         }
 
-                        .no-print, .btn, .header-title, .header-subtitle, 
-                        .app-container > .content-wrapper > *:not(.modal-overlay), 
-                        .navbar, .sidebar, .toast { 
+                        /* Esconde tudo exceto o modal */
+                        body > *:not(.modal-overlay) {
+                          display: none !important;
+                        }
+
+                        .no-print, .btn, .navbar, .sidebar, .toast { 
                           display: none !important; 
                         }
 
                         .modal-overlay { 
                           background: #FFF !important; 
                           display: block !important; 
-                          position: static !important; 
+                          position: static !important;
                           padding: 0 !important; 
                           margin: 0 !important;
+                          width: 100% !important;
+                          height: auto !important;
                           overflow: visible !important; 
                         }
 
@@ -541,34 +547,29 @@ const Brackets = () => {
                           box-shadow: none !important; 
                           border: none !important; 
                           margin: 0 !important; 
-                          width: 100vw !important; 
-                          height: 100vh !important;
-                          padding: 40px !important; 
+                          width: 100% !important; 
+                          min-height: 100vh !important;
+                          padding: 20px !important; 
                           display: flex !important;
                           flex-direction: column !important;
                           page-break-after: always !important;
-                          position: relative !important;
+                          visibility: visible !important;
                         }
 
                         .bracket-container { 
-                          padding: 0 !important; 
-                          width: 100% !important; 
                           flex: 1 !important;
                           display: flex !important;
                           align-items: center !important;
                           justify-content: center !important;
+                          margin: 20px 0 !important;
                         }
 
                         .bracket-footer {
-                          position: absolute !important;
-                          bottom: 40px !important;
-                          left: 40px !important;
-                          right: 40px !important;
-                          margin-top: 0 !important;
+                          margin-top: auto !important;
+                          padding-top: 20px !important;
                           border-top: 2px solid #10151C !important;
+                          width: 100% !important;
                         }
-
-                        h1, h2 { margin-top: 0 !important; }
                     }
                 `}</style>
             </div>
