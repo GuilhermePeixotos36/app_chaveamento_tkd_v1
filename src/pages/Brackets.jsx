@@ -260,7 +260,7 @@ const Brackets = () => {
         const PlayerLine = ({ player, isBlue, isRight }) => (
             <div style={{ borderBottom: '2.5px solid #111', padding: '6px 0', width: '200px', textAlign: isRight ? 'right' : 'left', color: isBlue ? '#1782C8' : '#E71546', minHeight: '52px' }}>
                 <div style={{ fontWeight: 950, whiteSpace: 'nowrap', textTransform: 'uppercase', fontSize: '13px' }}>
-                    <span style={{ fontSize: '10px', marginRight: '5px', color: '#111', fontWeight: 800 }}>{isBlue ? 'BLUE' : 'RED'}</span>
+                    <span style={{ fontSize: '10px', marginRight: '5px', color: '#111', fontWeight: 800 }}>{isBlue ? 'AZUL' : 'VERMELHO'}</span>
                     {player?.full_name || ''}
                 </div>
                 <div style={{ fontSize: '10px', color: '#666', fontWeight: 800 }}>{player?.organizations?.name || ''}</div>
@@ -319,13 +319,13 @@ const Brackets = () => {
         const champ = championships.find(c => c.id === selectedChampionship);
         return (
             <div className="modal-overlay" style={{ display: 'flex', padding: '20px', alignItems: 'flex-start', overflowY: 'auto' }}>
-                <div className="modal-content" style={{ maxWidth: '100%', width: 'auto', padding: '60px', borderRadius: '0', background: '#FFF' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '5px solid #10151C', paddingBottom: '32px', marginBottom: '48px' }}>
+                <div className="modal-content" style={{ maxWidth: '100%', width: 'auto', padding: '60px', borderRadius: '0', background: '#FFF', minHeight: '100vh', boxShadow: 'none' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '5px solid #10151C', paddingBottom: '32px', marginBottom: '40px' }}>
                         <div style={{ display: 'flex', gap: '32px', alignItems: 'center' }}>
                             <Trophy size={72} color="var(--brand-blue)" />
                             <div>
-                                <h1 style={{ margin: 0, fontSize: '36px', color: '#10151C', textTransform: 'uppercase', fontWeight: 950, letterSpacing: '2px' }}>{champ?.name}</h1>
-                                <p style={{ margin: '8px 0 0 0', color: 'var(--brand-blue)', fontWeight: 900, fontSize: '1.4rem' }}>FEDERAÇÃO DE TAEKWONDO DO ESTADO DE MINAS GERAIS</p>
+                                <h1 style={{ margin: 0, fontSize: '32px', color: '#10151C', textTransform: 'uppercase', fontWeight: 950, letterSpacing: '2px' }}>{champ?.name}</h1>
+                                <p style={{ margin: '8px 0 0 0', color: 'var(--brand-blue)', fontWeight: 900, fontSize: '1.2rem' }}>FEDERAÇÃO DE TAEKWONDO DO ESTADO DE MINAS GERAIS</p>
                             </div>
                         </div>
                         <div className="no-print" style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
@@ -334,10 +334,10 @@ const Brackets = () => {
                             <button className="btn btn-ghost" onClick={() => setShowBracketModal(false)}><X size={40} /></button>
                         </div>
                     </div>
-                    <div style={{ textAlign: 'center', marginBottom: '60px' }}>
-                        <h2 style={{ fontSize: '3rem', fontWeight: 950, margin: '0 0 16px 0', textTransform: 'uppercase', color: '#10151C' }}>{cat.classification_name}</h2>
-                        <div style={{ display: 'flex', justifyContent: 'center', gap: '40px', fontWeight: 800, color: '#333', fontSize: '1.2rem' }}>
-                            <span className="badge badge-primary" style={{ padding: '10px 24px', fontSize: '1.1rem' }}>{cat.classification_code}</span>
+                    <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+                        <h2 style={{ fontSize: '2rem', fontWeight: 950, margin: '0 0 12px 0', textTransform: 'uppercase', color: '#10151C' }}>{cat.classification_name}</h2>
+                        <div style={{ display: 'flex', justifyContent: 'center', gap: '40px', fontWeight: 800, color: '#333', fontSize: '1.1rem' }}>
+                            <span className="badge badge-primary" style={{ padding: '8px 20px', fontSize: '1rem' }}>{cat.classification_code}</span>
                             <span>{cat.info.gender}</span>
                             <span>{cat.info.weight}</span>
                             <span style={{ color: 'var(--brand-blue)' }}>{cat.athletes.length} ATLETAS</span>
