@@ -257,87 +257,112 @@ const Brackets = () => {
         const leftBranch = rounds.slice(0, numRounds - 1).map(round => round.slice(0, Math.ceil(round.length / 2)));
         const rightBranch = rounds.slice(0, numRounds - 1).map(round => round.slice(Math.ceil(round.length / 2)));
 
+        const MatchHeight = 120; // Altura fixa base
+
         const PlayerLine = ({ player, isBlue, isRight }) => (
             <div style={{
-                borderBottom: '1px solid #333',
+                borderBottom: '1px solid #111',
                 width: '180px',
-                padding: '2px 0',
+                padding: '1px 4px',
                 textAlign: isRight ? 'right' : 'left',
                 color: isBlue ? '#1782C8' : '#E71546',
-                position: 'relative'
+                height: '40px',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'flex-end'
             }}>
-                <div style={{ fontWeight: 950, textTransform: 'uppercase', fontSize: '10px', lineHeight: '1.2' }}>
-                    <span style={{ fontSize: '7px', color: '#666', marginRight: '4px' }}>{isBlue ? 'AZUL' : 'VERMELHO'}</span>
+                <div style={{ fontWeight: 950, textTransform: 'uppercase', fontSize: '10px', lineHeight: '1' }}>
+                    <span style={{ fontSize: '7px', color: '#111', marginRight: '4px', fontWeight: 800 }}>{isBlue ? 'AZUL' : 'VERMELHO'}</span>
                     {player?.full_name || '---'}
                 </div>
-                <div style={{ fontSize: '7px', color: '#888', fontWeight: 700 }}>{player?.organizations?.name || ''}</div>
+                <div style={{ fontSize: '7px', color: '#666', fontWeight: 800 }}>{player?.organizations?.name || ''}</div>
             </div>
         );
 
-        const SimpleMatch = ({ match, isRight }) => (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', margin: '15px 0', position: 'relative' }}>
-                <PlayerLine player={match.player1} isBlue={true} isRight={isRight} />
-
-                {/* Connector Simple */}
+        const SimpleMatch = ({ match, rIndex, isRight }) => {
+            const h = MatchHeight * Math.pow(2, rIndex);
+            const connectorW = 40;
+            return (
                 <div style={{
-                    position: 'absolute',
-                    [isRight ? 'left' : 'right']: '-25px',
-                    top: '15px',
-                    bottom: '15px',
-                    width: '25px',
-                    border: '1px solid #333',
-                    [isRight ? 'borderRight' : 'borderLeft']: 'none',
+                    height: `${h}px`,
                     display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    position: 'relative',
+                    width: '180px',
+                    margin: isRight ? `0 0 0 ${connectorW}px` : `0 ${connectorW}px 0 0`
                 }}>
-                    <div style={{ width: '100%', height: '1px', background: '#333' }} />
-                    <div style={{
-                        position: 'absolute', background: '#fff', border: '1px solid #333',
-                        fontSize: '8px', fontWeight: 900, padding: '1px 3px', borderRadius: '2px'
-                    }}>{match.match_number}</div>
-                </div>
+                    <div style={{ position: 'absolute', top: `${(h / 4) - 20}px`, [isRight ? 'right' : 'left']: 0 }}>
+                        <PlayerLine player={match.player1} isBlue={true} isRight={isRight} />
+                    </div>
 
-                <PlayerLine player={match.player2} isBlue={false} isRight={isRight} />
-            </div>
-        );
+                    <div style={{ position: 'absolute', bottom: `${(h / 4) - 20}px`, [isRight ? 'right' : 'left']: 0 }}>
+                        <PlayerLine player={match.player2} isBlue={false} isRight={isRight} />
+                    </div>
+
+                    {/* Conector */}
+                    <div style={{
+                        position: 'absolute',
+                        top: `${h / 4}px`,
+                        bottom: `${h / 4}px`,
+                        [isRight ? 'left' : 'right']: -connectorW,
+                        width: connectorW,
+                        border: '1.5px solid #111',
+                        [isRight ? 'borderRight' : 'borderLeft']: 'none'
+                    }}>
+                        <div style={{
+                            position: 'absolute', top: '50%', left: 0, right: 0, height: '1.5px', background: '#111', transform: 'translateY(-50%)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center'
+                        }}>
+                            <div style={{
+                                background: '#333', color: '#fff', fontSize: '9px', fontWeight: 950, padding: '2px 4px', borderRadius: '2px', minWidth: '22px', textAlign: 'center'
+                            }}>{match.match_number}</div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const totalH = Math.pow(2, numRounds - 2) * MatchHeight;
 
         return (
-            <div className="bracket-container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '60px 20px', background: '#fff', minHeight: '600px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '40px' }}>
+            <div className="bracket-container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '80px 40px', background: '#fff' }}>
+                <div style={{ display: 'flex', alignItems: 'center' }}>
 
                     {/* Ramos Esquerda */}
-                    <div style={{ display: 'flex', gap: '30px' }}>
-                        {leftBranch.map((round, rIdx) => (
-                            <div key={`l-${rIdx}`} style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-around', height: '100%' }}>
-                                {round.map(m => <SimpleMatch key={m.id} match={m} isRight={false} />)}
+                    <div style={{ display: 'flex' }}>
+                        {leftBranch.map((round, rIndex) => (
+                            <div key={`l-${rIndex}`} style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                                {round.map(m => <SimpleMatch key={m.id} match={m} rIndex={rIndex} isRight={false} />)}
                             </div>
                         ))}
                     </div>
 
-                    {/* FINAL */}
-                    <div style={{ textAlign: 'center', width: '300px' }}>
-                        <div style={{ fontWeight: 950, fontSize: '24px', letterSpacing: '4px', marginBottom: '40px' }}>FINAL</div>
+                    {/* FINAL CENTRAL INTEGRADA */}
+                    <div style={{ width: '400px', height: `${totalH}px`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+                        <div style={{ position: 'absolute', top: '-100px', fontWeight: 950, fontSize: '32px', letterSpacing: '8px' }}>FINAL</div>
 
-                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '30px' }}>
-                            <div style={{ border: '2px solid #111', padding: '15px', borderRadius: '4px', position: 'relative' }}>
-                                <div style={{ position: 'absolute', top: '-10px', left: '50%', transform: 'translateX(-50%)', background: '#111', color: '#fff', fontSize: '10px', padding: '2px 8px', borderRadius: '2px', fontWeight: 900 }}>{finalMatch.match_number}</div>
-                                <div style={{ width: '180px', marginBottom: '10px', borderBottom: '1px solid #333', color: '#1782C8', fontWeight: 900, fontSize: '12px' }}>{finalMatch.player1?.full_name || '---'}</div>
-                                <div style={{ width: '180px', color: '#E71546', fontWeight: 900, fontSize: '12px' }}>{finalMatch.player2?.full_name || '---'}</div>
-                            </div>
+                        <div style={{ display: 'flex', alignItems: 'center', width: '100%', justifyContent: 'space-between', border: '2px solid #111', padding: '20px', borderRadius: '4px', background: '#fff', boxShadow: '0 4px 15px rgba(0,0,0,0.05)' }}>
+                            <div style={{ position: 'absolute', top: '-15px', left: '50%', transform: 'translateX(-50%)', background: '#111', color: '#fff', padding: '4px 20px', borderRadius: '4px', fontWeight: 950, fontSize: '20px' }}>{finalMatch.match_number}</div>
 
-                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
-                                <Trophy size={80} color="#FBCB37" fill="#FBCB37" />
-                                <div style={{ fontWeight: 950, fontSize: '22px', color: '#111' }}>CAMPEÃO</div>
+                            <div style={{ flex: 1 }}>
+                                <PlayerLine player={finalMatch.player1} isBlue={true} isRight={false} />
+                                <div style={{ height: '20px' }} />
+                                <PlayerLine player={finalMatch.player2} isBlue={false} isRight={false} />
                             </div>
+                        </div>
+
+                        <div style={{ marginTop: '80px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
+                            <Trophy size={90} color="#FBCB37" fill="#FBCB37" />
+                            <div style={{ fontWeight: 950, fontSize: '28px', letterSpacing: '2px' }}>CAMPEÃO</div>
                         </div>
                     </div>
 
                     {/* Ramos Direita */}
-                    <div style={{ display: 'flex', flexDirection: 'row-reverse', gap: '30px' }}>
-                        {rightBranch.map((round, rIdx) => (
-                            <div key={`r-${rIdx}`} style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-around', height: '100%' }}>
-                                {round.map(m => <SimpleMatch key={m.id} match={m} isRight={true} />)}
+                    <div style={{ display: 'flex', flexDirection: 'row-reverse' }}>
+                        {rightBranch.map((round, rIndex) => (
+                            <div key={`r-${rIndex}`} style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                                {round.map(m => <SimpleMatch key={m.id} match={m} rIndex={rIndex} isRight={true} />)}
                             </div>
                         ))}
                     </div>
@@ -352,72 +377,65 @@ const Brackets = () => {
         const [scale, setScale] = useState(1);
         const bracketRef = React.useRef(null);
         const containerRef = React.useRef(null);
-        const [logoError, setLogoError] = useState(false);
 
         React.useLayoutEffect(() => {
             if (bracketRef.current && containerRef.current) {
-                const containerWidth = containerRef.current.offsetWidth - 80;
+                const containerWidth = containerRef.current.offsetWidth - 60;
                 const containerHeight = window.innerHeight - 380;
                 const contentWidth = bracketRef.current.scrollWidth;
                 const contentHeight = bracketRef.current.scrollHeight;
                 let finalScale = Math.min(containerWidth / contentWidth, containerHeight / contentHeight);
-                setScale(finalScale < 1 ? Math.max(0.3, finalScale) : 1);
+                setScale(finalScale < 1 ? Math.max(0.2, finalScale) : 1);
             }
         }, [cat]);
 
         return (
-            <div className="modal-overlay" style={{ display: 'flex', padding: '0', alignItems: 'flex-start', overflowY: 'auto', backgroundColor: 'rgba(0,0,0,0.85)', zIndex: 1000 }}>
+            <div className="modal-overlay" style={{ display: 'flex', padding: 0, alignItems: 'center', overflow: 'auto', backgroundColor: 'rgba(0,0,0,0.9)', zIndex: 1000 }}>
                 <div ref={containerRef} className="modal-content" style={{ width: '100%', maxWidth: '100vw', padding: '40px', borderRadius: '0', background: '#FFF', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
                     <div style={{ width: '100%', maxWidth: '1400px', margin: '0 auto', flex: 1 }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '3px solid #111', paddingBottom: '24px', marginBottom: '24px' }}>
-                            <div style={{ display: 'flex', gap: '24px', alignItems: 'center' }}>
-                                {!logoError ? (
-                                    <img
-                                        src="/logo.png"
-                                        alt="Logo"
-                                        style={{ width: '90px', height: '90px', objectFit: 'contain' }}
-                                        onError={() => setLogoError(true)}
-                                    />
-                                ) : (
-                                    <div style={{
-                                        width: '90px', height: '90px', background: 'linear-gradient(135deg, #E71546 0%, #1782C8 100%)',
-                                        borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FFF',
-                                        fontSize: '14px', fontWeight: 950, textAlign: 'center', lineHeight: '1.2'
-                                    }}>
-                                        FETEMG<br /><span style={{ fontSize: '8px', fontWeight: 600 }}>Institucional</span>
-                                    </div>
-                                )}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '4px solid #111', paddingBottom: '20px', marginBottom: '30px' }}>
+                            <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
+                                <img
+                                    src="/logo.png"
+                                    alt="Federação"
+                                    style={{ width: '100px', height: '100px', objectFit: 'contain' }}
+                                    onError={(e) => {
+                                        e.target.style.display = 'none';
+                                        e.target.nextSibling.style.display = 'flex';
+                                    }}
+                                />
+                                <div style={{
+                                    display: 'none', width: '100px', height: '100px', background: 'linear-gradient(135deg, #1782C8 0%, #E71546 100%)',
+                                    borderRadius: '10px', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 950, textAlign: 'center'
+                                }}>FETEMG</div>
+
                                 <div>
-                                    <h1 style={{ margin: 0, fontSize: '28px', color: '#10151C', fontWeight: 950, textTransform: 'uppercase' }}>{champ?.name}</h1>
-                                    <p style={{ margin: '4px 0 0 0', color: '#1782C8', fontWeight: 800, fontSize: '1rem' }}>FEDERAÇÃO DE TAEKWONDO DO ESTADO DE MINAS GERAIS</p>
+                                    <h1 style={{ margin: 0, fontSize: '30px', fontWeight: 950, textTransform: 'uppercase' }}>{champ?.name}</h1>
+                                    <p style={{ margin: 0, color: '#1782C8', fontWeight: 800 }}>FEDERAÇÃO DE TAEKWONDO DO ESTADO DE MINAS GERAIS</p>
                                 </div>
                             </div>
-                            <div className="no-print" style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                            <div className="no-print" style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
                                 <button className="btn btn-primary" onClick={() => saveBracket(activeCategory)} disabled={saving}><Save size={20} /> SALVAR</button>
                                 <button className="btn btn-secondary" onClick={() => window.print()}><Printer size={20} /> IMPRIMIR</button>
-                                <button className="btn btn-ghost" onClick={() => setShowBracketModal(false)}><X size={32} /></button>
+                                <button className="btn btn-ghost" onClick={() => setShowBracketModal(false)}><X size={40} /></button>
                             </div>
                         </div>
-                        <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-                            <h2 style={{ fontSize: '1.5rem', fontWeight: 950, margin: '0', textTransform: 'uppercase' }}>{cat.classification_name}</h2>
-                            <div style={{ display: 'flex', justifyContent: 'center', gap: '40px', fontWeight: 800, color: '#333', fontSize: '1rem' }}>
-                                <span className="badge badge-primary" style={{ padding: '6px 16px', fontSize: '0.9rem' }}>{cat.classification_code}</span>
+
+                        <div style={{ textAlign: 'center', marginBottom: '30px' }}>
+                            <h2 style={{ fontSize: '1.8rem', fontWeight: 950, textTransform: 'uppercase' }}>{cat.classification_name}</h2>
+                            <div style={{ display: 'flex', justifyContent: 'center', gap: '30px', fontWeight: 800 }}>
+                                <span>{cat.classification_code}</span>
                                 <span>{cat.info.gender}</span>
-                                <span>{cat.info.weight}</span>
-                                <span style={{ color: 'var(--brand-blue)' }}>{cat.athletes.length} ATLETAS</span>
                             </div>
                         </div>
 
                         <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', padding: '20px 0' }}>
-                            <div style={{
+                            <div ref={bracketRef} style={{
                                 transform: `scale(${scale})`,
-                                transformOrigin: 'center center',
-                                width: 'fit-content',
-                                height: 'fit-content'
+                                transformOrigin: 'top center',
+                                transition: 'transform 0.2s'
                             }}>
-                                <div ref={bracketRef}>
-                                    <BracketView cat={cat} />
-                                </div>
+                                <BracketView cat={cat} />
                             </div>
                         </div>
 

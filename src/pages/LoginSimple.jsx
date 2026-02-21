@@ -67,7 +67,10 @@ export default function Login() {
             console.log('Organizer encontrado:', organizer);
             console.log('Error organizer:', organizerError);
 
-            if (organizer && (organizer.password_hash === 'temp_test_user' || organizer.password_hash === formData.password)) {
+            console.log('Password hash no banco:', organizer.password_hash);
+            console.log('Password digitada:', formData.password);
+
+            if (organizer && (organizer.password_hash === 'temp_test_user' || organizer.password_hash.trim() === formData.password.trim())) {
               setMessage('Login realizado! (Modo Gerenciador)');
               setTimeout(() => {
                 window.location.href = '/dashboard';
@@ -264,8 +267,8 @@ export default function Login() {
                   ? 'rgba(16, 185, 129, 0.1)'
                   : 'rgba(239, 68, 68, 0.1)',
                 border: `1px solid ${message.includes('sucesso')
-                    ? 'rgba(16, 185, 129, 0.3)'
-                    : 'rgba(239, 68, 68, 0.3)'
+                  ? 'rgba(16, 185, 129, 0.3)'
+                  : 'rgba(239, 68, 68, 0.3)'
                   }`,
                 color: message.includes('sucesso')
                   ? '#10b981'
