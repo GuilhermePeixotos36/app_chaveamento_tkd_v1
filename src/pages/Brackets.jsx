@@ -205,17 +205,6 @@ const Brackets = () => {
         if (age <= 44) return 'Master 2';
         return 'Master 3';
     };
-
-    const getBeltGroup = (beltLevel) => {
-        if (beltLevel <= 3) return 1; // Grupo 1 - Iniciante (Branca, Cinza, Amarela)
-        if (beltLevel <= 6) return 2; // Grupo 2 - Intermediário (Laranja, Verde, Roxa)
-        if (beltLevel <= 9) return 3; // Grupo 3 - Avançado (Azul, Marrom, Vermelha)
-        return 4; // Grupo 4 - Elite (Vermelha-Preta, Preta)
-    };
-
-    const findMatchingClassification = (registration) => {
-        const ageGroup = getAgeGroup(registration.age);
-        const beltGroup = getBeltGroup(registration.belt_level);
         
         console.log('--- DEBUG CLASSIFICATION MATCH ---');
         console.log('Atleta:', registration.full_name);
