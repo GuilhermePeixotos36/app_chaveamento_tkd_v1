@@ -814,39 +814,60 @@ const Brackets = () => {
                             margin: 1cm;
                         }
                         
-                        body {
+                        /* Hide ALL elements by default */
+                        html, body, #root, .app-container {
+                            height: auto !important;
+                            overflow: visible !important;
                             background: white !important;
                         }
 
-                        /* Hide everything by default */
-                        .app-container > *:not(.modal-overlay):not(.print-all-containers) {
-                            display: none !important;
-                        }
-                        
-                        .navbar, .sidebar, .btn, .toast, .modal-close {
-                            display: none !important;
+                        /* Target all elements and hide them */
+                        body * {
+                            visibility: hidden !important;
+                            background-color: transparent !important;
                         }
 
-                        /* Show only necessary containers */
-                        .app-container, .content-wrapper, .modal-overlay, .modal-content, .print-all-containers {
-                            display: block !important;
+                        /* ONLY show the elements we want to print */
+                        .modal-overlay, .modal-overlay *, 
+                        .print-all-containers, .print-all-containers * {
                             visibility: visible !important;
-                            position: static !important;
+                        }
+
+                        /* Position the print content at the top left */
+                        .modal-overlay {
+                            position: absolute !important;
+                            left: 0 !important;
+                            top: 0 !important;
                             width: 100% !important;
                             height: auto !important;
+                            display: block !important;
+                            background: white !important;
+                            z-index: 9999 !important;
+                        }
+
+                        .print-all-containers {
+                            position: absolute !important;
+                            left: 0 !important;
+                            top: 0 !important;
+                            width: 100% !important;
+                            display: block !important;
+                            z-index: 9998 !important;
+                        }
+
+                        .modal-content {
+                            box-shadow: none !important;
+                            border: none !important;
+                            width: 100% !important;
+                            max-width: 100% !important;
                             margin: 0 !important;
                             padding: 0 !important;
                             background: white !important;
-                            box-shadow: none !important;
-                            border: none !important;
                         }
 
-                        .modal-overlay {
-                            visibility: visible !important;
-                        }
-                        
-                        .modal-content * {
-                            visibility: visible !important;
+                        /* Specific element cleanup */
+                        .btn, .modal-close, .toast, .navbar, .sidebar, .loading-spinner {
+                            display: none !important;
+                            visibility: hidden !important;
                         }
 
                         .modal-header {
@@ -854,7 +875,7 @@ const Brackets = () => {
                             margin-bottom: 20px !important;
                         }
 
-                        .modal-title {
+                        .modal-title, .modal-title * {
                             color: black !important;
                             font-size: 24px !important;
                         }
@@ -863,18 +884,17 @@ const Brackets = () => {
                             border: 1px solid #000 !important;
                             background: white !important;
                             break-inside: avoid;
+                            color: black !important;
                         }
 
                         .print-bracket-page {
-                            visibility: visible !important;
                             page-break-after: always !important;
-                            padding: 0 !important;
-                            margin-bottom: 2cm !important;
+                            padding-bottom: 2cm !important;
                             color: black !important;
+                            background: white !important;
                         }
                         
-                        .print-all-containers * {
-                            visibility: visible !important;
+                        h1, h2, h3, h4, p, span, div {
                             color: black !important;
                         }
                     }
