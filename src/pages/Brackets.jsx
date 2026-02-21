@@ -22,7 +22,6 @@ const Brackets = () => {
     const [categories, setCategories] = useState({});
     const [unclassifiedAthletes, setUnclassifiedAthletes] = useState([]);
     const [kyorugiClassifications, setKyorugiClassifications] = useState([]);
-    const [weightCategories, setWeightCategories] = useState([]);
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState('');
     const [errorMsg, setErrorMsg] = useState('');
@@ -31,7 +30,7 @@ const Brackets = () => {
     const [saving, setSaving] = useState(false);
 
     useEffect(() => {
-        loadBaseData();
+        loadInitialData();
     }, []);
 
     useEffect(() => {
@@ -40,32 +39,33 @@ const Brackets = () => {
         }
     }, [selectedChampionship, kyorugiClassifications]);
 
-    const loadBaseData = async () => {
+    const loadInitialData = async () => {
         setLoading(true);
         try {
             // Load championships
-            const { data: champs, error: cErr } = await supabase.from('championships').select('*').order('date', { ascending: false });
-            if (cErr) throw cErr;
+            const { data: champs } = await supabase.from('championships').select('*').order('date', { ascending: false });
             setChampionships(champs || []);
             if (champs && champs.length > 0) setSelectedChampionship(champs[0].id);
 
-            // Load classifications and weight categories separately to avoid join errors
-            const [classData, weightData] = await Promise.all([
-                supabase.from('kyorugi_classifications').select('*').order('created_at', { ascending: false }),
-                supabase.from('weight_categories').select('*').order('min_weight', { ascending: true })
+            // Load classifications and weights separately
+            const [classRes, weightRes] = await Promise.all([
+                supabase.from('kyorugi_classifications').select('*'),
+                supabase.from('weight_categories').select('*')
             ]);
 
-            if (classData.error) throw classData.error;
-            if (weightData.error) throw weightData.error;
+            const wMap = {};
+            if (weightRes.data) weightRes.data.forEach(w => wMap[w.id] = w.name);
 
-            setKyorugiClassifications(classData.data || []);
-            setWeightCategories(weightData.data || []);
-        } catch (error) {
-            console.error('Error loading base data:', error);
-            setErrorMsg('Erro ao carregar dados básicos');
-        } finally {
-            setLoading(false);
-        }
+            const enrichedClass = (classRes.data || []).map(c => ({
+                ...c,
+                weight_name: wMap[c.weight_category_id] || '---'
+            }));
+
+            setKyorugiClassifications(enrichedClass);
+        } catch (e) {
+            console.error('Base load error:', e);
+            setErrorMsg('Erro ao inicializar sistema');
+        } finally { setLoading(false); }
     };
 
     const getAgeGroup = (age) => {
@@ -92,17 +92,15 @@ const Brackets = () => {
         const ageGroup = getAgeGroup(reg.age);
         const beltGroup = getBeltGroup(reg.belt_level);
 
-        // 1. Precise Match by classification params
-        let matching = kyorugiClassifications.find(c =>
+        let match = kyorugiClassifications.find(c =>
             c.age_category === ageGroup &&
             c.gender === reg.gender &&
             c.belt_group === beltGroup &&
             c.weight_category_id === reg.weight_category_id
         );
 
-        // 2. Fallback by weight range if ID match fails
-        if (!matching && reg.weight) {
-            matching = kyorugiClassifications.find(c =>
+        if (!match && reg.weight) {
+            match = kyorugiClassifications.find(c =>
                 c.age_category === ageGroup &&
                 c.gender === reg.gender &&
                 c.belt_group === beltGroup &&
@@ -110,81 +108,67 @@ const Brackets = () => {
                 parseFloat(reg.weight) <= parseFloat(c.max_weight)
             );
         }
-
-        return matching;
+        return match;
     };
 
     const loadRegistrations = async (champId) => {
         setLoading(true);
         setErrorMsg('');
         try {
-            // Fetch registrations and organizations separately to avoid join errors
-            const [regRes, orgRes] = await Promise.all([
-                supabase.from('registrations').select('*').eq('championship_id', champId),
-                supabase.from('organizations').select('id, name')
-            ]);
+            // USING THE EXACT QUERY PATTERN THE USER CONFIRMED WORKED BEFORE
+            const { data: regData, error: regErr } = await supabase
+                .from('registrations')
+                .select('*, organizations(name), modalities(name)')
+                .eq('championship_id', champId);
 
-            if (regRes.error) throw regRes.error;
-            if (orgRes.error) throw orgRes.error;
-
-            const orgMap = {};
-            orgRes.data.forEach(o => orgMap[o.id] = o);
-
-            const regData = regRes.data.map(r => ({
-                ...r,
-                organizations: orgMap[r.organization_id] || { name: '---' }
-            }));
+            if (regErr) throw regErr;
 
             const grouped = {};
             const unmapped = [];
 
-            regData.forEach(reg => {
-                const classification = findMatchingClassification(reg);
-                if (classification) {
-                    const catKey = `classification_${classification.id}`;
-                    if (!grouped[catKey]) {
-                        const wc = weightCategories.find(w => w.id === classification.weight_category_id);
-                        grouped[catKey] = {
-                            id: catKey,
-                            classification_id: classification.id,
-                            classification_code: classification.code,
-                            classification_name: classification.name,
-                            info: {
-                                age: classification.age_category,
-                                gender: classification.gender === 'M' ? 'Masculino' : 'Feminino',
-                                belt: `Grupo ${classification.belt_group}`,
-                                weight: wc ? wc.name : '---'
-                            },
-                            athletes: [],
-                            bracket: null,
-                            category_params: {
-                                modality_id: reg.modality_id,
-                                age_category_id: reg.age_category_id,
-                                weight_category_id: reg.weight_category_id,
-                                belt_category_id: reg.belt_category_id
-                            }
-                        };
+            if (regData) {
+                regData.forEach(reg => {
+                    const classification = findMatchingClassification(reg);
+                    if (classification) {
+                        const catKey = `classification_${classification.id}`;
+                        if (!grouped[catKey]) {
+                            grouped[catKey] = {
+                                id: catKey,
+                                classification_id: classification.id,
+                                classification_code: classification.code,
+                                classification_name: classification.name,
+                                info: {
+                                    age: classification.age_category,
+                                    gender: classification.gender === 'M' ? 'Masculino' : 'Feminino',
+                                    belt: `Grupo ${classification.belt_group}`,
+                                    weight: classification.weight_name || '---',
+                                    modality: reg.modalities?.name || '---'
+                                },
+                                athletes: [],
+                                bracket: null,
+                                category_params: {
+                                    modality_id: reg.modality_id,
+                                    age_category_id: reg.age_category_id,
+                                    weight_category_id: reg.weight_category_id,
+                                    belt_category_id: reg.belt_category_id
+                                }
+                            };
+                        }
+                        grouped[catKey].athletes.push(reg);
+                    } else {
+                        unmapped.push(reg);
                     }
-                    grouped[catKey].athletes.push(reg);
-                } else {
-                    unmapped.push(reg);
-                }
-            });
+                });
+            }
 
-            // Load existing brackets for this championship
-            const { data: bracketData, error: bErr } = await supabase
-                .from('brackets')
-                .eq('championship_id', champId)
-                .select('*');
-
-            if (bErr) console.error('Error fetching brackets:', bErr);
-
-            if (bracketData) {
-                bracketData.forEach(b => {
-                    const key = `classification_${b.kyorugi_classification_id}`;
-                    if (grouped[key]) {
-                        grouped[key].bracket = b.bracket_data;
-                        grouped[key].db_id = b.id;
+            // Brackets load
+            const { data: bData } = await supabase.from('brackets').eq('championship_id', champId).select('*');
+            if (bData) {
+                bData.forEach(b => {
+                    const k = `classification_${b.kyorugi_classification_id}`;
+                    if (grouped[k]) {
+                        grouped[k].bracket = b.bracket_data;
+                        grouped[k].db_id = b.id;
                     }
                 });
             }
@@ -192,11 +176,9 @@ const Brackets = () => {
             setCategories(grouped);
             setUnclassifiedAthletes(unmapped);
         } catch (error) {
-            console.error('Error loading registrations:', error);
+            console.error('Error loadRegistrations:', error);
             setErrorMsg('Erro: ' + (error.message || 'Falha ao carregar atletas'));
-        } finally {
-            setLoading(false);
-        }
+        } finally { setLoading(false); }
     };
 
     const createSingleEliminationBracket = (athletes) => {
@@ -262,11 +244,9 @@ const Brackets = () => {
             setMessage('Chave salva com sucesso!');
             setTimeout(() => setMessage(''), 3000);
         } catch (e) {
-            console.error('Error saving bracket:', e);
-            alert('Erro ao salvar no banco de dados.');
-        } finally {
-            setSaving(false);
-        }
+            console.error('Save error:', e);
+            alert('Erro ao salvar no banco.');
+        } finally { setSaving(false); }
     };
 
     const BracketView = ({ cat }) => {
@@ -278,9 +258,9 @@ const Brackets = () => {
         const rightBranch = rounds.slice(0, numRounds - 1).map(round => round.slice(Math.ceil(round.length / 2)));
 
         const PlayerLine = ({ player, isBlue, isRight }) => (
-            <div style={{ borderBottom: '2.5px solid #111', padding: '6px 0', width: '200px', textAlign: isRight ? 'right' : 'left', color: isBlue ? '#1782C8' : '#E71546', minHeight: '50px' }}>
-                <div style={{ fontWeight: 900, whiteSpace: 'nowrap', textTransform: 'uppercase', fontSize: '13px' }}>
-                    <span style={{ fontSize: '10px', marginRight: '5px', color: '#111', fontWeight: 700 }}>{isBlue ? 'BLUE' : 'RED'}</span>
+            <div style={{ borderBottom: '2.5px solid #111', padding: '6px 0', width: '200px', textAlign: isRight ? 'right' : 'left', color: isBlue ? '#1782C8' : '#E71546', minHeight: '52px' }}>
+                <div style={{ fontWeight: 950, whiteSpace: 'nowrap', textTransform: 'uppercase', fontSize: '13px' }}>
+                    <span style={{ fontSize: '10px', marginRight: '5px', color: '#111', fontWeight: 800 }}>{isBlue ? 'BLUE' : 'RED'}</span>
                     {player?.full_name || (player === null ? 'BYE' : '---')}
                 </div>
                 <div style={{ fontSize: '10px', color: '#666', fontWeight: 800 }}>{player?.organizations?.name || ''}</div>
@@ -290,12 +270,12 @@ const Brackets = () => {
         const MatchBox = ({ match, rIndex, isRight }) => {
             const verticalSpace = Math.pow(2, rIndex) * 55;
             return (
-                <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: `${verticalSpace * 2}px`, position: 'relative', margin: isRight ? '0 0 0 35px' : '0 35px 0 0' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: `${verticalSpace * 2}px`, position: 'relative', margin: isRight ? '0 0 0 32px' : '0 32px 0 0' }}>
                     <PlayerLine player={match.player1} isBlue={true} isRight={isRight} />
-                    <div style={{ position: 'absolute', [isRight ? 'left' : 'right']: '-35px', top: '25%', bottom: '25%', width: '35px', border: '3.5px solid #222', [isRight ? 'borderRight' : 'borderLeft']: 'none' }}>
-                        <div style={{ position: 'absolute', top: '50%', [isRight ? 'right' : 'left']: '-18px', transform: 'translateY(-50%)', background: '#222', color: '#FFF', fontSize: '11px', padding: '4px 8px', fontWeight: 900, borderRadius: '4px', zIndex: 10 }}>{match.match_number}</div>
+                    <div style={{ position: 'absolute', [isRight ? 'left' : 'right']: '-32px', top: '25%', bottom: '25%', width: '32px', border: '3.5px solid #222', [isRight ? 'borderRight' : 'borderLeft']: 'none' }}>
+                        <div style={{ position: 'absolute', top: '50%', [isRight ? 'right' : 'left']: '-18px', transform: 'translateY(-50%)', background: '#222', color: '#FFF', fontSize: '11px', padding: '4px 8px', fontWeight: 950, borderRadius: '4px', zIndex: 10 }}>{match.match_number}</div>
                     </div>
-                    <div style={{ height: `${verticalSpace - 50}px` }} />
+                    <div style={{ height: `${verticalSpace - 52}px` }} />
                     <PlayerLine player={match.player2} isBlue={false} isRight={isRight} />
                 </div>
             );
@@ -321,11 +301,11 @@ const Brackets = () => {
                             <div style={{ fontWeight: 950, color: '#10151C', fontSize: '24px', letterSpacing: '2px' }}>CHAMPION</div>
                         </div>
                     </div>
-                    {[...rightBranch].reverse().map((reqIndex) => {
+                    {[...rightBranch].reverse().map((round, reqIndex) => {
                         const rIndex = rightBranch.length - 1 - reqIndex;
                         return (
                             <div key={`r-${reqIndex}`} style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-around' }}>
-                                {rightBranch[rIndex].map(m => <MatchBox key={m.id} match={m} rIndex={rIndex} isRight={true} />)}
+                                {round.map(m => <MatchBox key={m.id} match={m} rIndex={rIndex} isRight={true} />)}
                             </div>
                         );
                     })}
@@ -357,27 +337,23 @@ const Brackets = () => {
                     <div style={{ textAlign: 'center', marginBottom: '60px' }}>
                         <h2 style={{ fontSize: '3rem', fontWeight: 950, margin: '0 0 16px 0', textTransform: 'uppercase', color: '#10151C' }}>{cat.classification_name}</h2>
                         <div style={{ display: 'flex', justifyContent: 'center', gap: '40px', fontWeight: 800, color: '#333', fontSize: '1.2rem' }}>
-                            <span className="badge badge-primary" style={{ padding: '10px 24px', fontSize: '1.1rem', borderRadius: '6px' }}>{cat.classification_code}</span>
-                            <span style={{ textTransform: 'uppercase' }}>{cat.info.gender}</span>
-                            <span>•</span>
-                            <span style={{ textTransform: 'uppercase' }}>{cat.info.weight}</span>
-                            <span>•</span>
+                            <span className="badge badge-primary" style={{ padding: '10px 24px', fontSize: '1.1rem' }}>{cat.classification_code}</span>
+                            <span>{cat.info.gender}</span>
+                            <span>{cat.info.weight}</span>
                             <span style={{ color: 'var(--brand-blue)' }}>{cat.athletes.length} ATLETAS</span>
                         </div>
                     </div>
                     <BracketView cat={cat} />
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '80px', borderTop: '2px solid #EEE', paddingTop: '40px' }}>
-                        <div style={{ fontSize: '13px', color: '#444', maxWidth: '700px', lineHeight: '1.8' }}>
+                        <div style={{ fontSize: '13px', color: '#555', maxWidth: '750px', lineHeight: '1.8' }}>
                             <strong style={{ color: '#10151C' }}>LEGENDA TÉCNICA OFICIAL:</strong><br />
-                            (PTF) Vitória por Pontos, (PTG) Vitória por Superioridade Técnica (12 pontos de diferença),<br />
-                            (GDP) Golden Point (Ponto de Ouro), (SUP) Superioridade por Decisão dos Árbitros,<br />
-                            (WDR) Desistência (Withdrawal), (DSQ) Desclassificação, (PUN) Punição Acumulada,<br />
-                            (RSC) Interrupção pelo Árbitro (Referee Stop Contest)
+                            (PTF) Pontos, (PTG) Superioridade Técnica, (GDP) Ponto de Ouro, (SUP) Superioridade por Decisão,<br />
+                            (WDR) Desistência, (DSQ) Desclassificação, (PUN) Punição, (RSC) Interrupção pelo Árbitro
                         </div>
-                        <div style={{ width: '350px', border: '3px solid #10151C', padding: '24px', background: '#F9F9F9' }}>
-                            <p style={{ margin: '0 0 20px 0', fontSize: '15px', fontWeight: 950, textTransform: 'uppercase', color: '#10151C' }}>VENCEDOR DA CATEGORIA:</p>
-                            <div style={{ height: '3px', background: '#BBB', margin: '15px 0' }} />
-                            <div style={{ height: '3px', background: '#BBB', margin: '15px 0' }} />
+                        <div style={{ width: '350px', border: '3px solid #10151C', padding: '24px' }}>
+                            <p style={{ margin: '0 0 20px 0', fontSize: '15px', fontWeight: 950, textTransform: 'uppercase' }}>Vencedor da Categoria:</p>
+                            <div style={{ height: '3px', background: '#DDD', margin: '15px 0' }} />
+                            <div style={{ height: '3px', background: '#DDD', margin: '15px 0' }} />
                         </div>
                     </div>
                 </div>
@@ -390,68 +366,67 @@ const Brackets = () => {
             <div className="content-wrapper">
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-                        <button onClick={() => window.location.href = '/dashboard'} className="btn btn-secondary" style={{ backgroundColor: '#FFF', width: '56px', height: '56px', padding: 0, boxShadow: 'var(--shadow-sm)' }}><ArrowLeft size={24} /></button>
+                        <button onClick={() => window.location.href = '/dashboard'} className="btn btn-secondary" style={{ backgroundColor: '#FFF', width: '56px', height: '56px', padding: 0 }}><ArrowLeft size={24} /></button>
                         <div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                                 <GitBranch size={32} color="var(--brand-blue)" />
                                 <h1 className="header-title" style={{ margin: 0, fontSize: '2.4rem' }}>Chaveamento</h1>
                             </div>
-                            <p className="header-subtitle" style={{ fontSize: '1.1rem' }}>Sorteio oficial e geração de chaves competitivas</p>
+                            <p className="header-subtitle">Gestão institucional de sorteios e chaves</p>
                         </div>
                     </div>
                 </div>
 
-                <div className="content-card" style={{ marginBottom: '40px', background: 'var(--brand-blue)', color: '#FFF', padding: '32px', borderRadius: '16px' }}>
+                <div className="content-card" style={{ marginBottom: '40px', background: 'var(--brand-blue)', color: '#FFF', padding: '32px' }}>
                     <div style={{ display: 'flex', gap: '40px', alignItems: 'flex-end' }}>
                         <div style={{ flex: 1 }}>
-                            <label style={{ color: 'rgba(255,255,255,0.7)', fontWeight: 800, fontSize: '0.8rem', textTransform: 'uppercase', marginBottom: '12px', display: 'block', letterSpacing: '1px' }}>Selecione o Campeonato</label>
-                            <select className="select-modern" value={selectedChampionship} onChange={(e) => setSelectedChampionship(e.target.value)} style={{ background: '#FFF', color: '#10151C', border: 'none', fontWeight: 800, height: '52px', fontSize: '1.1rem' }}>
+                            <label style={{ color: 'rgba(255,255,255,0.7)', fontWeight: 800, fontSize: '0.8rem', textTransform: 'uppercase', marginBottom: '12px', display: 'block' }}>Selecione o Campeonato</label>
+                            <select className="select-modern" value={selectedChampionship} onChange={(e) => setSelectedChampionship(e.target.value)} style={{ background: '#FFF', color: '#10151C', border: 'none', fontWeight: 800, height: '52px' }}>
                                 {championships.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                             </select>
                         </div>
-                        <button className="btn btn-secondary" onClick={generateAllBrackets} style={{ background: '#FFF', height: '52px', fontWeight: 800, padding: '0 24px', fontSize: '0.9rem' }}><RefreshCw size={20} /> SORTEIO AUTOMÁTICO GERAL</button>
+                        <button className="btn btn-secondary" onClick={generateAllBrackets} style={{ background: '#FFF', height: '52px', fontWeight: 800 }}><RefreshCw size={20} /> SORTEIO AUTOMÁTICO</button>
                     </div>
                 </div>
 
                 {loading ? (
-                    <div className="content-card" style={{ textAlign: 'center', padding: '120px' }}><div className="loading-spinner" style={{ width: '60px', height: '60px', borderSize: '4px', margin: '0 auto' }} /></div>
+                    <div className="content-card" style={{ textAlign: 'center', padding: '120px' }}><div className="loading-spinner" style={{ margin: '0 auto' }} /></div>
                 ) : (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '48px' }}>
                         {errorMsg && (
                             <div style={{ backgroundColor: '#FEF2F2', border: '2px solid #FEE2E2', padding: '24px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '20px' }}>
                                 <AlertCircle color="#B91C1C" size={32} />
-                                <h4 style={{ margin: 0, color: '#991B1B', fontWeight: 900, fontSize: '1.2rem' }}>{errorMsg}</h4>
+                                <h4 style={{ margin: 0, color: '#991B1B', fontWeight: 950 }}>{errorMsg}</h4>
                             </div>
                         )}
 
-                        {/* Unmapped Athletes Section */}
                         {unclassifiedAthletes.length > 0 && (
                             <div style={{ backgroundColor: '#FFFBEB', border: '2px solid #FEF3C7', padding: '24px', borderRadius: '12px', display: 'flex', alignItems: 'start', gap: '20px' }}>
                                 <AlertCircle color="#D97706" size={28} />
                                 <div style={{ flex: 1 }}>
-                                    <h4 style={{ margin: '0 0 6px 0', color: '#92400E', fontWeight: 900, fontSize: '1.1rem' }}>{unclassifiedAthletes.length} Atletas Fora de Classificação</h4>
-                                    <p style={{ margin: 0, color: '#B45309', fontSize: '0.95rem', fontWeight: 600 }}>Estes atletas estão inscritos mas os dados (peso/faixa/idade) não coincidem com nenhuma categoria técnica oficial cadastrada.</p>
+                                    <h4 style={{ margin: '0 0 6px 0', color: '#92400E', fontWeight: 950 }}>{unclassifiedAthletes.length} Atletas fora de classificação</h4>
+                                    <p style={{ margin: 0, color: '#B45309', fontSize: '0.95rem', fontWeight: 700 }}>Estes atletas não possuem uma classificação técnica (peso/faixa/idade) correspondente cadastrada.</p>
                                 </div>
                             </div>
                         )}
 
                         {Object.keys(categories).length === 0 && !loading && (
-                            <div className="content-card" style={{ textAlign: 'center', padding: '100px', border: '3px dashed #EEE', background: 'transparent' }}>
-                                <Users size={80} color="#DDD" style={{ marginBottom: '24px' }} />
-                                <h3 style={{ color: '#AAA', fontSize: '1.5rem', fontWeight: 700 }}>Nenhuma inscrição encontrada para este campeonato.</h3>
+                            <div className="content-card" style={{ textAlign: 'center', padding: '100px', border: '2px dashed #DDD', background: 'transparent' }}>
+                                <Users size={64} color="#DDD" style={{ marginBottom: '24px' }} />
+                                <h3 style={{ color: '#AAA', fontWeight: 800 }}>Nenhuma inscrição encontrada neste campeonato.</h3>
                             </div>
                         )}
 
                         <div className="grid-responsive" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '32px' }}>
                             {Object.keys(categories).map(key => (
-                                <div key={key} className="content-card shadow-sm hover-lift" style={{ display: 'flex', flexDirection: 'column', border: '1px solid #E5E7EB', padding: '32px' }}>
+                                <div key={key} className="content-card shadow-sm" style={{ display: 'flex', flexDirection: 'column', border: '1px solid #E5E7EB', padding: '32px' }}>
                                     <div style={{ marginBottom: '28px' }}>
                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                                            <span className="badge badge-primary" style={{ fontWeight: 950, fontSize: '0.9rem', padding: '6px 14px' }}>{categories[key].classification_code}</span>
-                                            {categories[key].bracket && <span className="badge badge-success" style={{ fontWeight: 900, fontSize: '0.8rem' }}><Check size={14} /> CHAVE SORTEADA</span>}
+                                            <span className="badge badge-primary" style={{ fontWeight: 950, fontSize: '0.9rem' }}>{categories[key].classification_code}</span>
+                                            {categories[key].bracket && <span className="badge badge-success" style={{ fontWeight: 900 }}><Check size={14} /> CHAVE GERADA</span>}
                                         </div>
-                                        <h3 style={{ fontSize: '1.6rem', fontWeight: 950, color: '#10151C', margin: '0 0 8px 0', lineHeight: '1.2' }}>{categories[key].classification_name}</h3>
-                                        <div style={{ fontSize: '1rem', color: '#666', fontWeight: 800, display: 'flex', gap: '16px', textTransform: 'uppercase' }}>
+                                        <h3 style={{ fontSize: '1.5rem', fontWeight: 950, color: '#10151C', margin: '0 0 8px 0' }}>{categories[key].classification_name}</h3>
+                                        <div style={{ fontSize: '0.95rem', color: '#666', fontWeight: 800, display: 'flex', gap: '16px' }}>
                                             <span>{categories[key].info.gender}</span>
                                             <span>•</span>
                                             <span>{categories[key].info.weight}</span>
@@ -460,30 +435,30 @@ const Brackets = () => {
 
                                     <div style={{ background: '#F9FAFB', padding: '20px', borderRadius: '12px', marginBottom: '32px', flex: 1, border: '1px solid #F3F4F6' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
-                                            <Users size={20} color="var(--brand-blue)" strokeWidth={2.5} />
-                                            <span style={{ fontWeight: 900, fontSize: '1rem', color: '#10151C' }}>{categories[key].athletes.length} ATLETAS CONFIRMADOS</span>
+                                            <Users size={18} color="var(--brand-blue)" />
+                                            <span style={{ fontWeight: 950, fontSize: '0.95rem' }}>{categories[key].athletes.length} ATLETAS INSCRITOS</span>
                                         </div>
-                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                                             {categories[key].athletes.slice(0, 4).map(a => (
-                                                <div key={a.id} style={{ fontSize: '0.9rem', color: '#374151', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                <div key={a.id} style={{ fontSize: '0.9rem', color: '#4B5563', display: 'flex', justifyContent: 'space-between' }}>
                                                     <span style={{ fontWeight: 800 }}>• {a.full_name}</span>
-                                                    <span style={{ color: '#9CA3AF', fontSize: '0.75rem', fontWeight: 700 }}>{a.organizations?.name?.substring(0, 20)}</span>
+                                                    <span style={{ color: '#9CA3AF', fontSize: '0.75rem', fontWeight: 700 }}>{a.organizations?.name?.substring(0, 18)}</span>
                                                 </div>
                                             ))}
                                             {categories[key].athletes.length > 4 && (
-                                                <div style={{ fontSize: '0.85rem', color: 'var(--brand-blue)', fontWeight: 900, marginTop: '8px', textAlign: 'center', background: 'var(--primary-50)', padding: '4px', borderRadius: '4px' }}>+ {categories[key].athletes.length - 4} outros competidores</div>
+                                                <div style={{ fontSize: '0.8rem', color: 'var(--brand-blue)', fontWeight: 900, marginTop: '8px' }}>+ {categories[key].athletes.length - 4} outros atletas</div>
                                             )}
                                         </div>
                                     </div>
 
-                                    <div style={{ display: 'flex', gap: '16px' }}>
+                                    <div style={{ display: 'flex', gap: '12px' }}>
                                         {categories[key].bracket ? (
                                             <>
-                                                <button onClick={() => { setActiveCategory(key); setShowBracketModal(true); }} className="btn btn-secondary shadow-sm" style={{ flex: 1, backgroundColor: '#FFF', fontWeight: 800, border: '1px solid #D1D5DB' }}><Eye size={20} /> VISUALIZAR CHAVE</button>
-                                                <button onClick={() => generateBracket(key)} className="btn btn-ghost" title="REFAZER SORTEIO" style={{ width: '50px' }}><RefreshCw size={20} /></button>
+                                                <button onClick={() => { setActiveCategory(key); setShowBracketModal(true); }} className="btn btn-secondary" style={{ flex: 1, backgroundColor: '#FFF', fontWeight: 800 }}><Eye size={20} /> VER CHAVE</button>
+                                                <button onClick={() => generateBracket(key)} className="btn btn-ghost" title="REFAZER SORTEIO"><RefreshCw size={20} /></button>
                                             </>
                                         ) : (
-                                            <button onClick={() => generateBracket(key)} className="btn btn-primary btn-block shadow-md" style={{ fontWeight: 900, height: '52px', fontSize: '1rem' }}><Trophy size={20} /> REALIZAR SORTEIO</button>
+                                            <button onClick={() => generateBracket(key)} className="btn btn-primary btn-block" style={{ fontWeight: 900, height: '52px' }}><Trophy size={20} /> GERAR SORTEIO</button>
                                         )}
                                     </div>
                                 </div>
@@ -492,15 +467,14 @@ const Brackets = () => {
                     </div>
                 )}
                 {showBracketModal && <BracketModal />}
-                {message && <div className="toast success show" style={{ zIndex: 10000, padding: '20px 32px' }}><Check size={24} /> <span style={{ fontWeight: 800 }}>{message}</span></div>}
-
+                {message && <div className="toast success show" style={{ zIndex: 10000 }}><Check size={24} /> {message}</div>}
                 <style>{`
                     @media print {
                         .no-print, .btn, .header-title, .header-subtitle, .app-container > .content-wrapper > *:not(.modal-overlay), .navbar, .sidebar, .toast { display: none !important; }
                         body, .app-container { background: #FFF !important; padding: 0 !important; margin: 0 !important; }
-                        .modal-overlay { background: #FFF !important; display: block !important; position: static !important; padding: 0 !important; overflow: visible !important; }
+                        .modal-overlay { background: #FFF !important; display: block !important; position: static !important; padding: 0 !important; }
                         .modal-content { box-shadow: none !important; border: none !important; margin: 0 !important; width: 100% !important; padding: 0 !important; }
-                        .bracket-container { padding: 40px 0 !important; width: 100% !important; }
+                        .bracket-container { padding: 40px 0 !important; }
                     }
                 `}</style>
             </div>
