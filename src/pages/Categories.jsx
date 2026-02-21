@@ -367,8 +367,24 @@ export default function Categories() {
                 )}
                 {activeForm === 'belt' && (
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                    <div><label>Cor Inicial</label><input name="min_belt_color" value={formData.min_belt_color || ''} onChange={(e) => setFormData({ ...formData, min_belt_color: e.target.value })} className="input-modern" /></div>
-                    <div><label>Cor Final</label><input name="max_belt_color" value={formData.max_belt_color || ''} onChange={(e) => setFormData({ ...formData, max_belt_color: e.target.value })} className="input-modern" /></div>
+                    <div>
+                      <label>Cor Inicial</label>
+                      <select name="min_belt_color" value={formData.min_belt_color || ''} onChange={(e) => setFormData({ ...formData, min_belt_color: e.target.value })} className="select-modern">
+                        <option value="">Selecione...</option>
+                        {['Branca', 'Cinza', 'Amarela', 'Laranja', 'Verde', 'Roxa', 'Azul', 'Marrom', 'Vermelha', 'Ponta Preta', 'Preta'].map(color => (
+                          <option key={color} value={color}>{color}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label>Cor Final</label>
+                      <select name="max_belt_color" value={formData.max_belt_color || ''} onChange={(e) => setFormData({ ...formData, max_belt_color: e.target.value })} className="select-modern">
+                        <option value="">Selecione...</option>
+                        {['Branca', 'Cinza', 'Amarela', 'Laranja', 'Verde', 'Roxa', 'Azul', 'Marrom', 'Vermelha', 'Ponta Preta', 'Preta'].map(color => (
+                          <option key={color} value={color}>{color}</option>
+                        ))}
+                      </select>
+                    </div>
                   </div>
                 )}
                 {activeForm === 'modality' && (
