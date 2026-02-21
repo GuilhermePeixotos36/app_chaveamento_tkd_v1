@@ -491,10 +491,174 @@ const Brackets = () => {
         }
     };
 
+    const BracketView = ({ cat }) => {
+        const rounds = cat.bracket;
+        if (!rounds) return null;
+
+        return (
+            <div className="bracket-container" style={{
+                overflowX: 'auto',
+                padding: '40px',
+                minHeight: '60vh',
+                background: '#f8fafc',
+                display: 'flex',
+                alignItems: 'center'
+            }}>
+                <div style={{ display: 'flex', gap: '0', alignItems: 'center' }}>
+                    {rounds.map((round, rIndex) => (
+                        <div key={rIndex} style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            justifyContent: 'space-around',
+                            gap: '0',
+                            minWidth: '280px'
+                        }}>
+                            <div style={{
+                                textAlign: 'center',
+                                fontWeight: 'bold',
+                                padding: '10px',
+                                color: '#334155',
+                                textTransform: 'uppercase',
+                                fontSize: '12px',
+                                letterSpacing: '1px',
+                                background: '#f1f5f9',
+                                margin: '0 20px 20px 20px',
+                                borderRadius: '4px'
+                            }}>
+                                {rIndex === rounds.length - 1 ? 'FINAL' :
+                                    rIndex === rounds.length - 2 ? 'SEMIFINAL' :
+                                        rIndex === rounds.length - 3 ? 'QUARTAS' : `RODADA ${rIndex + 1}`}
+                            </div>
+
+                            <div style={{
+                                display: 'flex',
+                                flexDirection: 'column',
+                                justifyContent: 'space-around',
+                                flex: 1,
+                                gap: rIndex === 0 ? '20px' : '0'
+                            }}>
+                                {round.map((match, mIndex) => {
+                                    const verticalSpace = Math.pow(2, rIndex) * 100;
+
+                                    return (
+                                        <div key={match.id} style={{
+                                            position: 'relative',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            height: rIndex === 0 ? 'auto' : `${verticalSpace}px`,
+                                            marginBottom: rIndex === 0 ? '20px' : '0'
+                                        }}>
+                                            <div className="match-card" style={{
+                                                width: '220px',
+                                                background: 'white',
+                                                border: '1px solid #e2e8f0',
+                                                borderRadius: '6px',
+                                                boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+                                                overflow: 'hidden',
+                                                zIndex: 2,
+                                                margin: '0 20px'
+                                            }}>
+                                                <div style={{
+                                                    padding: '8px 12px',
+                                                    borderBottom: '1px solid #f1f5f9',
+                                                    background: match.player1 ? 'white' : '#f8fafc',
+                                                    minHeight: '45px'
+                                                }}>
+                                                    <div style={{ fontWeight: '600', fontSize: '13px', color: match.player1 ? '#1e293b' : '#94a3b8' }}>
+                                                        {match.player1?.full_name || 'BYE'}
+                                                    </div>
+                                                    <div style={{ fontSize: '10px', color: '#64748b', marginTop: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                                        {match.player1?.organizations?.name || '---'}
+                                                    </div>
+                                                </div>
+                                                <div style={{
+                                                    padding: '8px 12px',
+                                                    background: match.player2 ? 'white' : '#f8fafc',
+                                                    minHeight: '45px'
+                                                }}>
+                                                    <div style={{ fontWeight: '600', fontSize: '13px', color: match.player2 ? '#1e293b' : '#94a3b8' }}>
+                                                        {match.player2?.full_name || 'BYE'}
+                                                    </div>
+                                                    <div style={{ fontSize: '10px', color: '#64748b', marginTop: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                                        {match.player2?.organizations?.name || '---'}
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Outgoing connectors */}
+                                            {rIndex < rounds.length - 1 && (
+                                                <div style={{
+                                                    position: 'absolute',
+                                                    right: '0',
+                                                    top: '50%',
+                                                    width: '20px',
+                                                    height: '2px',
+                                                    background: '#cbd5e1',
+                                                    transform: 'translateX(100%)'
+                                                }} />
+                                            )}
+
+                                            {/* Vertical meeting lines */}
+                                            {rIndex < rounds.length - 1 && mIndex % 2 === 0 && (
+                                                <div style={{
+                                                    position: 'absolute',
+                                                    right: '-20px',
+                                                    top: '50%',
+                                                    width: '2px',
+                                                    height: `${verticalSpace}px`,
+                                                    background: '#cbd5e1',
+                                                    zIndex: 1
+                                                }} />
+                                            )}
+
+                                            {/* Incoming horizontal lines */}
+                                            {rIndex < rounds.length - 1 && mIndex % 2 === 0 && (
+                                                <div style={{
+                                                    position: 'absolute',
+                                                    right: '-40px',
+                                                    top: `calc(50% + ${verticalSpace / 2}px)`,
+                                                    width: '20px',
+                                                    height: '2px',
+                                                    background: '#cbd5e1',
+                                                    zIndex: 1
+                                                }} />
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    ))}
+
+                    {/* Champion Box */}
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginLeft: '40px' }}>
+                        <div style={{
+                            width: '80px',
+                            height: '80px',
+                            borderRadius: '50%',
+                            background: 'linear-gradient(135deg, #fbbf24, #d97706)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            boxShadow: '0 10px 15px -3px rgba(217, 119, 6, 0.3)',
+                            fontSize: '32px',
+                            border: '4px solid white',
+                            color: 'white'
+                        }}>
+                            🏆
+                        </div>
+                        <div style={{ marginTop: '10px', fontWeight: 'bold', color: '#d97706', letterSpacing: '2px' }}>
+                            CAMPEÃO
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
     const BracketModal = () => {
         if (!activeCategory || !categories[activeCategory]) return null;
         const cat = categories[activeCategory];
-        const rounds = cat.bracket;
 
         return (
             <div className="modal-overlay" onClick={() => setShowBracketModal(false)}>
@@ -535,113 +699,7 @@ const Brackets = () => {
                         </div>
                     </div>
 
-                    <div style={{ overflowX: 'auto', padding: 'var(--spacing-8)', minHeight: '60vh' }}>
-                        <div style={{ display: 'flex', gap: 'var(--spacing-12)', alignItems: 'center' }}>
-                            {rounds.map((round, rIndex) => (
-                                <div key={rIndex} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-8)', justifyContent: 'space-around' }}>
-                                    <div style={{ textAlign: 'center', fontWeight: 'bold', marginBottom: 'var(--spacing-4)', color: 'var(--primary-600)' }}>
-                                        {rIndex === rounds.length - 1 ? 'FINAL' :
-                                            rIndex === rounds.length - 2 ? 'SEMIFINAL' :
-                                                rIndex === rounds.length - 3 ? 'QUARTAS' : `RODADA ${rIndex + 1}`}
-                                    </div>
-                                    {round.map((match, mIndex) => (
-                                        <div key={match.id} style={{ position: 'relative' }}>
-                                            <div className="content-card card-compact" style={{
-                                                width: '240px',
-                                                padding: 'var(--spacing-3)',
-                                                borderLeft: '4px solid var(--primary-500)',
-                                                marginBottom: 'var(--spacing-2)'
-                                            }}>
-                                                <div style={{
-                                                    padding: 'var(--spacing-2)',
-                                                    borderBottom: '1px solid var(--border)',
-                                                    fontSize: 'var(--font-size-sm)',
-                                                    display: 'flex',
-                                                    justifyContent: 'space-between',
-                                                    background: match.player1 ? 'transparent' : 'var(--gray-50)',
-                                                    borderRadius: 'var(--radius-sm)'
-                                                }}>
-                                                    <span style={{ fontWeight: match.player1 ? '500' : '400' }}>
-                                                        {match.player1?.full_name || 'ISENTO (BYE)'}
-                                                    </span>
-                                                    <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>
-                                                        {match.player1?.organizations?.name.substring(0, 15)}
-                                                    </span>
-                                                </div>
-                                                <div style={{
-                                                    padding: 'var(--spacing-2)',
-                                                    fontSize: 'var(--font-size-sm)',
-                                                    display: 'flex',
-                                                    justifyContent: 'space-between',
-                                                    background: match.player2 ? 'transparent' : 'var(--gray-50)',
-                                                    borderRadius: 'var(--radius-sm)',
-                                                    marginTop: 'var(--spacing-1)'
-                                                }}>
-                                                    <span style={{ fontWeight: match.player2 ? '500' : '400' }}>
-                                                        {match.player2?.full_name || 'ISENTO (BYE)'}
-                                                    </span>
-                                                    <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>
-                                                        {match.player2?.organizations?.name.substring(0, 15)}
-                                                    </span>
-                                                </div>
-                                            </div>
-
-                                            {/* Connection lines */}
-                                            {rIndex < rounds.length - 1 && (
-                                                <>
-                                                    <div style={{
-                                                        position: 'absolute',
-                                                        right: '-32px',
-                                                        top: '50%',
-                                                        width: '32px',
-                                                        height: '2px',
-                                                        background: 'var(--border)'
-                                                    }} />
-                                                    {mIndex % 2 === 0 ? (
-                                                        <div style={{
-                                                            position: 'absolute',
-                                                            right: '-32px',
-                                                            top: '50%',
-                                                            width: '2px',
-                                                            height: 'calc(100% + var(--spacing-8))',
-                                                            background: 'var(--border)'
-                                                        }} />
-                                                    ) : (
-                                                        <div style={{
-                                                            position: 'absolute',
-                                                            right: '-32px',
-                                                            bottom: '50%',
-                                                            width: '2px',
-                                                            height: 'calc(100% + var(--spacing-8))',
-                                                            background: 'var(--border)'
-                                                        }} />
-                                                    )}
-                                                </>
-                                            )}
-                                        </div>
-                                    ))}
-                                </div>
-                            ))}
-
-                            {/* Champion Box */}
-                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 'var(--spacing-4)' }}>
-                                <div style={{
-                                    width: '60px',
-                                    height: '60px',
-                                    borderRadius: '50%',
-                                    background: 'gold',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    boxShadow: '0 0 20px rgba(255, 215, 0, 0.5)',
-                                    fontSize: '24px'
-                                }}>
-                                    🏆
-                                </div>
-                                <div style={{ fontWeight: 'bold', color: 'var(--primary-600)' }}>CAMPEÃO</div>
-                            </div>
-                        </div>
-                    </div>
+                    <BracketView cat={cat} />
                 </div>
             </div>
         );
@@ -887,6 +945,26 @@ const Brackets = () => {
                             color: black !important;
                         }
 
+                        .bracket-container {
+                            background: white !important;
+                            padding: 20px !important;
+                        }
+
+                        .match-card {
+                            border: 1px solid black !important;
+                            box-shadow: none !important;
+                        }
+
+                        .match-card > div {
+                            background: white !important;
+                            border-color: black !important;
+                            color: black !important;
+                        }
+
+                        .match-card div {
+                            color: black !important;
+                        }
+
                         .print-bracket-page {
                             page-break-after: always !important;
                             padding-bottom: 2cm !important;
@@ -897,36 +975,49 @@ const Brackets = () => {
                         h1, h2, h3, h4, p, span, div {
                             color: black !important;
                         }
+
+                        /* Ensure lines are visible in print */
+                        div[style*="background: rgb(203, 213, 225)"] {
+                            background: black !important;
+                        }
                     }
                     `}
                 </style>
 
-                {/* Print view for 'Print All' (Simple fallback if modal is closed) */}
+                {/* Print view for 'Print All' */}
                 <div className="print-all-containers">
                     {Object.keys(categories).filter(k => categories[k].bracket).map(key => (
                         <div key={key} className="print-bracket-page">
                             <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '2px solid black', paddingBottom: '10px', marginBottom: '20px' }}>
                                 <div>
                                     <h1 style={{ margin: 0, color: 'black' }}>{categories[key].classification_name || 'CHAVEAMENTO'}</h1>
-                                    <p style={{ margin: 0, color: 'black' }}>{categories[key].info.age} - {categories[key].info.gender} • {categories[key].info.weight}</p>
+                                    <p style={{ margin: 0, color: 'black', fontSize: '18px', fontWeight: 'bold' }}>
+                                        {categories[key].info.age} - {categories[key].info.gender} • {categories[key].info.weight}
+                                    </p>
                                 </div>
                                 <div style={{ textAlign: 'right' }}>
                                     <h2 style={{ margin: 0, color: 'black' }}>{categories[key].classification_code}</h2>
                                     <p style={{ margin: 0, color: 'black' }}>{championships.find(c => c.id === selectedChampionship)?.name}</p>
                                 </div>
                             </div>
-                            <div style={{ padding: '20px', border: '2px solid black' }}>
-                                <h3 style={{ color: 'black' }}>Atletas Inscritos:</h3>
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+
+                            {/* Reusing the professional bracket view for print */}
+                            <div className="print-bracket-wrapper" style={{ border: '2px solid black', overflow: 'hidden' }}>
+                                <BracketView cat={categories[key]} />
+                            </div>
+
+                            <div style={{ marginTop: '40px', padding: '20px', borderTop: '1px solid #ccc' }}>
+                                <h3 style={{ color: 'black', marginBottom: '15px' }}>Lista de Atletas:</h3>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' }}>
                                     {categories[key].athletes.map((a, i) => (
-                                        <div key={a.id} style={{ border: '1px solid black', padding: '10px', color: 'black' }}>
+                                        <div key={a.id} style={{ fontSize: '12px', color: 'black' }}>
                                             <strong>{i + 1}. {a.full_name}</strong>
-                                            <div style={{ fontSize: '12px' }}>{a.organizations?.name}</div>
+                                            <div style={{ fontSize: '10px' }}>{a.organizations?.name}</div>
                                         </div>
                                     ))}
                                 </div>
-                                <p style={{ marginTop: '40px', textAlign: 'center', fontSize: '14px', fontStyle: 'italic', color: 'black' }}>
-                                    Documento gerado em {new Date().toLocaleDateString('pt-BR')} às {new Date().toLocaleTimeString('pt-BR')}
+                                <p style={{ marginTop: '30px', textAlign: 'center', fontSize: '12px', fontStyle: 'italic', color: 'black' }}>
+                                    Documento oficial gerado em {new Date().toLocaleDateString('pt-BR')} às {new Date().toLocaleTimeString('pt-BR')}
                                 </p>
                             </div>
                         </div>
