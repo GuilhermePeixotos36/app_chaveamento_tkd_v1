@@ -257,31 +257,33 @@ const Brackets = () => {
         const leftBranch = rounds.slice(0, numRounds - 1).map(round => round.slice(0, Math.ceil(round.length / 2)));
         const rightBranch = rounds.slice(0, numRounds - 1).map(round => round.slice(Math.ceil(round.length / 2)));
 
-        const MatchHeight = 100; // Altura fixa base reduzida para melhor visualização
+        const MatchHeight = 120; // Altura padrão para confrontos
+        const MatchWidth = 200; // Largura padrão para confrontos
+        const ConnectorWidth = 40; // Largura dos conectores
 
         const PlayerLine = ({ player, isBlue, isRight }) => (
             <div style={{
-                borderBottom: '1px solid #111',
-                width: '180px',
-                padding: '1px 4px',
+                borderBottom: '2px solid #111',
+                width: `${MatchWidth}px`,
+                padding: '8px',
                 textAlign: isRight ? 'right' : 'left',
                 color: isBlue ? '#1782C8' : '#E71546',
-                height: '40px',
+                height: '50px',
                 display: 'flex',
                 flexDirection: 'column',
-                justifyContent: 'center'
+                justifyContent: 'center',
+                background: '#fff'
             }}>
-                <div style={{ fontWeight: 950, textTransform: 'uppercase', fontSize: '10px', lineHeight: '1' }}>
-                    <span style={{ fontSize: '7px', color: '#111', marginRight: '4px', fontWeight: 800 }}>{isBlue ? 'AZUL' : 'VERMELHO'}</span>
+                <div style={{ fontWeight: 950, textTransform: 'uppercase', fontSize: '12px', lineHeight: '1' }}>
+                    <span style={{ fontSize: '8px', color: '#111', marginRight: '6px', fontWeight: 800 }}>{isBlue ? 'AZUL' : 'VERMELHO'}</span>
                     {player?.full_name || '---'}
                 </div>
-                <div style={{ fontSize: '7px', color: '#666', fontWeight: 800 }}>{player?.organizations?.name || ''}</div>
+                <div style={{ fontSize: '8px', color: '#666', fontWeight: 800 }}>{player?.organizations?.name || ''}</div>
             </div>
         );
 
-        const SimpleMatch = ({ match, rIndex, isRight }) => {
+        const MatchBox = ({ match, rIndex, isRight }) => {
             const h = MatchHeight * Math.pow(2, rIndex);
-            const connectorW = 30; // Reduzir largura do conector
             return (
                 <div style={{
                     height: `${h}px`,
@@ -289,74 +291,153 @@ const Brackets = () => {
                     flexDirection: 'column',
                     justifyContent: 'center',
                     position: 'relative',
-                    width: '180px',
-                    margin: isRight ? `0 0 0 ${connectorW}px` : `0 ${connectorW}px 0 0`
+                    width: `${MatchWidth}px`,
+                    margin: isRight ? `0 0 0 ${ConnectorWidth}px` : `0 ${ConnectorWidth}px 0 0`
                 }}>
-                    <div style={{ position: 'absolute', top: `${(h / 4) - 20}px`, [isRight ? 'right' : 'left']: 0 }}>
+                    {/* Jogador 1 */}
+                    <div style={{ position: 'absolute', top: `${(h / 4) - 25}px`, [isRight ? 'right' : 'left']: 0 }}>
                         <PlayerLine player={match.player1} isBlue={true} isRight={isRight} />
                     </div>
 
-                    <div style={{ position: 'absolute', bottom: `${(h / 4) - 20}px`, [isRight ? 'right' : 'left']: 0 }}>
+                    {/* Jogador 2 */}
+                    <div style={{ position: 'absolute', bottom: `${(h / 4) - 25}px`, [isRight ? 'right' : 'left']: 0 }}>
                         <PlayerLine player={match.player2} isBlue={false} isRight={isRight} />
                     </div>
 
-                    {/* Conector */}
+                    {/* Linha vertical entre jogadores */}
+                    <div style={{
+                        position: 'absolute',
+                        top: `${(h / 4) - 25}px`,
+                        bottom: `${(h / 4) - 25}px`,
+                        [isRight ? 'left' : 'right']: 0,
+                        width: '2px',
+                        background: '#111'
+                    }} />
+
+                    {/* Linha horizontal do conector */}
                     <div style={{
                         position: 'absolute',
                         top: `${h / 4}px`,
-                        bottom: `${h / 4}px`,
-                        [isRight ? 'left' : 'right']: -connectorW,
-                        width: connectorW,
-                        border: '1.5px solid #111',
-                        [isRight ? 'borderRight' : 'borderLeft']: 'none'
+                        [isRight ? 'left' : 'right']: -ConnectorWidth,
+                        width: ConnectorWidth,
+                        height: '2px',
+                        background: '#111'
+                    }} />
+
+                    {/* Número da luta */}
+                    <div style={{
+                        position: 'absolute',
+                        top: `${h / 4}px`,
+                        [isRight ? 'left' : 'right']: -ConnectorWidth,
+                        width: ConnectorWidth,
+                        height: '30px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
                     }}>
                         <div style={{
-                            position: 'absolute', top: '50%', left: 0, right: 0, height: '1.5px', background: '#111', transform: 'translateY(-50%)',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center'
-                        }}>
-                            <div style={{
-                                background: '#333', color: '#fff', fontSize: '9px', fontWeight: 950, padding: '2px 4px', borderRadius: '2px', minWidth: '22px', textAlign: 'center'
-                            }}>{match.match_number}</div>
-                        </div>
+                            background: '#333',
+                            color: '#fff',
+                            fontSize: '10px',
+                            fontWeight: 950,
+                            padding: '4px 8px',
+                            borderRadius: '3px',
+                            minWidth: '30px',
+                            textAlign: 'center'
+                        }}>{match.match_number}</div>
                     </div>
                 </div>
             );
         };
 
+        const FinalMatch = ({ match }) => (
+            <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: `${MatchWidth}px`
+            }}>
+                {/* Jogador 1 */}
+                <div style={{ marginBottom: '20px' }}>
+                    <PlayerLine player={match.player1} isBlue={true} isRight={false} />
+                </div>
+
+                {/* Jogador 2 */}
+                <div>
+                    <PlayerLine player={match.player2} isBlue={false} isRight={false} />
+                </div>
+
+                {/* Número da luta */}
+                <div style={{
+                    position: 'absolute',
+                    top: '-40px',
+                    background: '#000',
+                    color: '#fff',
+                    fontSize: '12px',
+                    fontWeight: 950,
+                    padding: '6px 12px',
+                    borderRadius: '4px',
+                    minWidth: '40px',
+                    textAlign: 'center'
+                }}>{match.match_number}</div>
+            </div>
+        );
+
         const totalH = Math.pow(2, numRounds - 2) * MatchHeight;
 
         return (
-            <div className="bracket-container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '40px 20px', background: '#fff' }}>
+            <div style={{ 
+                display: 'flex', 
+                justifyContent: 'center', 
+                alignItems: 'center', 
+                padding: '60px 40px', 
+                background: '#fff',
+                fontFamily: 'Arial, sans-serif'
+            }}>
                 <div style={{ display: 'flex', alignItems: 'center' }}>
-
                     {/* Ramos Esquerda */}
-                    <div style={{ display: 'flex', marginRight: '80px' }}>
+                    <div style={{ display: 'flex', marginRight: `${ConnectorWidth * 2}px` }}>
                         {leftBranch.map((round, rIndex) => (
                             <div key={`l-${rIndex}`} style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                                {round.map(m => <SimpleMatch key={m.id} match={m} rIndex={rIndex} isRight={false} />)}
+                                {round.map(m => <MatchBox key={m.id} match={m} rIndex={rIndex} isRight={false} />)}
                             </div>
                         ))}
                     </div>
 
-                    {/* FINAL CENTRAL */}
-                    <div style={{ width: '400px', height: `${totalH}px`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative', margin: '0 60px' }}>
-                        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
-                            <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '80px', height: '30px', background: '#000', padding: '5px', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                <div style={{ color: '#fff', fontWeight: 950, fontSize: '10px' }}>{finalMatch.match_number}</div>
-                            </div>
-                        </div>
-
-                        <div style={{ marginTop: '10px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px' }}>
-                            <Trophy size={40} color="#FBCB37" fill="#FBCB37" />
-                            <div style={{ fontWeight: 950, fontSize: '14px', letterSpacing: '1px' }}>CAMPEÃO</div>
+                    {/* Final */}
+                    <div style={{ 
+                        display: 'flex', 
+                        flexDirection: 'column', 
+                        alignItems: 'center', 
+                        justifyContent: 'center',
+                        margin: `0 ${ConnectorWidth * 2}px`
+                    }}>
+                        <FinalMatch match={finalMatch} />
+                        
+                        {/* Campeão */}
+                        <div style={{ 
+                            marginTop: '60px', 
+                            display: 'flex', 
+                            flexDirection: 'column', 
+                            alignItems: 'center', 
+                            gap: '8px' 
+                        }}>
+                            <Trophy size={50} color="#FBCB37" fill="#FBCB37" />
+                            <div style={{ 
+                                fontWeight: 950, 
+                                fontSize: '16px', 
+                                letterSpacing: '1px',
+                                textTransform: 'uppercase'
+                            }}>Campeão</div>
                         </div>
                     </div>
 
                     {/* Ramos Direita */}
-                    <div style={{ display: 'flex', flexDirection: 'row-reverse', marginLeft: '80px' }}>
+                    <div style={{ display: 'flex', marginLeft: `${ConnectorWidth * 2}px` }}>
                         {rightBranch.map((round, rIndex) => (
                             <div key={`r-${rIndex}`} style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                                {round.map(m => <SimpleMatch key={m.id} match={m} rIndex={rIndex} isRight={true} />)}
+                                {round.map(m => <MatchBox key={m.id} match={m} rIndex={rIndex} isRight={true} />)}
                             </div>
                         ))}
                     </div>
