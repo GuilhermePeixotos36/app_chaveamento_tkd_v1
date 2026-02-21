@@ -275,20 +275,19 @@ const Brackets = () => {
             });
         }
         
-        // Se não encontrar por ID, tentar encontrar pelo peso real
+        // Se não encontrar por ID, tentar encontrar pelo peso real (fallback)
         if (!matchingClassification && registration.weight) {
             console.log('=== TENTANDO ENCONTRAR POR PESO REAL ===');
+            console.log('Peso do atleta:', registration.weight);
+            console.log('Verificando classifications por peso real...');
+            
             matchingClassification = kyorugiClassifications.find(classification => {
                 console.log('Comparando com classificação (por peso):', {
-                    classification_age_category: classification.age_category,
-                    expected_age_group: ageGroup,
-                    classification_gender: classification.gender,
-                    expected_gender: registration.gender,
-                    classification_belt_group: classification.belt_group,
-                    expected_belt_group: beltGroup,
+                    classification_name: classification.name,
                     classification_min_weight: classification.min_weight,
                     classification_max_weight: classification.max_weight,
-                    athlete_weight: registration.weight
+                    athlete_weight: registration.weight,
+                    match: registration.weight >= classification.min_weight && registration.weight <= classification.max_weight
                 });
                 
                 const match = classification.age_category === ageGroup &&
