@@ -260,8 +260,6 @@ const Brackets = () => {
             setMessage('Chave salva com sucesso!');
             setTimeout(() => setMessage(''), 3000);
         } catch (e) {
-            console.error('Save error:', e);
-            alert('Erro ao salvar no banco.');
         } finally { setSaving(false); }
     };
 
@@ -270,7 +268,110 @@ const Brackets = () => {
         if (!rounds || rounds.length === 0) return null;
         const numRounds = rounds.length;
         
-        // Dimensões fixas para layout profissional
+        // Verificar se é exatamente 4 atletas (2 semifinais + 1 final)
+        const isExactly4Athletes = rounds.length === 2 && rounds[0].length === 2 && rounds[1].length === 1;
+        
+        if (isExactly4Athletes) {
+            // Layout horizontal linear para 4 atletas
+            const MATCH_WIDTH = 220;
+            const MATCH_HEIGHT = 90;
+            const CONTAINER_WIDTH = 1200;
+            const CONTAINER_HEIGHT = 400;
+            
+            return (
+                <div style={{
+                    position: 'relative',
+                    width: `${CONTAINER_WIDTH}px`,
+                    height: `${CONTAINER_HEIGHT}px`,
+                    background: '#fff',
+                    fontFamily: 'Arial, sans-serif',
+                    margin: '20px auto',
+                    padding: '40px',
+                    minWidth: '800px'
+                }}>
+                    {/* Semifinal 1 - 25% da largura */}
+                    <div style={{
+                        position: 'absolute',
+                        left: '0%',
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        width: '25%',
+                        height: `${MATCH_HEIGHT}px`
+                    }}>
+                        {renderMatch(rounds[0][0], 0, 0, 2)}
+                    </div>
+                    
+                    {/* Semifinal 2 - 25% da largura */}
+                    <div style={{
+                        position: 'absolute',
+                        left: '25%',
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        width: '25%',
+                        height: `${MATCH_HEIGHT}px`
+                    }}>
+                        {renderMatch(rounds[0][1], 0, 1, 2)}
+                    </div>
+                    
+                    {/* Final - 50% da largura */}
+                    <div style={{
+                        position: 'absolute',
+                        left: '50%',
+                        top: '50%',
+                        transform: 'translate(-50%, -50%)',
+                        width: '25%',
+                        height: `${MATCH_HEIGHT}px`
+                    }}>
+                        {renderMatch(rounds[1][0], 1, 0, 1)}
+                    </div>
+                    
+                    {/* Conexões horizontais contínuas */}
+                    {/* Da semifinal 1 para a final */}
+                    <div style={{
+                        position: 'absolute',
+                        left: '25%',
+                        top: '50%',
+                        width: '25%',
+                        height: '2px',
+                        background: '#111',
+                        transform: 'translateY(-50%)'
+                    }} />
+                    
+                    {/* Da semifinal 2 para a final */}
+                    <div style={{
+                        position: 'absolute',
+                        left: '50%',
+                        top: '50%',
+                        width: '25%',
+                        height: '2px',
+                        background: '#111',
+                        transform: 'translateY(-50%)'
+                    }} />
+                    
+                    {/* Troféu abaixo da final */}
+                    <div style={{
+                        position: 'absolute',
+                        left: '50%',
+                        bottom: '60px',
+                        transform: 'translateX(-50%)',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: '8px'
+                    }}>
+                        <Trophy size={50} color="#FBCB37" fill="#FBCB37" />
+                        <div style={{ 
+                            fontWeight: 900, 
+                            fontSize: '14px', 
+                            letterSpacing: '1px',
+                            textTransform: 'uppercase' 
+                        }}>Campeão</div>
+                    </div>
+                </div>
+            );
+        }
+        
+        // Layout original para outros casos
         const MATCH_WIDTH = 220;
         const MATCH_HEIGHT = 90;
         const COLUMN_SPACING = 80;
