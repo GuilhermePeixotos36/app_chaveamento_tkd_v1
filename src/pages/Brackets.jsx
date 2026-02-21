@@ -672,9 +672,6 @@ const Brackets = () => {
                                 <h2 style={{ color: '#e74c3c', margin: '8px 0', fontSize: '20px' }}>
                                     {cat.info.age} {cat.info.gender} {cat.info.weight} - Atletas: {cat.athletes.length}
                                 </h2>
-                                <p style={{ margin: '4px 0', fontSize: '14px', fontWeight: 'bold' }}>
-                                    Data da competição: {champ?.date ? new Date(champ.date).toLocaleDateString('pt-BR') : '---'}
-                                </p>
                             </div>
                         </div>
                         <div style={{ display: 'flex', gap: 'var(--spacing-2)' }}>
@@ -1000,9 +997,6 @@ const Brackets = () => {
                                         <h2 style={{ color: '#e74c3c', margin: '8px 0', fontSize: '20px' }}>
                                             {cat.info.age} {cat.info.gender} {cat.info.weight} - Atletas: {cat.athletes.length}
                                         </h2>
-                                        <p style={{ margin: '4px 0', fontSize: '14px', fontWeight: 'bold' }}>
-                                            Data da competição: {champ?.date ? new Date(champ.date).toLocaleDateString('pt-BR') : '---'}
-                                        </p>
                                     </div>
                                 </div>
                                 <div className="print-bracket-wrapper" style={{ border: '1px solid #000', padding: '20px', minHeight: '500px', background: '#fff' }}>
