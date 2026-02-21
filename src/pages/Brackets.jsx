@@ -308,10 +308,24 @@ const Brackets = () => {
                     {/* Container dos jogadores */}
                     <div style={{
                         display: 'flex',
-                        flexDirection: 'column',
+                        flexDirection: isFinal ? 'row' : 'column',
                         height: '100%',
                         position: 'relative'
                     }}>
+                        {/* Layout horizontal para FINAL */}
+                        {isFinal && (
+                            <div style={{
+                                position: 'absolute',
+                                left: '50%',
+                                top: '50%',
+                                transform: 'translate(-50%, -50%)',
+                                width: '2px',
+                                height: '60%',
+                                background: '#111',
+                                zIndex: 1
+                            }} />
+                        )}
+                        
                         {/* Linha vertical central */}
                         <div style={{
                             position: 'absolute',
@@ -329,11 +343,13 @@ const Brackets = () => {
                             display: 'flex',
                             alignItems: 'center',
                             padding: '8px 12px',
-                            borderBottom: '2px solid #111',
+                            borderBottom: !isFinal ? '2px solid #111' : 'none',
+                            borderRight: isFinal ? '2px solid #111' : 'none',
                             minHeight: '40px',
                             background: '#fff',
                             position: 'relative',
-                            zIndex: 2
+                            zIndex: 2,
+                            flex: 1
                         }}>
                             <div style={{ flex: 1 }}>
                                 <div style={{ 
