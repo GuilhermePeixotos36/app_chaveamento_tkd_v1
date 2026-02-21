@@ -320,8 +320,8 @@ const Brackets = () => {
         return (
             <div className="modal-overlay" style={{ display: 'flex', padding: '0', alignItems: 'flex-start', overflowY: 'auto', backgroundColor: 'rgba(0,0,0,0.85)' }}>
                 <div className="modal-content" style={{ width: '100%', minWidth: 'fit-content', padding: '60px 40px', borderRadius: '0', background: '#FFF', minHeight: '100vh', boxShadow: 'none', position: 'relative' }}>
-                    <div style={{ maxWidth: '1400px', margin: '0 auto', width: '100%' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '5px solid #10151C', paddingBottom: '32px', marginBottom: '40px' }}>
+                    <div style={{ width: '100%', margin: '0 auto' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '5px solid #10151C', paddingBottom: '32px', marginBottom: '40px', maxWidth: '1400px', margin: '0 auto' }}>
                             <div style={{ display: 'flex', gap: '32px', alignItems: 'center' }}>
                                 <Trophy size={72} color="var(--brand-blue)" />
                                 <div>
@@ -345,11 +345,13 @@ const Brackets = () => {
                             </div>
                         </div>
 
-                        <div style={{ width: '100%', overflowX: 'auto', padding: '20px 0', display: 'flex', justifyContent: 'center' }}>
-                            <BracketView cat={cat} />
+                        <div style={{ width: '100%', overflowX: 'auto', padding: '40px 0', display: 'flex', justifyContent: 'flex-start' }}>
+                            <div style={{ minWidth: 'min-content' }}>
+                                <BracketView cat={cat} />
+                            </div>
                         </div>
 
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '80px', borderTop: '2px solid #EEE', paddingTop: '40px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '80px', borderTop: '2px solid #EEE', paddingTop: '40px', maxWidth: '1400px', margin: '0 auto' }}>
                             <div style={{ fontSize: '13px', color: '#555', maxWidth: '750px', lineHeight: '1.8' }}>
                                 <strong style={{ color: '#10151C' }}>LEGENDA TÉCNICA OFICIAL:</strong><br />
                                 (PTF) Pontos, (PTG) Superioridade Técnica, (GDP) Ponto de Ouro, (SUP) Superioridade por Decisão,<br />
