@@ -147,23 +147,7 @@ const Inscriptions = () => {
     e.preventDefault();
     setLoading(true);
     
-    console.log('--- DEBUG CRIAÇÃO DE INSCRIÇÃO ---');
-    console.log('Dados a serem inseridos:', {
-      full_name: editData.full_name,
-      age: parseInt(editData.age),
-      gender: editData.gender,
-      weight: parseFloat(editData.weight),
-      weight_category_id: editData.weight_category_id,
-      belt_level: parseInt(editData.belt_level),
-      belt_category_id: editData.belt_category_id,
-      modality_id: editData.modality_id,
-      organization_id: editData.organization_id,
-      birth_date: editData.birth_date || new Date().toISOString().split('T')[0],
-      phone: editData.phone || '',
-      observations: editData.observations || '',
-      email: editData.email || '',
-      status: editData.status || 'active'
-    });
+    console.log('Dados do formulario:', editData);
     
     try {
       const { data, error } = await supabase
@@ -185,13 +169,13 @@ const Inscriptions = () => {
           status: editData.status || 'active'
         });
 
-      console.log('Resultado da inserção:', { data, error });
+      console.log('Resultado:', { data, error });
       
       if (error) {
-        console.error('Erro detalhado na inserção:', error);
+        console.error('Erro:', error);
         alert('Erro ao criar inscrição: ' + error.message);
       } else {
-        console.log('Inscrição criada com sucesso! ID:', data?.[0]?.id);
+        console.log('Sucesso! ID:', data?.[0]?.id);
         setMessage('Inscrição criada com sucesso!');
         setIsEditing(false);
         setEditData({
@@ -211,15 +195,6 @@ const Inscriptions = () => {
           status: 'active'
         });
         loadInscriptions(selectedChampionship);
-        
-        for (const sql of sqlStatements) {
-          const { error: columnError } = await supabase.rpc('sql', { sql });
-          
-          if (columnError) {
-            console.error('Erro ao criar coluna:', columnError);
-          } else {
-            console.log('Coluna criada com sucesso:', sql);
-          }
         }
       } catch (err) {
         console.error('Erro na abordagem alternativa:', err);
