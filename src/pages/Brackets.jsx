@@ -233,6 +233,19 @@ const Brackets = () => {
         // Lógica corrigida: priorizar weight_category_id da inscrição, mesmo que seja null
         let matchingClassification = null;
         
+        console.log('=== DEBUG CLASSIFICATION MATCH INÍCIO ===');
+        console.log('Atleta:', registration.full_name);
+        console.log('Dados completos do atleta:', {
+          full_name: registration.full_name,
+          age: registration.age,
+          gender: registration.gender,
+          belt_level: registration.belt_level,
+          weight: registration.weight,
+          weight_category_id: registration.weight_category_id,
+          age_category_id: registration.age_category_id,
+          belt_category_id: registration.belt_category_id
+        });
+        
         // Tentar encontrar por weight_category_id da inscrição primeiro
         if (registration.weight_category_id) {
             console.log('=== TENTANDO ENCONTRAR POR WEIGHT_CATEGORY_ID ===');
