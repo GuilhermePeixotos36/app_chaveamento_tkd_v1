@@ -39,16 +39,36 @@ const AthleteClassifications = () => {
     { value: 'F', label: 'Feminino' }
   ];
 
-  const beltGroups = [
-    { value: 1, label: 'Grupo 1 - Iniciante (Branca, Cinza, Amarela)' },
-    { value: 2, label: 'Grupo 2 - Intermediário (Laranja, Verde, Roxa)' },
-    { value: 3, label: 'Grupo 3 - Avançado (Azul, Marrom, Vermelha)' },
-    { value: 4, label: 'Grupo 4 - Elite (Vermelha-Preta, Preta)' }
-  ];
+  const [beltGroups, setBeltGroups] = useState([]);
 
   useEffect(() => {
     loadClassifications();
+    loadBeltGroups();
   }, []);
+
+  // Carregar categorias de faixa da tabela
+  const loadBeltGroups = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('belt_categories')
+        .select('*')
+        .order('name');
+      
+      if (error) throw error;
+      
+      console.log('Belt categories loaded:', data?.length || 0);
+      
+      // Transformar categorias em opções para o dropdown
+      const beltGroupOptions = (data || []).map(cat => ({
+        value: cat.id,
+        label: `${cat.name} (${cat.min_belt_color} à ${cat.max_belt_color})`
+      }));
+      
+      setBeltGroups(beltGroupOptions);
+    } catch (error) {
+      console.error('Erro ao carregar categorias de faixa:', error);
+    }
+  };
 
   // Funções de navegação
   const goToAddClassification = () => {
