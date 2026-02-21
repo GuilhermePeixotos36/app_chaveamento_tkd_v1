@@ -205,11 +205,16 @@ const AthleteClassifications = () => {
       
       const submitData = {
         ...formData,
-        belt_group: parseInt(formData.belt_group),
+        belt_group: parseInt(formData.belt_group) || 1,
         min_weight: weightCategory.min_weight,
         max_weight: weightCategory.max_weight,
         code: generateCode()
       };
+
+      console.log('--- DEBUG SUBMIT DATA ---');
+      console.log('belt_group original:', formData.belt_group);
+      console.log('belt_group parsed:', parseInt(formData.belt_group));
+      console.log('submitData:', submitData);
 
       console.log('--- DEBUG WEIGHT CATEGORIES ---');
       console.log('Total categories:', weightCategories.length);
