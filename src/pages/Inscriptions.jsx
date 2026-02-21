@@ -195,19 +195,13 @@ const Inscriptions = () => {
           status: 'active'
         });
         loadInscriptions(selectedChampionship);
-        }
-      } catch (err) {
-        console.error('Erro na abordagem alternativa:', err);
-      }
-      
-      loadInscriptions(selectedChampionship);
-    } catch (error) {
-      console.error('Erro ao criar inscrição:', error);
-      alert('Erro ao criar inscrição');
-    } finally {
-      setLoading(false);
-    }
-  };
+  } catch (error) {
+    console.error('Erro ao criar inscrição:', error);
+    alert('Erro ao criar inscrição');
+  } finally {
+    setLoading(false);
+  }
+};
   useEffect(() => {
     loadData();
   }, []);
