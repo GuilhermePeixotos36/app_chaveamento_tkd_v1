@@ -736,6 +736,5 @@ const Brackets = () => {
             </div>
         </div>
     );
-};
 
 export default Brackets;
