@@ -434,11 +434,6 @@ const Brackets = () => {
         }
     };
 
-    const viewBracket = (catKey) => {
-        setActiveCategory(catKey);
-        setShowBracketModal(true);
-    };
-
     const BracketModal = () => {
         if (!activeCategory || !categories[activeCategory]) return null;
         const cat = categories[activeCategory];
