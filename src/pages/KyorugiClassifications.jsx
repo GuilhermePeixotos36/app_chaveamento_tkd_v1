@@ -107,8 +107,12 @@ const AthleteClassifications = () => {
     
     const ageCode = ageCodes[formData.age_category];
     const genderCode = formData.gender;
-    const beltCode = formData.belt_group;
-
+    
+    // Buscar a categoria de faixa para obter um código simples
+    const beltCategory = beltGroups.find(group => group.value === formData.belt_group);
+    const beltCode = beltCategory ? (beltGroups.indexOf(beltCategory) + 1).toString() : '1';
+    
+    // Gerar sigla no formato: A-M1-68 (máximo 15 caracteres)
     return `${ageCode}${genderCode}${beltCode}-${weightCode}`;
   };
 
