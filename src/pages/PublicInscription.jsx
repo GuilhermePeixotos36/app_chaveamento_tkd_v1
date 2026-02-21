@@ -256,6 +256,28 @@ const PublicInscription = () => {
           setSuggestedWeightCategory(null);
         }
       }
+    } else if (name === 'athlete_belt') {
+      // Se faixa mudar, recalcular categoria de faixa
+      console.log('=== PROCESSANDO FAIXA (PUBLIC) ===');
+      const beltLevel = parseInt(value) || 1;
+      console.log('DEBUG: athlete_belt value:', value, 'type:', typeof value);
+      console.log('DEBUG: parsed beltLevel:', beltLevel, 'type:', typeof beltLevel);
+      
+      const age = calculateAge(formData.athlete_birthdate);
+      const ageCategoryId = findAgeCategoryId(age);
+      const beltCategoryId = findBeltCategoryId(beltLevel);
+      
+      console.log('IDs calculados (faixa):', {
+        age_category_id: ageCategoryId,
+        belt_category_id: beltCategoryId
+      });
+      
+      setFormData(prev => ({
+        ...prev,
+        [name]: value,
+        age_category_id: ageCategoryId,
+        belt_category_id: beltCategoryId
+      }));
     } else {
       // Para outros campos, apenas atualizar normalmente
       console.log('🔄 Atualizando campo normal (PUBLIC):', name, value);
