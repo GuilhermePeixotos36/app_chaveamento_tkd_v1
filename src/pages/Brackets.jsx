@@ -261,55 +261,49 @@ const Brackets = () => {
             <div style={{
                 borderBottom: '1.5px solid #111',
                 padding: '6px 0',
-                width: '200px',
+                width: '180px',
                 textAlign: isRight ? 'right' : 'left',
                 color: isBlue ? '#1782C8' : '#E71546',
                 minHeight: '52px',
                 position: 'relative'
             }}>
-                <div style={{ fontWeight: 950, whiteSpace: 'nowrap', textTransform: 'uppercase', fontSize: '13px' }}>
-                    <span style={{ fontSize: '10px', marginRight: '5px', color: '#111', fontWeight: 800 }}>{isBlue ? 'AZUL' : 'VERMELHO'}</span>
+                <div style={{ fontWeight: 950, whiteSpace: 'nowrap', textTransform: 'uppercase', fontSize: '12px' }}>
+                    <span style={{ fontSize: '9px', marginRight: '5px', color: '#111', fontWeight: 800 }}>{isBlue ? 'AZUL' : 'VERMELHO'}</span>
                     {player?.full_name || ''}
                 </div>
-                <div style={{ fontSize: '10px', color: '#666', fontWeight: 800 }}>{player?.organizations?.name || ''}</div>
-
-                {/* Extensão horizontal conectora */}
-                <div style={{
-                    position: 'absolute',
-                    bottom: '-1.5px',
-                    [isRight ? 'left' : 'right']: '-32px',
-                    width: '32px',
-                    height: '1.5px',
-                    background: '#111'
-                }} />
+                <div style={{ fontSize: '9px', color: '#666', fontWeight: 800 }}>{player?.organizations?.name || ''}</div>
             </div>
         );
 
         const MatchBox = ({ match, rIndex, isRight }) => {
             const verticalSpace = Math.pow(2, rIndex) * 55;
             const totalH = verticalSpace * 2;
+            const connectorWidth = 32;
+
             return (
                 <div style={{
                     display: 'flex',
                     flexDirection: 'column',
                     height: `${totalH}px`,
                     position: 'relative',
-                    margin: isRight ? '0 0 0 32px' : '0 32px 0 0'
+                    margin: isRight ? `0 0 0 ${connectorWidth}px` : `0 ${connectorWidth}px 0 0`
                 }}>
                     <PlayerLine player={match.player1} isBlue={true} isRight={isRight} />
                     <div style={{ flex: 1 }} />
                     <PlayerLine player={match.player2} isBlue={false} isRight={isRight} />
 
-                    {/* Conector Vertical Limpo */}
+                    {/* Conector em "C" ou "L" invertido para as lutas */}
                     <div style={{
                         position: 'absolute',
-                        [isRight ? 'left' : 'right']: '-32px',
+                        [isRight ? 'left' : 'right']: `-${connectorWidth}px`,
                         top: '52px',
                         height: `${totalH - 52}px`,
-                        width: '1.5px',
-                        background: '#111'
+                        width: `${connectorWidth}px`,
+                        border: '1.5px solid #111',
+                        [isRight ? 'borderRight' : 'borderLeft']: 'none',
+                        zIndex: 1
                     }}>
-                        {/* Número da Luta */}
+                        {/* Box do Número da Luta */}
                         <div style={{
                             position: 'absolute',
                             top: '50%',
@@ -324,12 +318,12 @@ const Brackets = () => {
                             zIndex: 10
                         }}>{match.match_number}</div>
 
-                        {/* Linha horizontal para a próxima rodada */}
+                        {/* Saída horizontal para a próxima etapa */}
                         <div style={{
                             position: 'absolute',
                             top: '50%',
-                            [isRight ? 'right' : 'left']: '-32px',
-                            width: '32px',
+                            [isRight ? 'right' : 'left']: `-${connectorWidth}px`,
+                            width: `${connectorWidth}px`,
                             height: '1.5px',
                             background: '#111',
                             transform: 'translateY(-50%)'
@@ -432,7 +426,17 @@ const Brackets = () => {
                     <div style={{ width: '100%', margin: '0 auto', flex: 1, display: 'flex', flexDirection: 'column' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '5px solid #10151C', paddingBottom: '32px', marginBottom: '30px', maxWidth: '1400px', margin: '0 auto', width: '100%' }}>
                             <div style={{ display: 'flex', gap: '32px', alignItems: 'center' }}>
-                                <Trophy size={72} color="var(--brand-blue)" />
+                                <img
+                                    src="https://raw.githubusercontent.com/GuilhermePeixotos36/app_chaveamento_tkd_v1/main/src/assets/logo_fetemg.png"
+                                    alt="FETEMG Logo"
+                                    style={{ height: '80px', width: 'auto' }}
+                                    onError={(e) => {
+                                        // Fallback para ícone se a imagem falhar
+                                        e.target.style.display = 'none';
+                                        e.target.nextSibling.style.display = 'block';
+                                    }}
+                                />
+                                <Trophy size={72} color="var(--brand-blue)" style={{ display: 'none' }} />
                                 <div>
                                     <h1 style={{ margin: 0, fontSize: '32px', color: '#10151C', textTransform: 'uppercase', fontWeight: 950, letterSpacing: '2px' }}>{champ?.name}</h1>
                                     <p style={{ margin: '8px 0 0 0', color: 'var(--brand-blue)', fontWeight: 900, fontSize: '1.2rem' }}>FEDERAÇÃO DE TAEKWONDO DO ESTADO DE MINAS GERAIS</p>
