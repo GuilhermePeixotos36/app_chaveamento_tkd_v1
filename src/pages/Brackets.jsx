@@ -184,20 +184,36 @@ const Brackets = () => {
     const createSingleEliminationBracket = (athletes) => {
         const n = athletes.length;
         if (n < 2) return null;
+        
+        // Calcular próxima potência de 2
         const totalSlots = Math.pow(2, Math.ceil(Math.log2(n)));
+        
+        // Embaralhar atletas
         const shuffled = [...athletes].sort(() => Math.random() - 0.5);
+        
+        // Criar seeds com BYEs automáticos
         let seeds = Array.from({ length: totalSlots }, (_, i) => i < n ? shuffled[i] : null);
+        
+        // Gerar bracket completo
         let matchCounter = 101;
         const rounds = [];
         let currentLevel = seeds;
+        
         while (currentLevel.length >= 2) {
             const matches = [];
             for (let i = 0; i < currentLevel.length; i += 2) {
-                matches.push({ id: Math.random().toString(36).substr(2, 9), match_number: matchCounter++, player1: currentLevel[i], player2: currentLevel[i + 1], winner: null });
+                matches.push({ 
+                    id: Math.random().toString(36).substr(2, 9), 
+                    match_number: matchCounter++, 
+                    player1: currentLevel[i], 
+                    player2: currentLevel[i + 1], 
+                    winner: null 
+                });
             }
             rounds.push(matches);
             currentLevel = Array.from({ length: matches.length }, () => null);
         }
+        
         return rounds;
     };
 
@@ -253,67 +269,169 @@ const Brackets = () => {
         const rounds = cat.bracket;
         if (!rounds || rounds.length === 0) return null;
         const numRounds = rounds.length;
-
+        
+        // Dimensões fixas para layout profissional
+        const MATCH_WIDTH = 220;
+        const MATCH_HEIGHT = 90;
+        const COLUMN_SPACING = 80;
+        const VERTICAL_SPACING = 40;
+        
         // Função para calcular posição na árvore binária
         const calculateTreePosition = (roundIndex, matchIndex, totalMatches) => {
             const level = numRounds - 1 - roundIndex;
             const positionInLevel = matchIndex;
-
-            // Calcular posição X e Y baseada na hierarquia
-            const x = level * 250; // 250px por nível
-            const y = positionInLevel * 150; // 150px por luta
-
+            
+            // Calcular posição X baseada na coluna (nível)
+            const x = level * (MATCH_WIDTH + COLUMN_SPACING);
+            
+            // Calcular posição Y baseada na posição na coluna
+            // Distribuir verticalmente com espaçamento proporcional
+            const availableHeight = (totalMatches - 1) * (MATCH_HEIGHT + VERTICAL_SPACING);
+            const y = positionInLevel * (MATCH_HEIGHT + VERTICAL_SPACING);
+            
             return { x, y, level, positionInLevel };
         };
 
-        // Função para renderizar um nó (luta)
+        // Função para renderizar conexões contínuas
+        const renderConnections = () => {
+            const connections = [];
+            
+            rounds.forEach((round, roundIndex) => {
+                if (roundIndex >= rounds.length - 1) return; // Última rodada não tem conexões para frente
+                
+                const nextRound = rounds[roundIndex + 1];
+                round.forEach((match, matchIndex) => {
+                    const nextMatchIndex = Math.floor(matchIndex / 2);
+                    
+                    if (nextRound && nextMatchIndex < nextRound.length) {
+                        const currentPos = calculateTreePosition(roundIndex, matchIndex, round.length);
+                        const nextPos = calculateTreePosition(roundIndex + 1, nextMatchIndex, nextRound.length);
+                        
+                        // Ponto de saída da luta atual (centro da direita)
+                        const exitPoint = {
+                            x: currentPos.x + MATCH_WIDTH,
+                            y: currentPos.y + MATCH_HEIGHT / 2
+                        };
+                        
+                        // Ponto de entrada da próxima luta (centro da esquerda)
+                        const entryPoint = {
+                            x: nextPos.x,
+                            y: nextPos.y + MATCH_HEIGHT / 2
+                        };
+                        
+                        // Linha horizontal saindo da luta atual
+                        connections.push({
+                            type: 'horizontal',
+                            from: exitPoint,
+                            to: { x: exitPoint.x + COLUMN_SPACING / 2, y: exitPoint.y }
+                        });
+                        
+                        // Linha vertical até o nível da próxima luta
+                        connections.push({
+                            type: 'vertical',
+                            from: { x: exitPoint.x + COLUMN_SPACING / 2, y: exitPoint.y },
+                            to: { x: exitPoint.x + COLUMN_SPACING / 2, y: entryPoint.y }
+                        });
+                        
+                        // Linha horizontal entrando na próxima luta
+                        connections.push({
+                            type: 'horizontal',
+                            from: { x: exitPoint.x + COLUMN_SPACING / 2, y: entryPoint.y },
+                            to: entryPoint
+                        });
+                    }
+                });
+            });
+            
+            return connections;
+        };
+
+        // Função para renderizar uma luta
         const renderMatch = (match, roundIndex, matchIndex, totalMatches) => {
             const position = calculateTreePosition(roundIndex, matchIndex, totalMatches);
             const isFinal = roundIndex === numRounds - 1;
-
+            
             return (
                 <div key={match.id} style={{
                     position: 'absolute',
                     left: `${position.x}px`,
                     top: `${position.y}px`,
-                    width: '200px',
-                    height: '80px',
-                    zIndex: 10
+                    width: `${MATCH_WIDTH}px`,
+                    height: `${MATCH_HEIGHT}px`,
+                    zIndex: 10,
+                    background: '#fff',
+                    border: '2px solid #111',
+                    borderRadius: '4px'
                 }}>
+                    {/* Número da luta */}
+                    <div style={{
+                        position: 'absolute',
+                        top: '-30px',
+                        left: '50%',
+                        transform: 'translateX(-50%)',
+                        background: '#000',
+                        color: '#fff',
+                        fontSize: '11px',
+                        fontWeight: 900,
+                        padding: '4px 8px',
+                        borderRadius: '3px',
+                        minWidth: '35px',
+                        textAlign: 'center',
+                        zIndex: 20
+                    }}>
+                        {match.match_number}
+                    </div>
+                    
                     {/* Container dos jogadores */}
                     <div style={{
                         display: 'flex',
                         flexDirection: 'column',
-                        gap: '10px',
-                        height: '100%'
+                        height: '100%',
+                        position: 'relative'
                     }}>
+                        {/* Linha vertical central */}
+                        <div style={{
+                            position: 'absolute',
+                            left: '50%',
+                            top: '0',
+                            bottom: '0',
+                            width: '2px',
+                            background: '#111',
+                            transform: 'translateX(-50%)',
+                            zIndex: 1
+                        }} />
+                        
                         {/* Jogador 1 */}
                         <div style={{
                             display: 'flex',
                             alignItems: 'center',
-                            padding: '8px',
+                            padding: '8px 12px',
                             borderBottom: '2px solid #111',
+                            minHeight: '40px',
                             background: '#fff',
-                            minHeight: '35px'
+                            position: 'relative',
+                            zIndex: 2
                         }}>
                             <div style={{ flex: 1 }}>
                                 <div style={{ 
-                                    fontSize: '8px', 
+                                    fontSize: '9px', 
                                     color: '#1782C8', 
                                     fontWeight: 800, 
-                                    marginRight: '6px' 
+                                    marginBottom: '2px'
                                 }}>AZUL</div>
                                 <div style={{ 
-                                    fontSize: '11px', 
-                                    fontWeight: 950, 
-                                    textTransform: 'uppercase' 
+                                    fontSize: '12px', 
+                                    fontWeight: 900, 
+                                    textTransform: 'uppercase',
+                                    lineHeight: '1.2'
                                 }}>
                                     {match.player1?.full_name || '---'}
                                 </div>
                                 <div style={{ 
                                     fontSize: '8px', 
                                     color: '#666', 
-                                    fontWeight: 800 
+                                    fontWeight: 700,
+                                    marginTop: '2px'
                                 }}>
                                     {match.player1?.organizations?.name || ''}
                                 </div>
@@ -324,53 +442,37 @@ const Brackets = () => {
                         <div style={{
                             display: 'flex',
                             alignItems: 'center',
-                            padding: '8px',
-                            borderBottom: '2px solid #111',
+                            padding: '8px 12px',
+                            minHeight: '40px',
                             background: '#fff',
-                            minHeight: '35px'
+                            position: 'relative',
+                            zIndex: 2
                         }}>
                             <div style={{ flex: 1 }}>
                                 <div style={{ 
-                                    fontSize: '8px', 
+                                    fontSize: '9px', 
                                     color: '#E71546', 
-                                    fontWeight: 800, 
-                                    marginRight: '6px' 
+                                    fontWeight: 800,
+                                    marginBottom: '2px'
                                 }}>VERMELHO</div>
                                 <div style={{ 
-                                    fontSize: '11px', 
-                                    fontWeight: 950, 
-                                    textTransform: 'uppercase' 
+                                    fontSize: '12px', 
+                                    fontWeight: 900, 
+                                    textTransform: 'uppercase',
+                                    lineHeight: '1.2'
                                 }}>
                                     {match.player2?.full_name || '---'}
                                 </div>
                                 <div style={{ 
                                     fontSize: '8px', 
                                     color: '#666', 
-                                    fontWeight: 800 
+                                    fontWeight: 700,
+                                    marginTop: '2px'
                                 }}>
                                     {match.player2?.organizations?.name || ''}
                                 </div>
                             </div>
                         </div>
-                    </div>
-
-                    {/* Número da luta */}
-                    <div style={{
-                        position: 'absolute',
-                        top: '-25px',
-                        left: '50%',
-                        transform: 'translateX(-50%)',
-                        background: '#000',
-                        color: '#fff',
-                        fontSize: '10px',
-                        fontWeight: 950,
-                        padding: '4px 8px',
-                        borderRadius: '3px',
-                        minWidth: '30px',
-                        textAlign: 'center',
-                        zIndex: 20
-                    }}>
-                        {match.match_number}
                     </div>
                 </div>
             );
@@ -379,86 +481,82 @@ const Brackets = () => {
         // Renderizar todas as lutas e conexões
         const allMatches = [];
         const allConnections = [];
-
+        
         rounds.forEach((round, roundIndex) => {
             round.forEach((match, matchIndex) => {
                 const position = calculateTreePosition(roundIndex, matchIndex, round.length);
                 allMatches.push({ match, position, roundIndex, matchIndex });
-
-                // Adicionar conexões para a próxima rodada
-                if (roundIndex < rounds.length - 1) {
-                    const nextRound = rounds[roundIndex + 1];
-                    const nextMatchIndex = Math.floor(matchIndex / 2);
-
-                    if (nextRound && nextMatchIndex < nextRound.length) {
-                        const nextPosition = calculateTreePosition(roundIndex + 1, nextMatchIndex, nextRound.length);
-
-                        // Conexão vertical
-                        allConnections.push({
-                            from: { ...position, x: position.x + 200 },
-                            to: { ...nextPosition, x: nextPosition.x }
-                        });
-
-                        // Conexão horizontal se necessário
-                        if (matchIndex % 2 === 1) {
-                            const prevPosition = calculateTreePosition(roundIndex, matchIndex - 1, round.length);
-                            allConnections.push({
-                                from: { ...prevPosition, x: prevPosition.x + 200 },
-                                to: { ...position, x: position.x + 200 }
-                            });
-                        }
-                    }
-                }
             });
         });
 
-        // Calcular dimensões do container
-        const maxX = Math.max(...allMatches.map(m => m.position.x + 200));
-        const maxY = Math.max(...allMatches.map(m => m.position.y + 80));
+        // Gerar conexões
+        const connections = renderConnections();
 
+        // Calcular dimensões do container
+        const totalWidth = numRounds * (MATCH_WIDTH + COLUMN_SPACING) + 100;
+        const maxMatchesInRound = Math.max(...rounds.map(r => r.length));
+        const totalHeight = maxMatchesInRound * (MATCH_HEIGHT + VERTICAL_SPACING) + 200;
+        
         return (
             <div style={{
                 position: 'relative',
-                width: `${maxX + 100}px`,
-                height: `${maxY + 200}px`,
+                width: `${totalWidth}px`,
+                height: `${totalHeight}px`,
                 background: '#fff',
                 fontFamily: 'Arial, sans-serif',
-                margin: '40px auto',
-                padding: '40px'
+                margin: '20px auto',
+                padding: '40px',
+                minWidth: '800px'
             }}>
                 {/* Renderizar conexões primeiro (para ficar atrás dos nós) */}
-                {allConnections.map((conn, index) => (
-                    <div key={`conn-${index}`} style={{
-                        position: 'absolute',
-                        left: `${conn.from.x}px`,
-                        top: `${conn.from.y}px`,
-                        width: '2px',
-                        height: `${conn.to.y - conn.from.y}px`,
-                        background: '#111',
-                        zIndex: 1
-                    }} />
-                ))}
-
+                {connections.map((conn, index) => {
+                    if (conn.type === 'horizontal') {
+                        return (
+                            <div key={`conn-h-${index}`} style={{
+                                position: 'absolute',
+                                left: `${Math.min(conn.from.x, conn.to.x)}px`,
+                                top: `${conn.from.y}px`,
+                                width: `${Math.abs(conn.to.x - conn.from.x)}px`,
+                                height: '2px',
+                                background: '#111',
+                                zIndex: 1
+                            }} />
+                        );
+                    } else {
+                        return (
+                            <div key={`conn-v-${index}`} style={{
+                                position: 'absolute',
+                                left: `${conn.from.x}px`,
+                                top: `${Math.min(conn.from.y, conn.to.y)}px`,
+                                width: '2px',
+                                height: `${Math.abs(conn.to.y - conn.from.y)}px`,
+                                background: '#111',
+                                zIndex: 1
+                            }} />
+                        );
+                    }
+                })}
+                
                 {/* Renderizar todos os nós (lutas) */}
                 {allMatches.map(({ match, position, roundIndex, matchIndex }) => 
                     renderMatch(match, roundIndex, matchIndex, rounds[roundIndex].length)
                 )}
-
+                
                 {/* Renderizar troféu abaixo da final */}
                 {rounds.length > 0 && (
                     <div style={{
                         position: 'absolute',
-                        left: `${(numRounds - 1) * 250 + 100}px`,
-                        top: `${maxY + 60}px`,
+                        left: `${(numRounds - 1) * (MATCH_WIDTH + COLUMN_SPACING) + MATCH_WIDTH/2 - 40}px`,
+                        top: `${totalHeight - 120}px`,
                         display: 'flex',
                         flexDirection: 'column',
                         alignItems: 'center',
-                        gap: '10px'
+                        gap: '8px'
                     }}>
-                        <Trophy size={60} color="#FBCB37" fill="#FBCB37" />
+                        <Trophy size={50} color="#FBCB37" fill="#FBCB37" />
                         <div style={{ 
-                            fontWeight: 950, 
-                            fontSize: '16px', 
+                            fontWeight: 900, 
+                            fontSize: '14px', 
                             letterSpacing: '1px',
                             textTransform: 'uppercase' 
                         }}>Campeão</div>
