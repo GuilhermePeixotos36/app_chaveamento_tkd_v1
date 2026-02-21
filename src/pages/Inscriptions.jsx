@@ -166,7 +166,7 @@ const Inscriptions = () => {
     });
     
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('registrations')
         .insert({
           full_name: editData.full_name,
@@ -189,7 +189,7 @@ const Inscriptions = () => {
       
       if (error) {
         console.error('Erro detalhado na inserção:', error);
-        alert(`Erro ao criar inscrição: ${error.message}`);
+        alert('Erro ao criar inscrição: ' + error.message);
       } else {
         console.log('Inscrição criada com sucesso! ID:', data?.[0]?.id);
         setMessage('Inscrição criada com sucesso!');
@@ -211,14 +211,6 @@ const Inscriptions = () => {
           status: 'active'
         });
         loadInscriptions(selectedChampionship);
-        // SQL para criar as colunas adicionais
-        const sqlStatements = [
-          'ALTER TABLE registrations ADD COLUMN IF NOT EXISTS birth_date TIMESTAMPTZ;',
-          'ALTER TABLE registrations ADD COLUMN IF NOT EXISTS phone TEXT;',
-          'ALTER TABLE registrations ADD COLUMN IF NOT EXISTS observations TEXT;',
-          'ALTER TABLE registrations ADD COLUMN IF NOT EXISTS email TEXT;',
-          'ALTER TABLE registrations ADD COLUMN IF NOT EXISTS status TEXT DEFAULT \'active\';'
-        ];
         
         for (const sql of sqlStatements) {
           const { error: columnError } = await supabase.rpc('sql', { sql });
