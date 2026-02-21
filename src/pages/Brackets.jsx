@@ -581,7 +581,6 @@ const Brackets = () => {
                     </div>
                 </div>
             </div>
-        );
     };
 
     return (
