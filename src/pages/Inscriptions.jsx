@@ -195,7 +195,8 @@ const Inscriptions = () => {
           status: 'active'
         });
         loadInscriptions(selectedChampionship);
-  } catch (error) {
+      }
+    } catch (error) {
     console.error('Erro ao criar inscrição:', error);
     alert('Erro ao criar inscrição');
   } finally {
