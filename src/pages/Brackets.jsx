@@ -468,6 +468,92 @@ const Brackets = () => {
         );
     };
 
+    const BracketModal = () => {
+        const cat = categories[activeCategory];
+        const champ = championships.find(c => c.id === selectedChampionship);
+        const [scale, setScale] = useState(1);
+        const bracketRef = React.useRef(null);
+        const containerRef = React.useRef(null);
+
+        React.useLayoutEffect(() => {
+            if (bracketRef.current && containerRef.current) {
+                const containerWidth = containerRef.current.offsetWidth - 60;
+                const containerHeight = window.innerHeight - 380;
+                const contentWidth = bracketRef.current.scrollWidth;
+                const contentHeight = bracketRef.current.scrollHeight;
+                let finalScale = Math.min(containerWidth / contentWidth, containerHeight / contentHeight);
+                setScale(finalScale < 1 ? Math.max(0.2, finalScale) : 1);
+            }
+        }, [cat]);
+
+        return (
+            <div className="modal-overlay" style={{ display: 'flex', padding: 0, alignItems: 'center', overflow: 'auto', backgroundColor: 'rgba(0,0,0,0.9)', zIndex: 1000 }}>
+                <div ref={containerRef} className="modal-content" style={{ width: '100%', maxWidth: '100vw', padding: '40px', borderRadius: '0', background: '#FFF', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+                    <div style={{ width: '100%', maxWidth: '1400px', margin: '0 auto', flex: 1 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '4px solid #111', paddingBottom: '20px', marginBottom: '30px' }}>
+                            <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
+                                <img
+                                    src="/logo.png"
+                                    alt="Federação"
+                                    style={{ width: '100px', height: '100px', objectFit: 'contain' }}
+                                    onError={(e) => {
+                                        e.target.style.display = 'none';
+                                        e.target.nextSibling.style.display = 'flex';
+                                    }}
+                                />
+                                <div style={{
+                                    display: 'none', width: '100px', height: '100px', background: 'linear-gradient(135deg, #1782C8 0%, #E71546 100%)',
+                                    borderRadius: '10px', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 950, textAlign: 'center'
+                                }}>FETEMG</div>
+
+                                <div>
+                                    <h1 style={{ margin: 0, fontSize: '30px', fontWeight: 950, textTransform: 'uppercase' }}>{champ?.name}</h1>
+                                    <p style={{ margin: 0, color: '#1782C8', fontWeight: 800 }}>FEDERAÇÃO DE TAEKWONDO DO ESTADO DE MINAS GERAIS</p>
+                                </div>
+                            </div>
+                            <div className="no-print" style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+                                <button className="btn btn-primary" onClick={() => saveBracket(activeCategory)} disabled={saving}><Save size={20} /> SALVAR</button>
+                                <button className="btn btn-secondary" onClick={() => window.print()}><Printer size={20} /> IMPRIMIR</button>
+                                <button className="btn btn-ghost" onClick={() => setShowBracketModal(false)}><X size={40} /></button>
+                            </div>
+                        </div>
+
+                        <div style={{ textAlign: 'center', marginBottom: '30px' }}>
+                            <h2 style={{ fontSize: '1.8rem', fontWeight: 950, textTransform: 'uppercase' }}>{cat.classification_name}</h2>
+                            <div style={{ display: 'flex', justifyContent: 'center', gap: '30px', fontWeight: 800 }}>
+                                <span>{cat.classification_code}</span>
+                                <span>{cat.info.gender}</span>
+                            </div>
+                        </div>
+
+                        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', padding: '20px 0' }}>
+                            <div ref={bracketRef} style={{
+                                transform: `scale(${scale})`,
+                                transformOrigin: 'top center',
+                                transition: 'transform 0.2s'
+                            }}>
+                                <BracketView cat={cat} />
+                            </div>
+                        </div>
+
+                        <div className="bracket-footer" style={{ display: 'flex', justifyContent: 'space-between', marginTop: 'auto', borderTop: '2px solid #EEE', paddingTop: '30px', maxWidth: '1400px', margin: '0 auto', width: '100%' }}>
+                            <div style={{ fontSize: '12px', color: '#555', maxWidth: '700px', lineHeight: '1.6' }}>
+                                <strong style={{ color: '#10151C' }}>LEGENDA TÉCNICA OFICIAL:</strong><br />
+                                (PTF) Pontos, (PTG) Superioridade Técnica, (GDP) Ponto de Ouro, (SUP) Superioridade por Decisão,<br />
+                                (WDR) Desistência, (DSQ) Desclassificação, (PUN) Punição, (RSC) Interrupção pelo Árbitro
+                            </div>
+                            <div style={{ width: '320px', border: '3px solid #10151C', padding: '15px' }}>
+                                <p style={{ margin: '0 0 10px 0', fontSize: '13px', fontWeight: 950, textTransform: 'uppercase' }}>Vencedor da Categoria:</p>
+                                <div style={{ height: '3px', background: '#DDD', margin: '10px 0' }} />
+                                <div style={{ height: '3px', background: '#DDD', margin: '10px 0' }} />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
     return (
         <div className="app-container" style={{ backgroundColor: '#F2EFEA' }}>
             <div className="content-wrapper">
