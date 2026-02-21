@@ -206,52 +206,76 @@ const Brackets = () => {
         console.log('Peso Category ID:', registration.weight_category_id);
         console.log('Peso real:', registration.weight, 'kg');
         
+        // Log todas as classificações disponíveis para comparação
+        console.log('=== TODAS AS CLASSIFICAÇÕES DISPONÍVEIS ===');
+        kyorugiClassifications.forEach((classification, index) => {
+            console.log(`Classificação ${index}:`, {
+                id: classification.id,
+                name: classification.name,
+                age_category: classification.age_category,
+                gender: classification.gender,
+                belt_group: classification.belt_group,
+                weight_category_id: classification.weight_category_id
+            });
+        });
+        
         // Lógica corrigida: priorizar weight_category_id da inscrição, mesmo que seja null
         let matchingClassification = null;
         
         // Tentar encontrar por weight_category_id da inscrição primeiro
         if (registration.weight_category_id) {
+            console.log('=== TENTANDO ENCONTRAR POR WEIGHT_CATEGORY_ID ===');
             matchingClassification = kyorugiClassifications.find(classification => {
                 console.log('Comparando com classificação (por ID da inscrição):', {
-                    age_category: classification.age_category,
-                    gender: classification.gender,
-                    belt_group: classification.belt_group,
-                    weight_category_id: classification.weight_category_id
+                    classification_age_category: classification.age_category,
+                    expected_age_group: ageGroup,
+                    classification_gender: classification.gender,
+                    expected_gender: registration.gender,
+                    classification_belt_group: classification.belt_group,
+                    expected_belt_group: beltGroup,
+                    classification_weight_category_id: classification.weight_category_id,
+                    expected_weight_category_id: registration.weight_category_id
                 });
                 
-                return classification.age_category === ageGroup &&
-                       classification.gender === registration.gender &&
-                       classification.belt_group === beltGroup &&
-                       classification.weight_category_id === registration.weight_category_id;
+                const match = classification.age_category === ageGroup &&
+                              classification.gender === registration.gender &&
+                              classification.belt_group === beltGroup &&
+                              classification.weight_category_id === registration.weight_category_id;
+                
+                console.log('Match por ID:', match);
+                return match;
             });
         }
         
         // Se não encontrar por ID, tentar encontrar pelo peso real
         if (!matchingClassification && registration.weight) {
+            console.log('=== TENTANDO ENCONTRAR POR PESO REAL ===');
             matchingClassification = kyorugiClassifications.find(classification => {
                 console.log('Comparando com classificação (por peso):', {
-                    age_category: classification.age_category,
-                    gender: classification.gender,
-                    belt_group: classification.belt_group,
-                    min_weight: classification.min_weight,
-                    max_weight: classification.max_weight
+                    classification_age_category: classification.age_category,
+                    expected_age_group: ageGroup,
+                    classification_gender: classification.gender,
+                    expected_gender: registration.gender,
+                    classification_belt_group: classification.belt_group,
+                    expected_belt_group: beltGroup,
+                    classification_min_weight: classification.min_weight,
+                    classification_max_weight: classification.max_weight,
+                    athlete_weight: registration.weight
                 });
                 
-                return classification.age_category === ageGroup &&
-                       classification.gender === registration.gender &&
-                       classification.belt_group === beltGroup &&
-                       registration.weight >= classification.min_weight &&
-                       registration.weight <= classification.max_weight;
+                const match = classification.age_category === ageGroup &&
+                              classification.gender === registration.gender &&
+                              classification.belt_group === beltGroup &&
+                              registration.weight >= classification.min_weight &&
+                              registration.weight <= classification.max_weight;
+                
+                console.log('Match por peso:', match);
+                return match;
             });
         }
         
-        if (!matchingClassification) {
-            console.log('⚠️ Atleta não corresponde a nenhuma classificação criada');
-            console.log('Sugestão: Verifique se a inscrição foi feita corretamente');
-        }
-        
-        console.log('Resultado:', matchingClassification ? 'ENCONTROU' : 'NÃO ENCONTROU');
-        console.log('--- END DEBUG ---');
+        console.log('=== RESULTADO FINAL ===');
+        console.log('Classificação encontrada:', matchingClassification ? matchingClassification.name : 'NENHUMA');
         
         return matchingClassification;
     };
