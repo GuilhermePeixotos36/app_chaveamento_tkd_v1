@@ -129,7 +129,6 @@ const PublicInscription = () => {
         
         if (suggested) {
           console.log('✅ Categoria sugerida (PUBLIC):', suggested.name, 'ID:', suggested.id);
-          alert(`✅ Categoria sugerida: ${suggested.name}`);
           setFormData(prev => ({
             ...prev,
             athlete_weight: value,
@@ -138,7 +137,6 @@ const PublicInscription = () => {
           setSuggestedWeightCategory(suggested);
         } else {
           console.log('❌ Nenhuma categoria encontrada (PUBLIC):', { weight, age, gender });
-          alert(`❌ Nenhuma categoria encontrada para peso ${weight}kg, idade ${age}, gênero ${gender}`);
           setFormData(prev => ({
             ...prev,
             athlete_weight: value,
@@ -176,7 +174,6 @@ const PublicInscription = () => {
         
         if (suggested) {
           console.log('✅ Categoria atualizada (PUBLIC):', suggested.name, 'ID:', suggested.id);
-          alert(`✅ Categoria atualizada: ${suggested.name}`);
           setFormData(prev => ({
             ...prev,
             weight_category_id: suggested.id
@@ -184,7 +181,6 @@ const PublicInscription = () => {
           setSuggestedWeightCategory(suggested);
         } else {
           console.log('❌ Nenhuma categoria encontrada após atualização (PUBLIC)');
-          alert(`❌ Nenhuma categoria encontrada para os novos dados`);
           setFormData(prev => ({
             ...prev,
             weight_category_id: null
@@ -362,7 +358,7 @@ const PublicInscription = () => {
 
       const age = calculateAge(formData.athlete_birthdate);
 
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('registrations')
         .insert({
           championship_id: formData.championship_id,
