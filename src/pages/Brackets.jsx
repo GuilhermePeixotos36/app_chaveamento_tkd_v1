@@ -507,8 +507,11 @@ const Brackets = () => {
             round.slice(Math.ceil(round.length / 2))
         );
 
-        const PlayerLine = ({ player, isBlue, isRight }) => {
+        const PlayerLine = ({ player, isBlue, isRight, fallbackText }) => {
             const code = isBlue ? 'B/' : 'R/';
+            const name = player?.full_name || fallbackText || (player === null ? 'Saída livre' : '---');
+            const org = player?.organizations?.name || player?.organizations_name || '';
+
             return (
                 <div style={{
                     borderBottom: '1px solid #000',
@@ -522,10 +525,10 @@ const Brackets = () => {
                 }}>
                     <div style={{ fontWeight: 'bold', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                         <span style={{ fontSize: '10px', marginRight: '5px', color: '#000' }}>{code}</span>
-                        {player?.full_name || 'Saída livre'}
+                        {name}
                     </div>
                     <div style={{ fontSize: '9px', color: '#000', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        {player?.organizations?.name || player?.organizations_name || ''}
+                        {org}
                     </div>
                 </div>
             );
@@ -600,27 +603,50 @@ const Brackets = () => {
 
                     <div style={{ textAlign: 'center', margin: '0 40px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                         <div style={{ fontWeight: 'bold', fontSize: '18px', marginBottom: '10px', color: '#334155' }}>Final</div>
-                        <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+
+                        <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px' }}>
+                            <PlayerLine
+                                player={finalMatch.player1}
+                                isBlue={true}
+                                isRight={false}
+                                fallbackText={numRounds > 1 ? "Vencedor Luta..." : ""}
+                            />
+
                             <div style={{
-                                position: 'absolute',
-                                top: '50%',
-                                left: '50%',
-                                transform: 'translate(-50%, -50%)',
                                 background: '#e2e8f0',
                                 border: '1px solid #94a3b8',
                                 fontSize: '12px',
                                 padding: '4px 8px',
                                 fontWeight: 'bold',
                                 zIndex: 10,
-                                color: '#000'
+                                color: '#000',
+                                margin: '10px 0'
                             }}>
                                 {finalMatch.match_number}
                             </div>
-                            <div style={{ display: 'flex', gap: '80px' }}>
-                                <div style={{ borderBottom: '2px solid #94a3b8', width: '100px' }} />
-                                <div style={{ borderBottom: '2px solid #94a3b8', width: '100px' }} />
-                            </div>
+
+                            <PlayerLine
+                                player={finalMatch.player2}
+                                isBlue={false}
+                                isRight={false}
+                                fallbackText={numRounds > 1 ? "Vencedor Luta..." : ""}
+                            />
+
+                            {/* Decorative lines for the final central match */}
+                            <div style={{
+                                position: 'absolute',
+                                left: '-40px',
+                                right: '-40px',
+                                top: '20px',
+                                bottom: '20px',
+                                border: numRounds > 1 ? '1px solid #94a3b8' : 'none',
+                                borderRight: 'none',
+                                borderLeft: 'none',
+                                pointerEvents: 'none',
+                                zIndex: 0
+                            }} />
                         </div>
+
                         <div style={{ marginTop: '20px', color: '#d97706', fontWeight: 'bold' }}>🏆 CAMPEÃO</div>
                     </div>
 
