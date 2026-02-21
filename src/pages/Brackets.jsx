@@ -422,7 +422,7 @@ const Brackets = () => {
                     padding: '40px',
                     minWidth: '800px'
                 }}>
-                    {/* Semifinal 1 - 25% da largura */}
+                    {/* Semifinal 1 - 25% da largura (nó folha esquerda) */}
                     <div style={{
                         position: 'absolute',
                         left: '0%',
@@ -434,19 +434,7 @@ const Brackets = () => {
                         {renderMatch(rounds[0][0], 0, 0, 2)}
                     </div>
                     
-                    {/* Semifinal 2 - 25% da largura */}
-                    <div style={{
-                        position: 'absolute',
-                        left: '25%',
-                        top: '50%',
-                        transform: 'translateY(-50%)',
-                        width: '25%',
-                        height: `${MATCH_HEIGHT}px`
-                    }}>
-                        {renderMatch(rounds[0][1], 0, 1, 2)}
-                    </div>
-                    
-                    {/* Final - 50% da largura */}
+                    {/* Final - 50% da largura (nó pai centralizado) */}
                     <div style={{
                         position: 'absolute',
                         left: '50%',
@@ -456,6 +444,18 @@ const Brackets = () => {
                         height: `${MATCH_HEIGHT}px`
                     }}>
                         {renderMatch(rounds[1][0], 1, 0, 1)}
+                    </div>
+                    
+                    {/* Semifinal 2 - 75% da largura (nó folha direita) */}
+                    <div style={{
+                        position: 'absolute',
+                        left: '75%',
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        width: '25%',
+                        height: `${MATCH_HEIGHT}px`
+                    }}>
+                        {renderMatch(rounds[0][1], 0, 1, 2)}
                     </div>
                     
                     {/* Conexões horizontais contínuas */}
