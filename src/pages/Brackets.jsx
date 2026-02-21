@@ -260,49 +260,48 @@ const Brackets = () => {
         const PlayerLine = ({ player, isBlue, isRight }) => (
             <div style={{
                 borderBottom: '1.5px solid #111',
-                padding: '4px 0',
-                width: '180px',
+                padding: '2px 0',
+                width: '160px',
                 textAlign: isRight ? 'right' : 'left',
                 color: isBlue ? '#1782C8' : '#E71546',
-                minHeight: '48px',
+                minHeight: '40px',
                 position: 'relative',
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'flex-end'
             }}>
                 <div style={{ fontWeight: 950, whiteSpace: 'nowrap', textTransform: 'uppercase', fontSize: '11px', lineHeight: '1.2' }}>
-                    <span style={{ fontSize: '8px', marginRight: '5px', color: '#111', fontWeight: 800 }}>{isBlue ? 'AZUL' : 'VERMELHO'}</span>
+                    <span style={{ fontSize: '7px', marginRight: '4px', color: '#111', fontWeight: 800 }}>{isBlue ? 'AZUL' : 'VERMELHO'}</span>
                     {player?.full_name || ''}
                 </div>
-                <div style={{ fontSize: '8px', color: '#666', fontWeight: 800, marginTop: '2px' }}>{player?.organizations?.name || ''}</div>
+                <div style={{ fontSize: '7px', color: '#666', fontWeight: 800 }}>{player?.organizations?.name || ''}</div>
             </div>
         );
 
         const MatchBox = ({ match, rIndex, isRight }) => {
-            const verticalSpace = Math.pow(2, rIndex) * 55;
-            const connectorWidth = 32;
-            const playerHeight = 48;
+            const verticalSpace = Math.pow(2, rIndex) * 50;
+            const connectorWidth = 40;
+            const playerHeight = 40;
             const totalH = verticalSpace * 2;
 
             return (
                 <div style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    height: `${totalH}px`,
                     position: 'relative',
+                    height: `${totalH}px`,
+                    width: '160px',
                     margin: isRight ? `0 0 0 ${connectorWidth}px` : `0 ${connectorWidth}px 0 0`,
                 }}>
-                    {/* Atleta 1 (Topo) */}
+                    {/* Atleta 1 */}
                     <div style={{ position: 'absolute', top: 0, [isRight ? 'right' : 'left']: 0 }}>
                         <PlayerLine player={match.player1} isBlue={true} isRight={isRight} />
                     </div>
 
-                    {/* Atleta 2 (Base) */}
+                    {/* Atleta 2 */}
                     <div style={{ position: 'absolute', bottom: 0, [isRight ? 'right' : 'left']: 0 }}>
                         <PlayerLine player={match.player2} isBlue={false} isRight={isRight} />
                     </div>
 
-                    {/* Conectores */}
+                    {/* Sistema de Conectores (Estilo Imagem 2) */}
                     <div style={{
                         position: 'absolute',
                         [isRight ? 'left' : 'right']: `-${connectorWidth}px`,
@@ -311,7 +310,7 @@ const Brackets = () => {
                         width: `${connectorWidth}px`,
                         zIndex: 1
                     }}>
-                        {/* Vertical Bar */}
+                        {/* Barra Vertical de Ligação */}
                         <div style={{
                             position: 'absolute',
                             [isRight ? 'left' : 'right']: '0',
@@ -321,7 +320,7 @@ const Brackets = () => {
                             background: '#111'
                         }} />
 
-                        {/* Top L-Hook */}
+                        {/* Gancho Superior (Horizontal) */}
                         <div style={{
                             position: 'absolute',
                             top: 0,
@@ -331,7 +330,7 @@ const Brackets = () => {
                             background: '#111'
                         }} />
 
-                        {/* Bottom L-Hook (border do jogador 2) */}
+                        {/* Gancho Inferior (Horizontal) */}
                         <div style={{
                             position: 'absolute',
                             bottom: 0,
@@ -341,7 +340,7 @@ const Brackets = () => {
                             background: '#111'
                         }} />
 
-                        {/* Match Number and Next Round Line */}
+                        {/* Caixa da Luta e Saída (Exatamente no meio) */}
                         <div style={{
                             position: 'absolute',
                             top: '50%',
@@ -352,13 +351,21 @@ const Brackets = () => {
                             alignItems: 'center',
                             flexDirection: isRight ? 'row-reverse' : 'row'
                         }}>
-                            <div style={{ width: '8px', height: '1.5px', background: '#111', flexShrink: 0 }} />
+                            <div style={{ width: '4px', height: '1.5px', background: '#111', flexShrink: 0 }} />
                             <div style={{
-                                background: '#111', color: '#FFF', fontSize: '10px', padding: '4px 8px',
-                                fontWeight: 950, borderRadius: '4px', boxShadow: '0 4px 10px rgba(0,0,0,0.3)',
-                                whiteSpace: 'nowrap', zIndex: 10
+                                background: '#EEE',
+                                border: '1.5px solid #111',
+                                color: '#000',
+                                fontSize: '9px',
+                                padding: '2px 6px',
+                                fontWeight: 950,
+                                borderRadius: '2px',
+                                boxShadow: '0 2px 5px rgba(0,0,0,0.1)',
+                                zIndex: 10,
+                                minWidth: '28px',
+                                textAlign: 'center'
                             }}>{match.match_number}</div>
-                            <div style={{ width: `${connectorWidth}px`, height: '1.5px', background: '#111', flexShrink: 0 }} />
+                            <div style={{ flex: 1, height: '1.5px', background: '#111' }} />
                         </div>
                     </div>
                 </div>
@@ -368,40 +375,38 @@ const Brackets = () => {
             <div className="bracket-container" style={{ padding: '60px 40px', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', overflowX: 'auto' }}>
                 <div style={{ display: 'flex', alignItems: 'center' }}>
                     {leftBranch.map((round, rIndex) => (
-                        <div key={`l-${rIndex}`} style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-around', gap: '20px' }}>
+                        <div key={`l-${rIndex}`} style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-around', gap: '30px', margin: '0 50px' }}>
                             {round.map(m => <MatchBox key={m.id} match={m} rIndex={rIndex} isRight={false} />)}
                         </div>
                     ))}
 
-                    <div style={{ textAlign: 'center', margin: '0 80px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                    <div style={{ textAlign: 'center', margin: '0 100px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                         <div style={{ fontWeight: 950, fontSize: '32px', marginBottom: '40px', color: '#10151C', textTransform: 'uppercase', letterSpacing: '4px' }}>FINAL</div>
                         <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
                             <PlayerLine player={finalMatch.player1} isBlue={true} isRight={false} />
 
-                            {/* Linha horizontal conectora */}
-                            <div style={{ width: '40px', height: '1.5px', background: '#111', marginTop: '48px' }} />
+                            <div style={{ width: '60px', height: '1.5px', background: '#111', marginTop: '40px' }} />
 
                             <div style={{
-                                background: '#10151C',
-                                color: '#FFF',
-                                fontSize: '20px',
-                                padding: '12px 20px',
+                                background: '#EEE',
+                                border: '2px solid #111',
+                                color: '#000',
+                                fontSize: '24px',
+                                padding: '15px 25px',
                                 fontWeight: 950,
-                                borderRadius: '12px',
-                                boxShadow: '0 10px 25px rgba(0,0,0,0.4)',
+                                borderRadius: '4px',
+                                boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
                                 margin: '0 10px',
                                 zIndex: 10,
                                 position: 'relative',
-                                top: '24px'
+                                top: '20px'
                             }}>{finalMatch.match_number}</div>
 
-                            {/* Linha horizontal conectora */}
-                            <div style={{ width: '40px', height: '1.5px', background: '#111', marginTop: '48px' }} />
+                            <div style={{ width: '60px', height: '1.5px', background: '#111', marginTop: '40px' }} />
 
                             <PlayerLine player={finalMatch.player2} isBlue={false} isRight={true} />
 
-                            {/* Linha vertical descendo para o Campeão */}
-                            <div style={{ position: 'absolute', top: '72px', left: '50%', transform: 'translateX(-50%)', width: '1.5px', height: '70px', background: '#111' }} />
+                            <div style={{ position: 'absolute', top: '64px', left: '50%', transform: 'translateX(-50%)', width: '1.5px', height: '70px', background: '#111' }} />
                         </div>
 
                         <div style={{ marginTop: '110px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '15px' }}>
@@ -413,7 +418,7 @@ const Brackets = () => {
                     {[...rightBranch].reverse().map((round, reqIndex) => {
                         const rIndex = rightBranch.length - 1 - reqIndex;
                         return (
-                            <div key={`r-${reqIndex}`} style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-around', gap: '20px' }}>
+                            <div key={`r-${reqIndex}`} style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-around', gap: '30px', margin: '0 50px' }}>
                                 {round.map(m => <MatchBox key={m.id} match={m} rIndex={rIndex} isRight={true} />)}
                             </div>
                         );
@@ -457,17 +462,24 @@ const Brackets = () => {
                     <div style={{ width: '100%', margin: '0 auto', flex: 1, display: 'flex', flexDirection: 'column' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '5px solid #10151C', paddingBottom: '32px', marginBottom: '30px', maxWidth: '1400px', margin: '0 auto', width: '100%' }}>
                             <div style={{ display: 'flex', gap: '32px', alignItems: 'center' }}>
-                                <img
-                                    src="https://raw.githubusercontent.com/GuilhermePeixotos36/app_chaveamento_tkd_v1/main/src/assets/logo_fetemg.png"
-                                    alt="FETEMG Logo"
-                                    style={{ height: '80px', width: 'auto' }}
-                                    onError={(e) => {
-                                        // Fallback para ícone se a imagem falhar
-                                        e.target.style.display = 'none';
-                                        e.target.nextSibling.style.display = 'block';
-                                    }}
-                                />
-                                <Trophy size={72} color="var(--brand-blue)" style={{ display: 'none' }} />
+                                <div style={{
+                                    width: '100px',
+                                    height: '100px',
+                                    background: 'linear-gradient(135deg, #E71546 0%, #1782C8 100%)',
+                                    borderRadius: '12px',
+                                    display: 'flex',
+                                    padding: '10px',
+                                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    color: '#FFF',
+                                    fontSize: '18px',
+                                    fontWeight: 950,
+                                    textAlign: 'center',
+                                    lineHeight: '1.1'
+                                }}>
+                                    FETEMG<br /><span style={{ fontSize: '9px', fontWeight: 600 }}>Institucional</span>
+                                </div>
                                 <div>
                                     <h1 style={{ margin: 0, fontSize: '32px', color: '#10151C', textTransform: 'uppercase', fontWeight: 950, letterSpacing: '2px' }}>{champ?.name}</h1>
                                     <p style={{ margin: '8px 0 0 0', color: 'var(--brand-blue)', fontWeight: 900, fontSize: '1.2rem' }}>FEDERAÇÃO DE TAEKWONDO DO ESTADO DE MINAS GERAIS</p>
