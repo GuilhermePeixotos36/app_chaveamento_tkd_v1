@@ -249,245 +249,221 @@ const Brackets = () => {
         } finally { setSaving(false); }
     };
 
-    const renderMatch = (match, roundIndex, matchIndex, totalMatches) => {
-        const position = calculateTreePosition(roundIndex, matchIndex, totalMatches);
-    setActiveCategory(key);
-    setShowBracketModal(true);
-};
+    const BracketView = ({ cat }) => {
+        const rounds = cat.bracket;
+        if (!rounds || rounds.length === 0) return null;
+        const numRounds = rounds.length;
 
-const generateAllBrackets = () => {
-    let count = 0;
-    const nextCats = { ...categories };
-    Object.keys(nextCats).forEach(k => {
-        if (nextCats[k].athletes.length >= 2 && !nextCats[k].bracket) {
-            nextCats[k].bracket = createSingleEliminationBracket(nextCats[k].athletes);
-            count++;
-        }
-    });
-    setCategories(nextCats);
-    if (count > 0) setMessage(`${count} chaves geradas!`);
-};
+        // Função para calcular posição na árvore binária
+        const calculateTreePosition = (roundIndex, matchIndex, totalMatches) => {
+            const level = numRounds - 1 - roundIndex;
+            const positionInLevel = matchIndex;
 
-const saveBracket = async (key) => {
-    const cat = categories[key];
-    setSaving(true);
-    try {
-        const payload = {
-            championship_id: selectedChampionship,
-            kyorugi_classification_id: cat.classification_id,
-            modality_id: cat.category_params.modality_id,
-            age_category_id: cat.category_params.age_category_id,
-            weight_category_id: cat.category_params.weight_category_id,
-            belt_category_id: cat.category_params.belt_category_id,
-            bracket_data: cat.bracket
+            // Calcular posição X e Y baseada na hierarquia
+            const x = level * 250; // 250px por nível
+            const y = positionInLevel * 150; // 150px por luta
+
+            return { x, y, level, positionInLevel };
         };
-        if (cat.db_id) {
-            await supabase.from('brackets').update(payload).eq('id', cat.db_id);
-        } else {
-            const { data } = await supabase.from('brackets').insert(payload).select();
-            setCategories(prev => ({ ...prev, [key]: { ...prev[key], db_id: data[0].id } }));
-        }
-        setMessage('Chave salva com sucesso!');
-        setTimeout(() => setMessage(''), 3000);
-    } catch (e) {
-        console.error('Save error:', e);
-        alert('Erro ao salvar no banco.');
-    } finally { setSaving(false); }
-};
 
-// Função para renderizar um nó (luta)
-const renderMatch = (match, roundIndex, matchIndex, totalMatches) => {
-    const position = calculateTreePosition(roundIndex, matchIndex, totalMatches);
-    const isFinal = roundIndex === numRounds - 1;
-        const isFinal = roundIndex === numRounds - 1;
+        // Função para renderizar um nó (luta)
+        const renderMatch = (match, roundIndex, matchIndex, totalMatches) => {
+            const position = calculateTreePosition(roundIndex, matchIndex, totalMatches);
+            const isFinal = roundIndex === numRounds - 1;
 
-        return (
-            <div key={match.id} style={{
-                position: 'absolute',
-                left: `${position.x}px`,
-                top: `${position.y}px`,
-                width: '200px',
-                height: '80px',
-                zIndex: 10
-            }}>
-                {/* Container dos jogadores */}
-                <div style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '10px',
-                    height: '100%'
-                }}>
-                    {/* Jogador 1 */}
-                    <div style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        padding: '8px',
-                        borderBottom: '2px solid #111',
-                        background: '#fff',
-                        minHeight: '35px'
-                    }}>
-                        <div style={{ flex: 1 }}>
-                            <div style={{ 
-                                fontSize: '8px', 
-                                color: '#1782C8', 
-                                fontWeight: 800, 
-                                marginRight: '6px' 
-                            }}>AZUL</div>
-                            <div style={{ 
-                                fontSize: '11px', 
-                                fontWeight: 950, 
-                                textTransform: 'uppercase' 
-                            }}>
-                                {match.player1?.full_name || '---'}
-                            </div>
-                            <div style={{ 
-                                fontSize: '8px', 
-                                color: '#666', 
-                                fontWeight: 800 
-                            }}>
-                                {match.player1?.organizations?.name || ''}
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Jogador 2 */}
-                    <div style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        padding: '8px',
-                        borderBottom: '2px solid #111',
-                        background: '#fff',
-                        minHeight: '35px'
-                    }}>
-                        <div style={{ flex: 1 }}>
-                            <div style={{ 
-                                fontSize: '8px', 
-                                color: '#E71546', 
-                                fontWeight: 800, 
-                                marginRight: '6px' 
-                            }}>VERMELHO</div>
-                            <div style={{ 
-                                fontSize: '11px', 
-                                fontWeight: 950, 
-                                textTransform: 'uppercase' 
-                            }}>
-                                {match.player2?.full_name || '---'}
-                            </div>
-                            <div style={{ 
-                                fontSize: '8px', 
-                                color: '#666', 
-                                fontWeight: 800 
-                            }}>
-                                {match.player2?.organizations?.name || ''}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Número da luta */}
-                <div style={{
+            return (
+                <div key={match.id} style={{
                     position: 'absolute',
-                    top: '-25px',
-                    left: '50%',
-                    transform: 'translateX(-50%)',
-                    background: '#000',
-                    color: '#fff',
-                    fontSize: '10px',
-                    fontWeight: 950,
-                    padding: '4px 8px',
-                    borderRadius: '3px',
-                    minWidth: '30px',
-                    textAlign: 'center',
-                    zIndex: 20
+                    left: `${position.x}px`,
+                    top: `${position.y}px`,
+                    width: '200px',
+                    height: '80px',
+                    zIndex: 10
                 }}>
-                    {match.match_number}
-                </div>
-            </div>
-        );
-    };
-
-    // Renderizar todas as lutas e conexões
-    const allMatches = [];
-    const allConnections = [];
-        const [scale, setScale] = useState(1);
-        const bracketRef = React.useRef(null);
-        const containerRef = React.useRef(null);
-
-        React.useLayoutEffect(() => {
-            if (bracketRef.current && containerRef.current) {
-                const containerWidth = containerRef.current.offsetWidth - 60;
-                const containerHeight = window.innerHeight - 380;
-                const contentWidth = bracketRef.current.scrollWidth;
-                const contentHeight = bracketRef.current.scrollHeight;
-                let finalScale = Math.min(containerWidth / contentWidth, containerHeight / contentHeight);
-                setScale(finalScale < 1 ? Math.max(0.2, finalScale) : 1);
-            }
-        }, [cat]);
-
-        return (
-            <div className="modal-overlay" style={{ display: 'flex', padding: 0, alignItems: 'center', overflow: 'auto', backgroundColor: 'rgba(0,0,0,0.9)', zIndex: 1000 }}>
-                <div ref={containerRef} className="modal-content" style={{ width: '100%', maxWidth: '100vw', padding: '40px', borderRadius: '0', background: '#FFF', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-                    <div style={{ width: '100%', maxWidth: '1400px', margin: '0 auto', flex: 1 }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '4px solid #111', paddingBottom: '20px', marginBottom: '30px' }}>
-                            <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
-                                <img
-                                    src="/logo.png"
-                                    alt="Federação"
-                                    style={{ width: '100px', height: '100px', objectFit: 'contain' }}
-                                    onError={(e) => {
-                                        e.target.style.display = 'none';
-                                        e.target.nextSibling.style.display = 'flex';
-                                    }}
-                                />
-                                <div style={{
-                                    display: 'none', width: '100px', height: '100px', background: 'linear-gradient(135deg, #1782C8 0%, #E71546 100%)',
-                                    borderRadius: '10px', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 950, textAlign: 'center'
-                                }}>FETEMG</div>
-
-                                <div>
-                                    <h1 style={{ margin: 0, fontSize: '30px', fontWeight: 950, textTransform: 'uppercase' }}>{champ?.name}</h1>
-                                    <p style={{ margin: 0, color: '#1782C8', fontWeight: 800 }}>FEDERAÇÃO DE TAEKWONDO DO ESTADO DE MINAS GERAIS</p>
+                    {/* Container dos jogadores */}
+                    <div style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '10px',
+                        height: '100%'
+                    }}>
+                        {/* Jogador 1 */}
+                        <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            padding: '8px',
+                            borderBottom: '2px solid #111',
+                            background: '#fff',
+                            minHeight: '35px'
+                        }}>
+                            <div style={{ flex: 1 }}>
+                                <div style={{ 
+                                    fontSize: '8px', 
+                                    color: '#1782C8', 
+                                    fontWeight: 800, 
+                                    marginRight: '6px' 
+                                }}>AZUL</div>
+                                <div style={{ 
+                                    fontSize: '11px', 
+                                    fontWeight: 950, 
+                                    textTransform: 'uppercase' 
+                                }}>
+                                    {match.player1?.full_name || '---'}
+                                </div>
+                                <div style={{ 
+                                    fontSize: '8px', 
+                                    color: '#666', 
+                                    fontWeight: 800 
+                                }}>
+                                    {match.player1?.organizations?.name || ''}
                                 </div>
                             </div>
-                            <div className="no-print" style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
-                                <button className="btn btn-primary" onClick={() => saveBracket(activeCategory)} disabled={saving}><Save size={20} /> SALVAR</button>
-                                <button className="btn btn-secondary" onClick={() => window.print()}><Printer size={20} /> IMPRIMIR</button>
-                                <button className="btn btn-ghost" onClick={() => setShowBracketModal(false)}><X size={40} /></button>
-                            </div>
                         </div>
 
-                        <div style={{ textAlign: 'center', marginBottom: '30px' }}>
-                            <h2 style={{ fontSize: '1.8rem', fontWeight: 950, textTransform: 'uppercase' }}>{cat.classification_name}</h2>
-                            <div style={{ display: 'flex', justifyContent: 'center', gap: '30px', fontWeight: 800 }}>
-                                <span>{cat.classification_code}</span>
-                                <span>{cat.info.gender}</span>
-                            </div>
-                        </div>
-
-                        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', padding: '20px 0' }}>
-                            <div ref={bracketRef} style={{
-                                transform: `scale(${scale})`,
-                                transformOrigin: 'top center',
-                                transition: 'transform 0.2s'
-                            }}>
-                                <BracketView cat={cat} />
-                            </div>
-                        </div>
-
-                        <div className="bracket-footer" style={{ display: 'flex', justifyContent: 'space-between', marginTop: 'auto', borderTop: '2px solid #EEE', paddingTop: '30px', maxWidth: '1400px', margin: '0 auto', width: '100%' }}>
-                            <div style={{ fontSize: '12px', color: '#555', maxWidth: '700px', lineHeight: '1.6' }}>
-                                <strong style={{ color: '#10151C' }}>LEGENDA TÉCNICA OFICIAL:</strong><br />
-                                (PTF) Pontos, (PTG) Superioridade Técnica, (GDP) Ponto de Ouro, (SUP) Superioridade por Decisão,<br />
-                                (WDR) Desistência, (DSQ) Desclassificação, (PUN) Punição, (RSC) Interrupção pelo Árbitro
-                            </div>
-                            <div style={{ width: '320px', border: '3px solid #10151C', padding: '15px' }}>
-                                <p style={{ margin: '0 0 10px 0', fontSize: '13px', fontWeight: 950, textTransform: 'uppercase' }}>Vencedor da Categoria:</p>
-                                <div style={{ height: '3px', background: '#DDD', margin: '10px 0' }} />
-                                <div style={{ height: '3px', background: '#DDD', margin: '10px 0' }} />
+                        {/* Jogador 2 */}
+                        <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            padding: '8px',
+                            borderBottom: '2px solid #111',
+                            background: '#fff',
+                            minHeight: '35px'
+                        }}>
+                            <div style={{ flex: 1 }}>
+                                <div style={{ 
+                                    fontSize: '8px', 
+                                    color: '#E71546', 
+                                    fontWeight: 800, 
+                                    marginRight: '6px' 
+                                }}>VERMELHO</div>
+                                <div style={{ 
+                                    fontSize: '11px', 
+                                    fontWeight: 950, 
+                                    textTransform: 'uppercase' 
+                                }}>
+                                    {match.player2?.full_name || '---'}
+                                </div>
+                                <div style={{ 
+                                    fontSize: '8px', 
+                                    color: '#666', 
+                                    fontWeight: 800 
+                                }}>
+                                    {match.player2?.organizations?.name || ''}
+                                </div>
                             </div>
                         </div>
                     </div>
+
+                    {/* Número da luta */}
+                    <div style={{
+                        position: 'absolute',
+                        top: '-25px',
+                        left: '50%',
+                        transform: 'translateX(-50%)',
+                        background: '#000',
+                        color: '#fff',
+                        fontSize: '10px',
+                        fontWeight: 950,
+                        padding: '4px 8px',
+                        borderRadius: '3px',
+                        minWidth: '30px',
+                        textAlign: 'center',
+                        zIndex: 20
+                    }}>
+                        {match.match_number}
+                    </div>
                 </div>
+            );
+        };
+
+        // Renderizar todas as lutas e conexões
+        const allMatches = [];
+        const allConnections = [];
+
+        rounds.forEach((round, roundIndex) => {
+            round.forEach((match, matchIndex) => {
+                const position = calculateTreePosition(roundIndex, matchIndex, round.length);
+                allMatches.push({ match, position, roundIndex, matchIndex });
+
+                // Adicionar conexões para a próxima rodada
+                if (roundIndex < rounds.length - 1) {
+                    const nextRound = rounds[roundIndex + 1];
+                    const nextMatchIndex = Math.floor(matchIndex / 2);
+
+                    if (nextRound && nextMatchIndex < nextRound.length) {
+                        const nextPosition = calculateTreePosition(roundIndex + 1, nextMatchIndex, nextRound.length);
+
+                        // Conexão vertical
+                        allConnections.push({
+                            from: { ...position, x: position.x + 200 },
+                            to: { ...nextPosition, x: nextPosition.x }
+                        });
+
+                        // Conexão horizontal se necessário
+                        if (matchIndex % 2 === 1) {
+                            const prevPosition = calculateTreePosition(roundIndex, matchIndex - 1, round.length);
+                            allConnections.push({
+                                from: { ...prevPosition, x: prevPosition.x + 200 },
+                                to: { ...position, x: position.x + 200 }
+                            });
+                        }
+                    }
+                }
+            });
+        });
+
+        // Calcular dimensões do container
+        const maxX = Math.max(...allMatches.map(m => m.position.x + 200));
+        const maxY = Math.max(...allMatches.map(m => m.position.y + 80));
+
+        return (
+            <div style={{
+                position: 'relative',
+                width: `${maxX + 100}px`,
+                height: `${maxY + 200}px`,
+                background: '#fff',
+                fontFamily: 'Arial, sans-serif',
+                margin: '40px auto',
+                padding: '40px'
+            }}>
+                {/* Renderizar conexões primeiro (para ficar atrás dos nós) */}
+                {allConnections.map((conn, index) => (
+                    <div key={`conn-${index}`} style={{
+                        position: 'absolute',
+                        left: `${conn.from.x}px`,
+                        top: `${conn.from.y}px`,
+                        width: '2px',
+                        height: `${conn.to.y - conn.from.y}px`,
+                        background: '#111',
+                        zIndex: 1
+                    }} />
+                ))}
+
+                {/* Renderizar todos os nós (lutas) */}
+                {allMatches.map(({ match, position, roundIndex, matchIndex }) => 
+                    renderMatch(match, roundIndex, matchIndex, rounds[roundIndex].length)
+                )}
+
+                {/* Renderizar troféu abaixo da final */}
+                {rounds.length > 0 && (
+                    <div style={{
+                        position: 'absolute',
+                        left: `${(numRounds - 1) * 250 + 100}px`,
+                        top: `${maxY + 60}px`,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: '10px'
+                    }}>
+                        <Trophy size={60} color="#FBCB37" fill="#FBCB37" />
+                        <div style={{ 
+                            fontWeight: 950, 
+                            fontSize: '16px', 
+                            letterSpacing: '1px',
+                            textTransform: 'uppercase' 
+                        }}>Campeão</div>
+                    </div>
+                )}
             </div>
         );
     };
