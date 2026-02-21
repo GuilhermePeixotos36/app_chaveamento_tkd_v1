@@ -163,11 +163,11 @@ const PublicInscription = () => {
     
     // Se o campo for peso, processar automaticamente a categoria de peso
     if (name === 'athlete_weight') {
-      const weight = parseFloat(value);
+      console.log('=== PROCESSANDO PESO (PUBLIC) ===');
+      const weight = parseFloat(value) || 0;
       const age = calculateAge(formData.athlete_birthdate);
       const gender = formData.athlete_gender;
       
-      console.log('=== PROCESSANDO PESO (PUBLIC) ===');
       console.log('Peso:', weight, 'Idade:', age, 'Gênero:', gender);
       
       if (weight && age && gender) {
@@ -182,6 +182,8 @@ const PublicInscription = () => {
           // Calcular IDs das outras categorias
           const age = calculateAge(formData.athlete_birthdate);
           const beltLevel = parseInt(formData.athlete_belt) || 1; // Garantir que seja número inteiro
+          console.log('DEBUG: athlete_belt value:', formData.athlete_belt, 'type:', typeof formData.athlete_belt);
+          console.log('DEBUG: parsed beltLevel:', beltLevel, 'type:', typeof beltLevel);
           const ageCategoryId = findAgeCategoryId(age);
           const beltCategoryId = findBeltCategoryId(beltLevel);
           
