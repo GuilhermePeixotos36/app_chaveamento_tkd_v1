@@ -118,51 +118,58 @@ const Brackets = () => {
         setLoading(true);
         setErrorMsg('');
         try {
-            // Fetch registrations with organization join (known FK)
-            const { data: regData, error: regErr } = await supabase
-                .from('registrations')
-                .select(`*, organizations(name)`)
-                .eq('championship_id', champId);
+            // Fetch registrations and organizations separately to avoid join errors
+            const [regRes, orgRes] = await Promise.all([
+                supabase.from('registrations').select('*').eq('championship_id', champId),
+                supabase.from('organizations').select('id, name')
+            ]);
 
-            if (regErr) throw regErr;
+            if (regRes.error) throw regRes.error;
+            if (orgRes.error) throw orgRes.error;
+
+            const orgMap = {};
+            orgRes.data.forEach(o => orgMap[o.id] = o);
+
+            const regData = regRes.data.map(r => ({
+                ...r,
+                organizations: orgMap[r.organization_id] || { name: '---' }
+            }));
 
             const grouped = {};
             const unmapped = [];
 
-            if (regData) {
-                regData.forEach(reg => {
-                    const classification = findMatchingClassification(reg);
-                    if (classification) {
-                        const catKey = `classification_${classification.id}`;
-                        if (!grouped[catKey]) {
-                            const wc = weightCategories.find(w => w.id === classification.weight_category_id);
-                            grouped[catKey] = {
-                                id: catKey,
-                                classification_id: classification.id,
-                                classification_code: classification.code,
-                                classification_name: classification.name,
-                                info: {
-                                    age: classification.age_category,
-                                    gender: classification.gender === 'M' ? 'Masculino' : 'Feminino',
-                                    belt: `Grupo ${classification.belt_group}`,
-                                    weight: wc ? wc.name : '---'
-                                },
-                                athletes: [],
-                                bracket: null,
-                                category_params: {
-                                    modality_id: reg.modality_id,
-                                    age_category_id: reg.age_category_id,
-                                    weight_category_id: reg.weight_category_id,
-                                    belt_category_id: reg.belt_category_id
-                                }
-                            };
-                        }
-                        grouped[catKey].athletes.push(reg);
-                    } else {
-                        unmapped.push(reg);
+            regData.forEach(reg => {
+                const classification = findMatchingClassification(reg);
+                if (classification) {
+                    const catKey = `classification_${classification.id}`;
+                    if (!grouped[catKey]) {
+                        const wc = weightCategories.find(w => w.id === classification.weight_category_id);
+                        grouped[catKey] = {
+                            id: catKey,
+                            classification_id: classification.id,
+                            classification_code: classification.code,
+                            classification_name: classification.name,
+                            info: {
+                                age: classification.age_category,
+                                gender: classification.gender === 'M' ? 'Masculino' : 'Feminino',
+                                belt: `Grupo ${classification.belt_group}`,
+                                weight: wc ? wc.name : '---'
+                            },
+                            athletes: [],
+                            bracket: null,
+                            category_params: {
+                                modality_id: reg.modality_id,
+                                age_category_id: reg.age_category_id,
+                                weight_category_id: reg.weight_category_id,
+                                belt_category_id: reg.belt_category_id
+                            }
+                        };
                     }
-                });
-            }
+                    grouped[catKey].athletes.push(reg);
+                } else {
+                    unmapped.push(reg);
+                }
+            });
 
             // Load existing brackets for this championship
             const { data: bracketData, error: bErr } = await supabase
@@ -186,7 +193,7 @@ const Brackets = () => {
             setUnclassifiedAthletes(unmapped);
         } catch (error) {
             console.error('Error loading registrations:', error);
-            setErrorMsg('Erro ao carregar atletas do campeonato');
+            setErrorMsg('Erro: ' + (error.message || 'Falha ao carregar atletas'));
         } finally {
             setLoading(false);
         }
