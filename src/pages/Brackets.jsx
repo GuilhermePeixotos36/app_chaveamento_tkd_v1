@@ -265,13 +265,16 @@ const Brackets = () => {
                 textAlign: isRight ? 'right' : 'left',
                 color: isBlue ? '#1782C8' : '#E71546',
                 minHeight: '48px',
-                position: 'relative'
+                position: 'relative',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'flex-end'
             }}>
-                <div style={{ fontWeight: 950, whiteSpace: 'nowrap', textTransform: 'uppercase', fontSize: '12px', lineHeight: '1.2' }}>
-                    <span style={{ fontSize: '9px', marginRight: '5px', color: '#111', fontWeight: 800 }}>{isBlue ? 'AZUL' : 'VERMELHO'}</span>
+                <div style={{ fontWeight: 950, whiteSpace: 'nowrap', textTransform: 'uppercase', fontSize: '11px', lineHeight: '1.2' }}>
+                    <span style={{ fontSize: '8px', marginRight: '5px', color: '#111', fontWeight: 800 }}>{isBlue ? 'AZUL' : 'VERMELHO'}</span>
                     {player?.full_name || ''}
                 </div>
-                <div style={{ fontSize: '9px', color: '#666', fontWeight: 800, marginTop: '2px' }}>{player?.organizations?.name || ''}</div>
+                <div style={{ fontSize: '8px', color: '#666', fontWeight: 800, marginTop: '2px' }}>{player?.organizations?.name || ''}</div>
             </div>
         );
 
@@ -289,26 +292,26 @@ const Brackets = () => {
                     position: 'relative',
                     margin: isRight ? `0 0 0 ${connectorWidth}px` : `0 ${connectorWidth}px 0 0`,
                 }}>
-                    {/* Jogador 1 (Topo) */}
+                    {/* Atleta 1 (Topo) */}
                     <div style={{ position: 'absolute', top: 0, [isRight ? 'right' : 'left']: 0 }}>
                         <PlayerLine player={match.player1} isBlue={true} isRight={isRight} />
                     </div>
 
-                    {/* Jogador 2 (Base) */}
+                    {/* Atleta 2 (Base) */}
                     <div style={{ position: 'absolute', bottom: 0, [isRight ? 'right' : 'left']: 0 }}>
                         <PlayerLine player={match.player2} isBlue={false} isRight={isRight} />
                     </div>
 
-                    {/* Sistema de Conectores em "L" */}
+                    {/* Conectores */}
                     <div style={{
                         position: 'absolute',
                         [isRight ? 'left' : 'right']: `-${connectorWidth}px`,
                         top: playerHeight,
-                        bottom: playerHeight,
+                        bottom: 0,
                         width: `${connectorWidth}px`,
                         zIndex: 1
                     }}>
-                        {/* Linha Vertical Barra */}
+                        {/* Vertical Bar */}
                         <div style={{
                             position: 'absolute',
                             [isRight ? 'left' : 'right']: '0',
@@ -318,7 +321,7 @@ const Brackets = () => {
                             background: '#111'
                         }} />
 
-                        {/* Linha Horizontal Topo */}
+                        {/* Top L-Hook */}
                         <div style={{
                             position: 'absolute',
                             top: 0,
@@ -328,7 +331,7 @@ const Brackets = () => {
                             background: '#111'
                         }} />
 
-                        {/* Linha Horizontal Base */}
+                        {/* Bottom L-Hook (border do jogador 2) */}
                         <div style={{
                             position: 'absolute',
                             bottom: 0,
@@ -338,23 +341,22 @@ const Brackets = () => {
                             background: '#111'
                         }} />
 
-                        {/* Caixa com o Número e Saída */}
+                        {/* Match Number and Next Round Line */}
                         <div style={{
                             position: 'absolute',
                             top: '50%',
-                            [isRight ? 'left' : 'right']: '0',
+                            [isRight ? 'left' : 'right']: 0,
                             width: `${connectorWidth * 2}px`,
                             transform: `translateY(-50%) ${isRight ? 'translateX(-100%)' : ''}`,
                             display: 'flex',
                             alignItems: 'center',
-                            flexDirection: isRight ? 'row-reverse' : 'row',
-                            pointerEvents: 'none'
+                            flexDirection: isRight ? 'row-reverse' : 'row'
                         }}>
                             <div style={{ width: '8px', height: '1.5px', background: '#111', flexShrink: 0 }} />
                             <div style={{
-                                background: '#111', color: '#FFF', fontSize: '10px', padding: '3px 6px',
-                                fontWeight: 950, borderRadius: '3px', boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
-                                whiteSpace: 'nowrap'
+                                background: '#111', color: '#FFF', fontSize: '10px', padding: '4px 8px',
+                                fontWeight: 950, borderRadius: '4px', boxShadow: '0 4px 10px rgba(0,0,0,0.3)',
+                                whiteSpace: 'nowrap', zIndex: 10
                             }}>{match.match_number}</div>
                             <div style={{ width: `${connectorWidth}px`, height: '1.5px', background: '#111', flexShrink: 0 }} />
                         </div>
@@ -366,7 +368,7 @@ const Brackets = () => {
             <div className="bracket-container" style={{ padding: '60px 40px', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', overflowX: 'auto' }}>
                 <div style={{ display: 'flex', alignItems: 'center' }}>
                     {leftBranch.map((round, rIndex) => (
-                        <div key={`l-${rIndex}`} style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-around' }}>
+                        <div key={`l-${rIndex}`} style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-around', gap: '20px' }}>
                             {round.map(m => <MatchBox key={m.id} match={m} rIndex={rIndex} isRight={false} />)}
                         </div>
                     ))}
@@ -377,7 +379,7 @@ const Brackets = () => {
                             <PlayerLine player={finalMatch.player1} isBlue={true} isRight={false} />
 
                             {/* Linha horizontal conectora */}
-                            <div style={{ width: '40px', height: '1.5px', background: '#111', marginTop: '52px' }} />
+                            <div style={{ width: '40px', height: '1.5px', background: '#111', marginTop: '48px' }} />
 
                             <div style={{
                                 background: '#10151C',
@@ -385,24 +387,24 @@ const Brackets = () => {
                                 fontSize: '20px',
                                 padding: '12px 20px',
                                 fontWeight: 950,
-                                borderRadius: '8px',
-                                boxShadow: '0 6px 15px rgba(0,0,0,0.3)',
+                                borderRadius: '12px',
+                                boxShadow: '0 10px 25px rgba(0,0,0,0.4)',
                                 margin: '0 10px',
                                 zIndex: 10,
                                 position: 'relative',
-                                top: '26px'
+                                top: '24px'
                             }}>{finalMatch.match_number}</div>
 
                             {/* Linha horizontal conectora */}
-                            <div style={{ width: '40px', height: '1.5px', background: '#111', marginTop: '52px' }} />
+                            <div style={{ width: '40px', height: '1.5px', background: '#111', marginTop: '48px' }} />
 
                             <PlayerLine player={finalMatch.player2} isBlue={false} isRight={true} />
 
                             {/* Linha vertical descendo para o Campeão */}
-                            <div style={{ position: 'absolute', top: '78px', left: '50%', transform: 'translateX(-50%)', width: '1.5px', height: '60px', background: '#111' }} />
+                            <div style={{ position: 'absolute', top: '72px', left: '50%', transform: 'translateX(-50%)', width: '1.5px', height: '70px', background: '#111' }} />
                         </div>
 
-                        <div style={{ marginTop: '100px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '15px' }}>
+                        <div style={{ marginTop: '110px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '15px' }}>
                             <Trophy size={80} color="#FBCB37" fill="#FBCB37" strokeWidth={1} />
                             <div style={{ fontWeight: 950, color: '#10151C', fontSize: '24px', letterSpacing: '2px' }}>CAMPEÃO</div>
                         </div>
@@ -411,7 +413,7 @@ const Brackets = () => {
                     {[...rightBranch].reverse().map((round, reqIndex) => {
                         const rIndex = rightBranch.length - 1 - reqIndex;
                         return (
-                            <div key={`r-${reqIndex}`} style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-around' }}>
+                            <div key={`r-${reqIndex}`} style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-around', gap: '20px' }}>
                                 {round.map(m => <MatchBox key={m.id} match={m} rIndex={rIndex} isRight={true} />)}
                             </div>
                         );
